@@ -1,4 +1,5 @@
 
+from typing import List
 from typing import cast
 
 from logging import Logger
@@ -39,6 +40,29 @@ class UmlDiagrammer(App):
         self.SetTopWindow(self._wxFrame)
 
         return True
+
+    def MacOpenFiles(self, fileNames: List[str]):
+        """
+        Called in response to an "openFiles" Apple event.
+
+        Args:
+            fileNames:
+        """
+        pass
+        # self.logger.info(f'MacOpenFiles: {fileNames=}')
+        #
+        # appFrame:    PyutApplicationFrame = self._frame
+        # self.logger.info(f'MacOpenFiles: {appFrame=}')
+        # #
+        # for fileName in fileNames:
+        #     appFrame.loadByFilename(f'{fileName}')
+        #     self.logger.info(f'Loaded: {fileNames=}')
+
+    def _setupApplicationLogging(self):
+        pass
+
+    def _displaySystemMetrics(self):
+        pass
 
 
 if __name__ == '__main__':

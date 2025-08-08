@@ -6,15 +6,8 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from pathlib import Path
-
 from wx import DEFAULT_FRAME_STYLE
-from wx import EVT_MENU
-from wx import FD_CHANGE_DIR
-from wx import FD_FILE_MUST_EXIST
-from wx import FD_OPEN
 from wx import FRAME_FLOAT_ON_PARENT
-from wx import ID_EXIT
 
 from wx import Menu
 from wx import MenuBar
@@ -22,8 +15,6 @@ from wx import NB_LEFT
 from wx import Notebook
 from wx import CallLater
 from wx import CallAfter
-from wx import CommandEvent
-from wx import FileSelector
 
 from wx import NewIdRef as wxNewIdRef
 
@@ -34,16 +25,16 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
-
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
 
-from umlio.Reader import Reader
-
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
+from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+from umldiagrammer.pubsubengine.MessageType import MessageType
 
 FRAME_WIDTH:  int = 800
 FRAME_HEIGHT: int = 400
@@ -81,58 +72,21 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.Show(True)
 
         self._preferences: UmlPreferences = UmlPreferences()
+        self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
 
     def _createApplicationMenuBar(self):
 
-        menuBar:  MenuBar = MenuBar()
-        fileMenu: Menu    = Menu()
+        uiMenuCreator: UIMenuCreator = UIMenuCreator(frame=self, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+        uiMenuCreator.initializeMenus()
 
-        fileMenu.Append(Identifiers.ID_OPEN_PROJECT_FILE, 'Open Project')
-        fileMenu.Append(Identifiers.ID_OPEN_XML_FILE,     'Open Xml Diagram')
-        fileMenu.AppendSeparator()
-        fileMenu.Append(ID_EXIT, '&Quit', "Quit Application")
-        fileMenu.AppendSeparator()
-        # fileMenu.Append(ID_PREFERENCES, "P&references", "Uml preferences")
+        menuBar:  MenuBar = MenuBar()
+        fileMenu: Menu    = uiMenuCreator.fileMenu
 
         menuBar.Append(fileMenu, 'File')
 
         self.SetMenuBar(menuBar)
 
-        # self.Bind(EVT_MENU, self._onOglPreferences, id=ID_PREFERENCES)
-        self.Bind(EVT_MENU, self._onLoadProject, id=Identifiers.ID_OPEN_PROJECT_FILE)
-        self.Bind(EVT_MENU, self._onLoadXmlFile, id=Identifiers.ID_OPEN_XML_FILE)
-
-    # noinspection PyUnusedLocal
-    def _onLoadProject(self, event: CommandEvent):
-
-        selectedFile: str = FileSelector("Choose a project file to load", wildcard=PROJECT_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
-        if selectedFile != '':
-            self._loadProjectFile(Path(selectedFile))
-
-    # noinspection PyUnusedLocal
-    def _onLoadXmlFile(self, event: CommandEvent):
-
-        selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
-        if selectedFile != '':
-            self._loadXmlFile(Path(selectedFile))
-
-    def _loadProjectFile(self, fileName: Path):
-        reader: Reader = Reader()
-
-        umlProject: UmlProject = reader.readProjectFile(fileName=fileName)
-        self._loadNewProject(umlProject)
-
-    def _loadXmlFile(self, fileName: Path):
-
-        reader: Reader = Reader()
-
-        umlProject: UmlProject = reader.readXmlFile(fileName=fileName)
-
-        self.logger.debug(f'{umlProject=}')
-
-        self._loadNewProject(umlProject)
-
-    def _loadNewProject(self, umlProject: UmlProject):
+    def _loadProject(self, umlProject: UmlProject):
 
         if self._notebook is None:
             self._createTheOverArchingNotebook()
