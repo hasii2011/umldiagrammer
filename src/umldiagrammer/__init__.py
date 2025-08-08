@@ -1,0 +1,1 @@
+from umldiagrammer._version import __version__
