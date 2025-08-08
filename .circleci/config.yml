@@ -19,6 +19,8 @@ jobs:
     executor: python/default
     steps:
       - checkout
+      - restore_cache:
+          key: &deps1-cache deps1-{{ .Branch }}-{{ checksum "pyproject.toml" }}
       - run:
           name: Install library dependencies
           command: |
@@ -34,11 +36,18 @@ jobs:
             pip install semantic-version==2.10.0
             pip install codeallybasic==1.15.0
             pip install codeallyadvanced==1.4.2
-            pip install pyutmodelv2==2.2.3
+            pip install pyutmodelv2==2.2.6
             pip install umlshapes==0.9.25
             pip install umlio==0.4.1
             pip install buildlackey==2.0.0
+      - save_cache:
+          key: *deps1-cache
+          paths:
+            - "venv"
       - run:
             name: run tests
             command: | 
+              python3 -m venv venv
+              . venv/bin/activate
+              pip install buildlackey
               unittests
