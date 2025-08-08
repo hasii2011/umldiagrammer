@@ -1,0 +1,24 @@
+wheel==0.44.0
+# Don't upgrade past this version as 70.x.x does not work
+setuptools==70.1.1
+
+# the following necessary when building the
+# application with py2App
+chardet==5.2.0
+
+py2app==0.28.8
+
+mypy == 1.17.1
+html-testRunner~=1.2.1
+
+# So Circle CI works
+
+buildlackey==2.0.0
+
+wxPython==4.2.3
+codeallybasic==1.15.0
+codeallyadvanced==1.4.2
+pyutmodelv2==2.2.6
+
+umlshapes==0.9.25
+umlio==0.4.1
