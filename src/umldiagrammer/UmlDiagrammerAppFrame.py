@@ -73,6 +73,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._preferences: UmlPreferences = UmlPreferences()
         self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
+        self._appPubSubEngine.subscribe(eventType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
 
     def _createApplicationMenuBar(self):
 
@@ -85,6 +86,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         menuBar.Append(fileMenu, 'File')
 
         self.SetMenuBar(menuBar)
+
+    def _newProject(self):
+        pass
 
     def _loadProject(self, umlProject: UmlProject):
 
