@@ -41,20 +41,16 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
+from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueIds
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 
-# Used as topic IDs
-TreeNodeTopicId  = NewType('TreeNodeTopicId', str)
-
 @dataclass
 class TreeNodeData:
-    umlDocument:     UmlDocument
-    treeNodeID:      TreeItemId        # The underlying TreeItemId (ID) is opaque
-    treeNodeTopicId: TreeNodeTopicId
+    umlDocument:  UmlDocument
+    treeNodeID:   TreeItemId        # The underlying TreeItemId (ID) is opaque
+    uniqueNodeId: UniqueId
 
-
-TreeNodeTopicIds = NewType('TreeNodeTopicIds', List[TreeNodeTopicId])
 
 NO_TREE_NODE_DATA: TreeNodeData = cast(TreeNodeData, None)
 
@@ -66,9 +62,9 @@ class UmlProjectTree(TreeCtrl):
 
         super().__init__(parent=parent, style=TR_HAS_BUTTONS | TR_HIDE_ROOT)
 
-        self._umlProject:       UmlProject       = umlProject
-        self._appPubSubEngine:  IAppPubSubEngine = appPubSubEngine
-        self._treeNodeTopicIDs: TreeNodeTopicIds = TreeNodeTopicIds([])
+        self._umlProject:      UmlProject       = umlProject
+        self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
+        self._uniqueIds:       UniqueIds = UniqueIds([])
 
         self.root: TreeItemId = self.AddRoot(umlProject.fileName.stem)
 
@@ -83,14 +79,14 @@ class UmlProjectTree(TreeCtrl):
         self._rightClickedTreeNodeData: TreeNodeData = NO_TREE_NODE_DATA
 
     @property
-    def treeNodeTopicIds(self) -> TreeNodeTopicIds:
+    def uniqueNodeIds(self) -> UniqueIds:
         """
         These are used to send out messages for changes to tree nodes
 
         Returns:  The list of topic IDs
 
         """
-        return self._treeNodeTopicIDs
+        return self._uniqueIds
 
     def _onProjectTreeRightClick(self, treeEvent: TreeEvent):
 
@@ -105,16 +101,16 @@ class UmlProjectTree(TreeCtrl):
     def _createDocumentNodes(self):
 
         for documentName, umlDocument in self._umlProject.umlDocuments.items():
-            documentNode:    TreeItemId      = self.AppendItem(self.root, documentName)
-            treeNodeTopicId: TreeNodeTopicId = TreeNodeTopicId(UmlUtils.getID())
+            documentNode:    TreeItemId = self.AppendItem(self.root, documentName)
+            treeNodeTopicId: UniqueId   = UniqueId(UmlUtils.getID())
 
             treeData: TreeNodeData = TreeNodeData(
                 umlDocument=umlDocument,
                 treeNodeID=documentNode,
-                treeNodeTopicId=treeNodeTopicId
+                uniqueNodeId=treeNodeTopicId
             )
 
-            self._treeNodeTopicIDs.append(treeNodeTopicId)
+            self._uniqueIds.append(treeNodeTopicId)
             self.SetItemData(item=documentNode, data=treeData)
 
     def _onDocumentSelectionChanged(self, treeEvent: TreeEvent):
@@ -127,7 +123,7 @@ class UmlProjectTree(TreeCtrl):
             self.logger.info(f'{treeData=}')
 
             self._appPubSubEngine.sendMessage(MessageType.DOCUMENT_SELECTION_CHANGED,
-                                              uniqueId=UniqueId(treeData.treeNodeTopicId),
+                                              uniqueId=treeData.uniqueNodeId,
                                               treeData=treeData)
 
     def _popupProjectDiagramMenu(self):

@@ -13,11 +13,10 @@ from umldiagrammer.DiagrammerTypes import FrameIdMap
 
 from umldiagrammer.UmlDocumentManager import UmlDocumentManager
 from umldiagrammer.UmlProjectTree import TreeNodeData
-from umldiagrammer.UmlProjectTree import TreeNodeTopicIds
 from umldiagrammer.UmlProjectTree import UmlProjectTree
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
-from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
+from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueIds
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
@@ -46,10 +45,10 @@ class UmlProjectPanel(SplitterWindow):
 
         self.SplitVertically(self._projectTree, self._documentManager)
 
-        treeNodeTopicIds: TreeNodeTopicIds = self._projectTree.treeNodeTopicIds
-        for treeNodeTopicId in treeNodeTopicIds:
+        uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
+        for uniqueId in uniqueNodeIds:
             self.appEventEngine.subscribe(eventType=MessageType.DOCUMENT_SELECTION_CHANGED,
-                                          uniqueId=UniqueId(treeNodeTopicId),
+                                          uniqueId=uniqueId,
                                           callback=self._onDiagramSelectionChanged)
 
         windowSize: Size = parent.GetSize()

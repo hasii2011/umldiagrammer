@@ -47,7 +47,6 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlio.IOTypes import UmlActors
 from umlio.IOTypes import UmlClasses
 from umlio.IOTypes import UmlDocument
-from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import UmlDocuments
 from umlio.IOTypes import UmlLinks
