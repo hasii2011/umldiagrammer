@@ -1,13 +1,9 @@
 
-from typing import Dict
-from typing import NewType
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.links.UmlLollipopInterface import UmlLollipopInterface
-from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLollipopInterfaceEventHandler
 from wx import SHOW_EFFECT_SLIDE_TO_RIGHT
 
 from wx import Window
@@ -17,7 +13,6 @@ from umlshapes.lib.ogl import ShapeEvtHandler
 
 from umlshapes.UmlDiagram import UmlDiagram
 
-from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.ClassDiagramFrame import CreateLollipopCallback
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
@@ -41,9 +36,11 @@ from umlshapes.links.UmlInheritance import UmlInheritance
 from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlAggregation import UmlAggregation
 
+from umlshapes.links.UmlLollipopInterface import UmlLollipopInterface
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
 from umlshapes.links.eventhandlers.UmlNoteLinkEventHandler import UmlNoteLinkEventHandler
 from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
+from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLollipopInterfaceEventHandler
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -58,8 +55,8 @@ from umlio.IOTypes import UmlNotes
 from umlio.IOTypes import UmlTexts
 from umlio.IOTypes import UmlUseCases
 
-FrameIdToUmlDocument = NewType('FrameIdToUmlDocument', Dict[FrameId, UmlDocument])
-UmlDocumentToPage    = NewType('UmlDocumentToPage', Dict[UmlDocumentTitle, int])
+from umldiagrammer.DiagrammerTypes import FrameIdMap
+from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
 
 UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
 
@@ -81,8 +78,8 @@ class UmlDocumentManager(Simplebook):
         self._umlDocuments:    UmlDocuments    = umlDocuments
         self._umlPubSubEngine: UmlPubSubEngine = umlPubSubEngine
 
-        self._diagramTitleToDiagram: FrameIdToUmlDocument = FrameIdToUmlDocument({})
-        self._diagramTitleToPage:    UmlDocumentToPage    = UmlDocumentToPage({})
+        self._frameIdMap:            FrameIdMap             = FrameIdMap({})
+        self._umlDocumentTileToPage: UmlDocumentTitleToPage = UmlDocumentTitleToPage({})
 
         # doing any effect should be an application preference
         self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
@@ -92,8 +89,12 @@ class UmlDocumentManager(Simplebook):
 
         self.SetSelection(0)
 
-    def setPage(self, umlDocumentTitle: UmlDocumentTitle):
-        self.SetSelection(self._diagramTitleToPage[umlDocumentTitle])
+    @property
+    def frameIdMap(self) -> FrameIdMap:
+        return self._frameIdMap
+
+    def setPage(self, umlDocument: UmlDocument):
+        self.SetSelection(self._umlDocumentTileToPage[umlDocument.documentTitle])
 
     def _createPages(self):
 
@@ -123,8 +124,8 @@ class UmlDocumentManager(Simplebook):
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
-            self._diagramTitleToDiagram[diagramFrame.id] = umlDocument
-            self._diagramTitleToPage[umlDocumentTitle] = self.GetPageCount() - 1
+            self._frameIdMap[diagramFrame.id] = umlDocument.documentTitle
+            self._umlDocumentTileToPage[umlDocumentTitle] = self.GetPageCount() - 1
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
 

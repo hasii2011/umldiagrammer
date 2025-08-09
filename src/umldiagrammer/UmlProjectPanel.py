@@ -7,18 +7,20 @@ from wx import Size
 from wx import Window
 from wx import SplitterWindow
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
-
 from umlio.IOTypes import UmlProject
 
+from umldiagrammer.DiagrammerTypes import FrameIdMap
+
 from umldiagrammer.UmlDocumentManager import UmlDocumentManager
-from umldiagrammer.UmlProjectTree import TreeData
-from umldiagrammer.UmlProjectTree import TreeNodeIDs
+from umldiagrammer.UmlProjectTree import TreeNodeData
+from umldiagrammer.UmlProjectTree import TreeNodeTopicIds
 from umldiagrammer.UmlProjectTree import UmlProjectTree
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 from umldiagrammer.pubsubengine.MessageType import MessageType
+
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 
 class UmlProjectPanel(SplitterWindow):
@@ -37,17 +39,17 @@ class UmlProjectPanel(SplitterWindow):
 
         self.appEventEngine: IAppPubSubEngine = appPubSubEngine
 
-        self._projectTree:    UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
-        self._diagramManager: UmlDocumentManager = UmlDocumentManager(parent=self, umlPubSubEngine=umlPubSibEngine, umlDocuments=umlProject.umlDocuments)
+        self._projectTree:     UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
+        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self, umlPubSubEngine=umlPubSibEngine, umlDocuments=umlProject.umlDocuments)
 
-        self.SetMinimumPaneSize(200)
+        self.SetMinimumPaneSize(200)            # TODO: This should be a preference
 
-        self.SplitVertically(self._projectTree, self._diagramManager)
+        self.SplitVertically(self._projectTree, self._documentManager)
 
-        treeNodeIDs: TreeNodeIDs = self._projectTree.treeNodeIDs
-        for treeNodeID in treeNodeIDs:
-            self.appEventEngine.subscribe(eventType=MessageType.DIAGRAM_SELECTION_CHANGED,
-                                          uniqueId=UniqueId(treeNodeID),
+        treeNodeTopicIds: TreeNodeTopicIds = self._projectTree.treeNodeTopicIds
+        for treeNodeTopicId in treeNodeTopicIds:
+            self.appEventEngine.subscribe(eventType=MessageType.DOCUMENT_SELECTION_CHANGED,
+                                          uniqueId=UniqueId(treeNodeTopicId),
                                           callback=self._onDiagramSelectionChanged)
 
         windowSize: Size = parent.GetSize()
@@ -56,6 +58,16 @@ class UmlProjectPanel(SplitterWindow):
         self.logger.info(f'{sashPosition=}')
         self.SetSashPosition(position=sashPosition, redraw=True)
 
-    def _onDiagramSelectionChanged(self, treeData: TreeData):
+        self._umlProject: UmlProject = umlProject
+
+    @property
+    def umlProject(self) -> UmlProject:
+        return self._umlProject
+
+    @property
+    def frameIdMap(self) -> FrameIdMap:
+        return self._documentManager.frameIdMap
+
+    def _onDiagramSelectionChanged(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
-        self._diagramManager.setPage(treeData.documentName)
+        self._documentManager.setPage(treeData.umlDocument)
