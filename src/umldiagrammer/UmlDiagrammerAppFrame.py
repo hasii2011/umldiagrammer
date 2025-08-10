@@ -8,23 +8,19 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from wx import DEFAULT_FRAME_STYLE
 from wx import FRAME_FLOAT_ON_PARENT
 
-from wx import Menu
-from wx import MenuBar
 from wx import NB_LEFT
-from wx import NO_BORDER
-from wx import Notebook
-from wx import CallLater
-from wx import CallAfter
 from wx import STB_DEFAULT_STYLE
 
-from wx import TB_FLAT
 from wx import ToolBar
+from wx import Menu
+from wx import MenuBar
+from wx import Notebook
 
-from wx import TB_HORIZONTAL
+from wx import CallLater
+from wx import CallAfter
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
@@ -32,6 +28,7 @@ from wx.lib.sized_controls import SizedPanel
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
@@ -48,6 +45,7 @@ from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
+from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
 
 DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
 DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
@@ -81,10 +79,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.CreateStatusBar(style=STB_DEFAULT_STYLE)  # should always do this when there's a resize border
         self.SetAutoLayout(True)
 
-        self._tb:  ToolBar  = self.CreateToolBar(TB_HORIZONTAL | NO_BORDER | TB_FLAT)
+        toolBarCreator: ToolBarCreator = ToolBarCreator(self)
+
+        # self._tb:  ToolBar  = self.CreateToolBar(TB_HORIZONTAL | NO_BORDER | TB_FLAT)
+        self._tb:  ToolBar  = toolBarCreator.toolBar
 
         self.SetToolBar(self._tb)
-
+        self._tb.Realize()
         self.Show(True)
 
         self._preferences: UmlPreferences = UmlPreferences()
@@ -165,4 +166,3 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _onUpdateApplicationStatus(self, message: str):
         self.logger.warning(f'{message=}')
         self.SetStatusText(text=message)
-

@@ -92,7 +92,6 @@ class UmlDiagrammer(App):
 
         version: Versions = Versions()
         print("Versions: ")
-        print(f"UML Diagrammer:     {version.applicationVersion}")
         print(f'Platform: {version.platform}')
 
         print(f'    System:       {platform.system()}')
@@ -101,7 +100,8 @@ class UmlDiagrammer(App):
 
         print(f'WxPython: {version.wxPythonVersion}')
         print(f'')
-        print(f'Pyut Packages')
+        print(f"UML Diagrammer:     {version.applicationVersion}")
+        print(f'UML Diagrammer Packages')
         print(f'    Uml Shapes:      {version.umlShapesVersion}')
         print(f'    UML IO:          {version.umlioVersion}')
 
