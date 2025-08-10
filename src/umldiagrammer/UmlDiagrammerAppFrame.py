@@ -8,6 +8,7 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.Reader import Reader
 from wx import DEFAULT_FRAME_STYLE
 from wx import FRAME_FLOAT_ON_PARENT
 
@@ -41,6 +42,7 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
+from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -92,7 +94,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
         self._appPubSubEngine.subscribe(eventType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
 
+        self._appPubSubEngine.subscribe(eventType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
+
         self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS, uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
+
+        self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
 
     def _createApplicationMenuBar(self):
 
@@ -162,6 +168,30 @@ class UmlDiagrammerAppFrame(SizedFrame):
         if len(self._openProjects) == 0:
             CallAfter(self._notebook.Destroy)
             self._notebook = None
+
+    def _onLoadDroppedFile(self, filename: str):
+        """
+        This is the handler for the FILES_DROPPED_ON_APPLICATION topic
+        TODO: This is a slight duplicated of the code in the FileMenuHandler,
+        can we keep it DRY?
+
+        Args:
+            filename:  Should end with either PROJECT_SUFFIX or XML_SUFFIX
+        """
+
+        fileNamePath: Path   = Path(filename)
+        suffix:       str    = fileNamePath.suffix
+        reader:       Reader = Reader()
+        if suffix == XML_SUFFIX:
+            umlProject: UmlProject = reader.readXmlFile(fileName=Path(fileNamePath))
+            self._loadProject(umlProject)
+
+        elif suffix == PROJECT_SUFFIX:
+            umlProject = reader.readProjectFile(fileName=fileNamePath)
+            self._loadProject(umlProject)
+
+        else:
+            assert False, 'We should not get files with bad suffixes'
 
     def _onUpdateApplicationStatus(self, message: str):
         self.logger.warning(f'{message=}')

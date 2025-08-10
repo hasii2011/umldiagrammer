@@ -8,4 +8,6 @@ class MessageType(Enum):
     OPEN_PROJECT               = 'Open Project'
     NEW_PROJECT                = 'New Project'
 
+    FILES_DROPPED_ON_APPLICATION = 'Files Dropped On Application'
+
     NO_EVENT = 'NoEvent'

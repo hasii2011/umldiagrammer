@@ -16,7 +16,7 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
-from umldiagrammer.FileMenuHandler import FileMenuHandler
+from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 
