@@ -11,7 +11,9 @@ from wx import EVT_MENU
 from wx import FD_CHANGE_DIR
 from wx import FD_FILE_MUST_EXIST
 from wx import FD_OPEN
+from wx import ID_OK
 from wx import ID_OPEN
+from wx import ID_PREFERENCES
 from wx import ID_SAVE
 from wx import ID_SAVEAS
 
@@ -27,6 +29,7 @@ from umlio.IOTypes import XML_SUFFIX
 
 from umlio.Reader import Reader
 
+from dialogs.DlgPreferences import DlgPreferences
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -38,6 +41,11 @@ PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SU
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
 
 class FileMenuHandler:
+    """
+    In general the file menu handler can do the operations.  However, some are global in that
+    the outer application frame controls the UI and this it must process some of these
+    requests
+    """
     def __init__(self, sizedFrame: SizedFrame, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
@@ -55,6 +63,7 @@ class FileMenuHandler:
         sizedFrame.Bind(EVT_MENU, self._onOpenXmlFile, id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
         sizedFrame.Bind(EVT_MENU, self._onFileSave,    id=ID_SAVE)
         sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,  id=ID_SAVEAS)
+        sizedFrame.Bind(EVT_MENU, self._onPreferences, id=ID_PREFERENCES)
 
     # noinspection PyUnusedLocal
     def _onNewProject(self, event: CommandEvent):
@@ -89,3 +98,12 @@ class FileMenuHandler:
     def _loadNewProject(self, umlProject: UmlProject):
 
         self._appPubSubEngine.sendMessage(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
+
+    # noinspection PyUnusedLocal
+    def _onPreferences(self, event: CommandEvent):
+
+        with DlgPreferences(parent=self._sizedFrame, appPubSubEngine=self._appPubSubEngine) as dlg:
+            if dlg.ShowModal() == ID_OK:
+                self.logger.info(f'Got answer')
+            else:
+                self.logger.info(f'Cancelled')

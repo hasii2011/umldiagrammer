@@ -1,6 +1,7 @@
 
 from typing import List
 from typing import NewType
+from typing import Tuple
 from typing import cast
 
 from logging import Logger
@@ -8,12 +9,18 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.Reader import Reader
+from codeallybasic.Dimensions import Dimensions
+from codeallybasic.Position import Position
+
+from wx import BOTH
 from wx import DEFAULT_FRAME_STYLE
+from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
 
 from wx import NB_LEFT
+from wx import Point
 from wx import STB_DEFAULT_STYLE
+from wx import Size
 
 from wx import ToolBar
 from wx import Menu
@@ -31,6 +38,8 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
+from umlio.Reader import Reader
+
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
@@ -38,11 +47,13 @@ from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlDocumentType
 
+from umldiagrammer import START_STOP_MARKER
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -60,12 +71,17 @@ XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFF
 
 ID_REFERENCE = NewType('ID_REFERENCE', int)
 
+HACK_ADJUST_EXIT_HEIGHT:    int = 52
+
 
 class UmlDiagrammerAppFrame(SizedFrame):
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
         super().__init__(parent=None, title='UML Diagrammer', size=(FRAME_WIDTH, FRAME_HEIGHT), style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
+
+        self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
+        self._umlPreferences: UmlPreferences        = UmlPreferences()
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
@@ -86,19 +102,53 @@ class UmlDiagrammerAppFrame(SizedFrame):
         # self._tb:  ToolBar  = self.CreateToolBar(TB_HORIZONTAL | NO_BORDER | TB_FLAT)
         self._tb:  ToolBar  = toolBarCreator.toolBar
 
+        self._overrideProgramExitSize:     bool = False
+        self._overrideProgramExitPosition: bool = False
+        """
+        Set to `True` by the preferences dialog when the end-user either manually specifies
+        the size or position of the Pyut application.  If it is False, then normal end
+        of application logic prevails;  The preferences dialog sends this class an
+        event; To change the value
+        """
+
         self.SetToolBar(self._tb)
         self._tb.Realize()
         self.Show(True)
 
-        self._preferences: UmlPreferences = UmlPreferences()
-        self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
-        self._appPubSubEngine.subscribe(eventType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
-
-        self._appPubSubEngine.subscribe(eventType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
-
-        self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS, uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
-
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
+
+        self._subscribeToMessagesWeHandle()
+
+        self._setApplicationPosition()
+
+        self.Bind(EVT_CLOSE,  self.Close)
+
+    def Close(self, force: bool = False):
+        """
+        Closing handler overload. Save files and ask for confirmation.
+
+        """
+        # Close all files
+        # self._pyutUI.handleUnsavedProjects()
+
+        if self._overrideProgramExitPosition is False:
+            # Only save position if we are not auto-saving
+            if self._preferences.centerAppOnStartup is False:
+                x, y = self.GetPosition()
+                pos: Position = Position(x=x, y=y)
+                self._preferences.startupPosition = pos
+                self.logger.info(f'Set new startup position: {pos}')
+        if self._overrideProgramExitSize is False:
+            ourSize: Size = self.GetSize()
+
+            # See issue https://github.com/hasii2011/PyUt/issues/452
+            # I need to check this on a larger monitor;
+            self._preferences.startupSize = Dimensions(ourSize[0], ourSize[1] - HACK_ADJUST_EXIT_HEIGHT)
+            self.logger.info(f'Set new startup size: {ourSize}')
+
+        self.logger.info(f'Pyut execution complete')
+        self.logger.info(START_STOP_MARKER)
+        self.Destroy()
 
     def _createApplicationMenuBar(self):
 
@@ -196,3 +246,21 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _onUpdateApplicationStatus(self, message: str):
         self.logger.warning(f'{message=}')
         self.SetStatusText(text=message)
+
+    def _setApplicationPosition(self):
+        """
+        Observe preferences how to set the application position
+        """
+        if self._preferences.centerAppOnStartup is True:
+            self.Center(BOTH)  # Center on the screen
+        else:
+            appPosition: Position = self._preferences.startupPosition
+            self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+
+    def _subscribeToMessagesWeHandle(self):
+
+        self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
+        self._appPubSubEngine.subscribe(eventType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
+
+        self._appPubSubEngine.subscribe(eventType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
+        self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS,    uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)

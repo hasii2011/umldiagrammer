@@ -1,4 +1,5 @@
 wheel==0.44.0
+# https://github.com/ronaldoussoren/py2app/issues/538#issuecomment-3193389958
 # Don't upgrade past this version as 70.x.x does not work
 setuptools==70.1.1
 
@@ -17,8 +18,8 @@ buildlackey==2.0.0
 
 wxPython==4.2.3
 codeallybasic==1.15.0
-codeallyadvanced==1.4.2
+codeallyadvanced==1.4.3
 pyutmodelv2==2.2.6
 
-umlshapes==0.9.25
-umlio==0.4.1
+umlshapes==0.9.50
+umlio==0.4.2
