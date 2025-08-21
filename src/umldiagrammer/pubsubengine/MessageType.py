@@ -11,6 +11,6 @@ class MessageType(Enum):
     FILES_DROPPED_ON_APPLICATION = 'Files Dropped On Application'
 
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
-    OVERRIDE_PROGRAM_EXIT_SIZE    = 'Override Program Exit Size'
+    OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 
     NO_EVENT = 'NoEvent'

@@ -16,10 +16,13 @@ from wx import BOTH
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
+from wx import GetClientDisplayRect
 
 from wx import NB_LEFT
 from wx import Point
+from wx import Rect
 from wx import STB_DEFAULT_STYLE
+from wx import ScreenDC
 from wx import Size
 
 from wx import ToolBar
@@ -48,40 +51,42 @@ from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlDocumentType
 
 from umldiagrammer import START_STOP_MARKER
+
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
+from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
+
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
+
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
+
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
 
 DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
 DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
-
-FRAME_WIDTH:  int = 800
-FRAME_HEIGHT: int = 400
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
 
 ID_REFERENCE = NewType('ID_REFERENCE', int)
 
-HACK_ADJUST_EXIT_HEIGHT:    int = 52
-
 
 class UmlDiagrammerAppFrame(SizedFrame):
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
-        super().__init__(parent=None, title='UML Diagrammer', size=(FRAME_WIDTH, FRAME_HEIGHT), style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
-
         self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
         self._umlPreferences: UmlPreferences        = UmlPreferences()
+
+        appSize: Size = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
+
+        super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
@@ -99,7 +104,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         toolBarCreator: ToolBarCreator = ToolBarCreator(self)
 
-        # self._tb:  ToolBar  = self.CreateToolBar(TB_HORIZONTAL | NO_BORDER | TB_FLAT)
         self._tb:  ToolBar  = toolBarCreator.toolBar
 
         self._overrideProgramExitSize:     bool = False
@@ -121,7 +125,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._setApplicationPosition()
 
-        self.Bind(EVT_CLOSE,  self.Close)
+        self.Bind(EVT_CLOSE, self.Close)
 
     def Close(self, force: bool = False):
         """
@@ -130,21 +134,25 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         # Close all files
         # self._pyutUI.handleUnsavedProjects()
-
         if self._overrideProgramExitPosition is False:
-            # Only save position if we are not auto-saving
+            # Only save position we are not in full screen
             if self._preferences.centerAppOnStartup is False:
                 x, y = self.GetPosition()
                 pos: Position = Position(x=x, y=y)
                 self._preferences.startupPosition = pos
                 self.logger.info(f'Set new startup position: {pos}')
-        if self._overrideProgramExitSize is False:
-            ourSize: Size = self.GetSize()
 
-            # See issue https://github.com/hasii2011/PyUt/issues/452
-            # I need to check this on a larger monitor;
-            self._preferences.startupSize = Dimensions(ourSize[0], ourSize[1] - HACK_ADJUST_EXIT_HEIGHT)
-            self.logger.info(f'Set new startup size: {ourSize}')
+            # Show full screen ?
+        if self._preferences.fullScreen is False:
+
+            if self._overrideProgramExitSize is False:
+                ourSize: Size = self.GetSize()
+
+                # See issue https://github.com/hasii2011/PyUt/issues/452
+                # I need to check this on a larger monitor;
+                # self._preferences.startupSize = Dimensions(width=ourSize.width, ourSize[1] - HACK_ADJUST_EXIT_HEIGHT)
+                self._preferences.startupSize = Dimensions(width=ourSize.width, height=ourSize.height - HACK_ADJUST_EXIT_HEIGHT)
+                self.logger.info(f'Set new startup size: {ourSize}')
 
         self.logger.info(f'Pyut execution complete')
         self.logger.info(START_STOP_MARKER)
@@ -247,6 +255,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.warning(f'{message=}')
         self.SetStatusText(text=message)
 
+    def _onOverrideProgramExitPosition(self):
+        self._overrideProgramExitPosition = True
+
     def _setApplicationPosition(self):
         """
         Observe preferences how to set the application position
@@ -264,3 +275,5 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(eventType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
         self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS,    uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
+
+        self._appPubSubEngine.subscribe(eventType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._onOverrideProgramExitPosition)

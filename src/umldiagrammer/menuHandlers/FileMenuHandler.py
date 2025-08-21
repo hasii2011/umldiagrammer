@@ -29,7 +29,7 @@ from umlio.IOTypes import XML_SUFFIX
 
 from umlio.Reader import Reader
 
-from dialogs.DlgPreferences import DlgPreferences
+from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine

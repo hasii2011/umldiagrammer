@@ -5,11 +5,7 @@ from wx import EVT_CHECKBOX
 
 from wx import CheckBox
 from wx import CommandEvent
-from wx import Panel
-from wx import Size
 from wx import Window
-
-from wx import NewIdRef as wxNewIdRef
 
 from wx.lib.sized_controls import SizedPanel
 
@@ -19,7 +15,7 @@ from codeallybasic.Position import Position
 from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsControl
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
-from dialogs.BasePreferencesPanel import BasePreferencesPanel
+from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
@@ -48,14 +44,15 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
     def _layoutControls(self, parent):
 
-        self._cbCenterAppOnStartup = CheckBox(self, label='Center Pyut on Startup')
+        self._cbCenterAppOnStartup = CheckBox(self, label='Center on Startup')
         self._appPositionControls  = self._layoutAppPositionControls(sizedPanel=self)
 
         self._cbFullScreenOnStartup  = CheckBox(self, label='Full Screen on Startup')
         self._appDimensionsContainer = self._layoutAppSizeControls(sizedPanel=self)
 
         self._setControlValues()
-        parent.Bind(EVT_CHECKBOX, self._onCenterOnStartupChanged, self._cbCenterAppOnStartup)
+        parent.Bind(EVT_CHECKBOX, self._onCenterOnStartupChanged,    self._cbCenterAppOnStartup)
+        parent.Bind(EVT_CHECKBOX, self._onFullScreenOnStartupChange, self._cbFullScreenOnStartup)
 
     @property
     def name(self) -> str:
@@ -92,6 +89,13 @@ class StartupPreferencesPanel(BasePreferencesPanel):
             self._appPositionControls.enableControls(True)
             self._cbCenterAppOnStartup.SetValue(False)
 
+        if self._preferences.fullScreen is True:
+            self._appDimensionsContainer.enableControls(False)
+            self._cbFullScreenOnStartup.SetValue(True)
+        else:
+            self._appDimensionsContainer.enableControls(True)
+            self._cbFullScreenOnStartup.SetValue(False)
+
         self._appDimensionsContainer.dimensions = self._preferences.startupSize
         self._appPositionControls.position      = self._preferences.startupPosition
 
@@ -119,7 +123,15 @@ class StartupPreferencesPanel(BasePreferencesPanel):
     def _onCenterOnStartupChanged(self, event: CommandEvent):
         """
         """
-        val: bool = event.IsChecked()
+        newValue: bool = event.IsChecked()
 
-        self._preferences.centerAppOnStartup = val
-        self._enablePositionControls(val)
+        self._preferences.centerAppOnStartup = newValue
+        self._enablePositionControls(newValue)
+        if newValue is True:
+            self._appPubSubEngine.sendMessage(MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID)
+
+    def _onFullScreenOnStartupChange(self, event: CommandEvent):
+        newValue: bool = event.IsChecked()
+        self._preferences.fullScreen = newValue
+        if newValue is True:
+            self._appPubSubEngine.sendMessage(MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID)

@@ -20,7 +20,7 @@ from wx import Size
 from wx.lib.sized_controls import SizedDialog
 from wx.lib.sized_controls import SizedPanel
 
-from dialogs.GeneralPreferencesPanel import GeneralPreferencesPanel
+from umldiagrammer.dialogs.GeneralPreferencesPanel import GeneralPreferencesPanel
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 

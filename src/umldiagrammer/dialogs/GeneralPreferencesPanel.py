@@ -9,21 +9,14 @@ from dataclasses import dataclass
 
 from pathlib import Path
 
-from wx import EVT_BUTTON
 from wx import EVT_CHECKBOX
 from wx import EVT_RADIOBOX
-from wx import EVT_SPINCTRL
 from wx import ID_ANY
-from wx import RA_SPECIFY_COLS
 
-from wx import Button
 from wx import CheckBox
 from wx import CommandEvent
 from wx import RA_SPECIFY_ROWS
 from wx import RadioBox
-from wx import Size
-from wx import SpinCtrl
-from wx import SpinEvent
 from wx import Window
 
 from wx import NewIdRef as wxNewIdRef
@@ -34,8 +27,8 @@ from wx.lib.sized_controls import SizedStaticBox
 
 from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
 
-from dialogs.BasePreferencesPanel import BasePreferencesPanel
-from dialogs.StartupPreferencesPanel import StartupPreferencesPanel
+from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
+from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
