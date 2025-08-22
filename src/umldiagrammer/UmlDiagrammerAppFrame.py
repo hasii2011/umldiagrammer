@@ -1,6 +1,7 @@
 
 from typing import List
 from typing import NewType
+from typing import Optional
 from typing import Tuple
 from typing import cast
 
@@ -9,13 +10,17 @@ from logging import getLogger
 
 from pathlib import Path
 
+from os import getenv as osGetEnv
+
 from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
+from codeallybasic.SecureConversions import SecureConversions
 
 from wx import BOTH
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
+from wx import FRAME_TOOL_WINDOW
 from wx import GetClientDisplayRect
 
 from wx import NB_LEFT
@@ -50,6 +55,7 @@ from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlDocumentType
 
+from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
@@ -86,7 +92,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         appSize: Size = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
 
-        super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
+        frameStyle:  int             = self._getFrameStyle()
+
+        super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=frameStyle)
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
@@ -277,3 +285,24 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS,    uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
 
         self._appPubSubEngine.subscribe(eventType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._onOverrideProgramExitPosition)
+
+    def _getFrameStyle(self) -> int:
+        """
+        wxPython 4.2.0 update:  using FRAME_TOOL_WINDOW causes the title to be above the toolbar
+        in production mode use FRAME_TOOL_WINDOW
+
+        Still the behavior in 4.2.2
+
+        Returns:  An appropriate frame style
+        """
+        appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
+        if appModeStr is None:
+            appMode: bool = False
+        else:
+            appMode = SecureConversions.secureBoolean(appModeStr)
+
+        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
+        if appMode is True:
+            frameStyle = frameStyle | FRAME_TOOL_WINDOW
+
+        return frameStyle

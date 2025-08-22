@@ -16,28 +16,63 @@ class ToolBarIcons:
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
-        self._newProjectIcon:         Bitmap = NO_BITMAP
+        self._newProjectIcon:          Bitmap = NO_BITMAP
+        self._newClassDiagramIcon:     Bitmap = NO_BITMAP
+        self._newSequenceDiagramIcon:  Bitmap = NO_BITMAP
+        self._newUseCaseDiagramIcon:   Bitmap = NO_BITMAP
 
         diagrammerPreferences: DiagrammerPreferences = DiagrammerPreferences()
 
-        if diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SIZE_16:
+        if diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SMALL:
             self._loadSmallIcons()
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SIZE_32:
+        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
+            self._loadMediumIcons()
+        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.LARGE:
             self._loadLargeIcons()
 
     @property
-    def iconNewProject(self):
+    def iconNewProject(self) -> Bitmap:
         return self._newProjectIcon
+
+    @property
+    def iconNewClassDiagram(self) -> Bitmap:
+        return self._newClassDiagramIcon
+
+    @property
+    def iconNewSequenceDiagramIcon(self) -> Bitmap:
+        return self._newSequenceDiagramIcon
+
+    @property
+    def iconNewUseCaseDiagramIcon(self) -> Bitmap:
+        return self._newUseCaseDiagramIcon
 
     def _loadSmallIcons(self):
         self._loadSmallMenuToolIcons()
 
     def _loadSmallMenuToolIcons(self):
+        from codeallyadvanced.resources.umldiagrammer.Embedded16 import NewProject
+        from codeallyadvanced.resources.umldiagrammer.Embedded16 import NewClassDiagram
+        from codeallyadvanced.resources.umldiagrammer.Embedded16 import NewSequenceDiagram
+        from codeallyadvanced.resources.umldiagrammer.Embedded16 import NewUseCaseDiagram
 
-        # from codeallyadvanced.resources.images.icons.embedded16.ImgToolboxNewProject import embeddedImage as ImgToolboxNewProject
-        from umldiagrammer.resources.icons.embedded32.NewProject import embeddedImage as ImgToolboxNewProject
-        self._newProjectIcon = ImgToolboxNewProject.GetBitmap()
+        self._newProjectIcon         = NewProject.GetBitmap()
+        self._newClassDiagramIcon    = NewClassDiagram.GetBitmap()
+        self._newSequenceDiagramIcon = NewSequenceDiagram.GetBitmap()
+        self._newUseCaseDiagramIcon  = NewUseCaseDiagram.GetBitmap()
+
+    def _loadMediumIcons(self):
+        from codeallyadvanced.resources.umldiagrammer.Embedded24 import NewProject
+        from codeallyadvanced.resources.umldiagrammer.Embedded24 import NewClassDiagram
+        from codeallyadvanced.resources.umldiagrammer.Embedded24 import NewSequenceDiagram
+        from codeallyadvanced.resources.umldiagrammer.Embedded24 import NewUseCaseDiagram
+
+        self._newProjectIcon      = NewProject.GetBitmap()
+        self._newClassDiagramIcon = NewClassDiagram.GetBitmap()
+        self._newSequenceDiagramIcon = NewSequenceDiagram.GetBitmap()
+        self._newUseCaseDiagramIcon  = NewUseCaseDiagram.GetBitmap()
 
     def _loadLargeIcons(self):
-        from umldiagrammer.resources.icons.embedded32.NewProject import embeddedImage as ImgToolboxNewProject
-        self._newProjectIcon = ImgToolboxNewProject.GetBitmap()
+        from codeallyadvanced.resources.umldiagrammer.Embedded32 import NewProject
+        from codeallyadvanced.resources.umldiagrammer.Embedded32 import NewClassDiagram
+        self._newProjectIcon      = NewProject.GetBitmap()
+        self._newClassDiagramIcon = NewClassDiagram.GetBitmap()

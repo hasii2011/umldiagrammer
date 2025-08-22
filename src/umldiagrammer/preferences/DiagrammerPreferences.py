@@ -15,7 +15,7 @@ from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreferenc
 
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
-DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SIZE_32.value
+DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SMALL.value
 DEFAULT_STARTUP_SIZE:     str = Dimensions(1024, 768).__str__()
 DEFAULT_STARTUP_POSITION: str = Position(5, 5).__str__()
 

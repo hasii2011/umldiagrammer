@@ -14,3 +14,5 @@ UmlDocumentTitleToPage = NewType('UmlDocumentTitleToPage', Dict[UmlDocumentTitle
 APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 
 HACK_ADJUST_EXIT_HEIGHT:    int = 52    # TODO: I think this is the status bar and the title area
+
+APP_MODE: str = 'APP_MODE'

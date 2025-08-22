@@ -161,9 +161,9 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
             case GeneralPreferencesPanel.TOOLBAR_ICON_SIZE_ID:
                 # noinspection PySimplifyBooleanCheck
                 if newValue is True:
-                    p.toolBarIconSize = ToolBarIconSize.SIZE_32
+                    p.toolBarIconSize = ToolBarIconSize.LARGE
                 else:
-                    p.toolBarIconSize = ToolBarIconSize.SIZE_16
+                    p.toolBarIconSize = ToolBarIconSize.SMALL
             case GeneralPreferencesPanel.LOAD_LAST_OPENED_PROJECT_ID:
                 p.loadLastOpenedProject = newValue
 
@@ -184,7 +184,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._preferences.diagramsDirectory = str(newPath)
 
     def _isLargeIconSize(self) -> bool:
-        if self._preferences.toolBarIconSize == ToolBarIconSize.SIZE_32:
+        if self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
             return True
         else:
             return False
