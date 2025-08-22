@@ -1,20 +1,25 @@
-
 from typing import Callable
 from typing import NewType
 from typing import cast
 
+from enum import Enum
+
 from dataclasses import dataclass
 
 from wx import Bitmap
-# from wx import WindowIDRef
-# from wx import NewIdRef
+from wx import BitmapBundle
+
+from wx import NewIdRef as wxNewIdRef
 
 
-Category       = NewType('Category',       str)
+class ToolGroup(Enum):
+    Menu    = 'Menu'
+    Tool    = 'Tool'
+    NOT_SET = 'Not Set'
 
 
 @dataclass
-class Tool:
+class ToolDefinition:
     """
     Tool : A tool description for a UML Diagrammer tool
     """
@@ -22,7 +27,7 @@ class Tool:
     """
     A unique ID for this tool
     """
-    img: Bitmap = cast(Bitmap, None)
+    img: BitmapBundle = cast(BitmapBundle, None)
     """
     An image for the tool
     """
@@ -34,9 +39,9 @@ class Tool:
     """
     A tooltip: tip for this tool
     """
-    category: Category = Category('')
+    toolGroup: ToolGroup = ToolGroup.NOT_SET
     """
-    A category for this tool 
+    The tool group for this tool 
     """
     actionCallback: Callable = cast(Callable, None)
     """
@@ -48,7 +53,7 @@ class Tool:
     """
     wxID: int = cast(int, None)
     """
-    A wx unique ID, used for the handler
+    A wx.NewIdRef
     """
     isToggle: bool = False
     """

@@ -35,12 +35,14 @@ from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlInheritance import UmlInheritance
 from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlAggregation import UmlAggregation
-
 from umlshapes.links.UmlLollipopInterface import UmlLollipopInterface
+
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
 from umlshapes.links.eventhandlers.UmlNoteLinkEventHandler import UmlNoteLinkEventHandler
 from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
 from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLollipopInterfaceEventHandler
+
+from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -55,7 +57,9 @@ from umlio.IOTypes import UmlTexts
 from umlio.IOTypes import UmlUseCases
 
 from umldiagrammer.DiagrammerTypes import FrameIdMap
+from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
 
@@ -67,16 +71,19 @@ class UmlDocumentManager(Simplebook):
         Args:
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
-            umlPubSubEngine:     The Uml Event engine, In case something happens on the diagram frame
+            umlPubSubEngine:    The Uml pub sub engine, In case something happens on the diagram frame
         """
 
-        self.logger: Logger = getLogger(__name__)
+        self.logger:          Logger                = getLogger(__name__)
+        self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
+        self._umlPreferences: UmlPreferences        = UmlPreferences()
 
         super().__init__(parent=parent)
 
         self._umlDocuments:    UmlDocuments    = umlDocuments
         self._umlPubSubEngine: UmlPubSubEngine = umlPubSubEngine
 
+        self._frameIdToTitleMap:     FrameIdToTitleMap      = FrameIdToTitleMap({})
         self._frameIdMap:            FrameIdMap             = FrameIdMap({})
         self._umlDocumentTileToPage: UmlDocumentTitleToPage = UmlDocumentTitleToPage({})
 
@@ -89,10 +96,14 @@ class UmlDocumentManager(Simplebook):
         self.SetSelection(0)
 
     @property
+    def frameIdToTitleMap(self) -> FrameIdToTitleMap:
+        return self._frameIdToTitleMap
+
+    @property
     def frameIdMap(self) -> FrameIdMap:
         return self._frameIdMap
 
-    def setPage(self, umlDocument: UmlDocument):
+    def switchToDocument(self, umlDocument: UmlDocument):
         self.SetSelection(self._umlDocumentTileToPage[umlDocument.documentTitle])
 
     def _createPages(self):
@@ -120,10 +131,17 @@ class UmlDocumentManager(Simplebook):
             else:
                 assert False, f'Unknown UML document type: {documentType=}'
 
+            umlDiagram: UmlDiagram = diagramFrame.umlDiagram
+            if self._umlPreferences.snapToGrid is True:
+                umlDiagram.SetSnapToGrid(snap=True)
+                umlDiagram.SetGridSpacing(self._umlPreferences.backgroundGridInterval)
+            else:
+                umlDiagram.SetSnapToGrid(snap=False)
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
-            self._frameIdMap[diagramFrame.id] = umlDocument.documentTitle
+            self._frameIdMap[diagramFrame.id]             = diagramFrame
+            self._frameIdToTitleMap[diagramFrame.id]      = umlDocument.documentTitle
             self._umlDocumentTileToPage[umlDocumentTitle] = self.GetPageCount() - 1
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):

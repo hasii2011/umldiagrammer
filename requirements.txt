@@ -18,8 +18,8 @@ buildlackey==2.0.0
 
 wxPython==4.2.3
 codeallybasic==1.15.0
-codeallyadvanced==2.0.0
+codeallyadvanced==2.2.0
 pyutmodelv2==2.2.6
 
-umlshapes==0.9.50
+umlshapes==0.9.100
 umlio==0.4.2

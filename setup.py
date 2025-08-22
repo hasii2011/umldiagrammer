@@ -6,12 +6,16 @@ import pathlib
 
 from umldiagrammer import __version__
 
+# TODO:  Currently requires that PYTHONPAT point to the src directory
+# Perhaps, I should move the code out of the src directory
+#
+#
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
 
-APP = ['umldiagrammer/UmlDiagrammer.py']
-DATA_FILES = [('umldiagrammer/resources', ['pyut/resources/loggingConfiguration.json']),
-              ('umldiagrammer/resources/img', ['pyut/resources/img/pyut.ico']),
+APP = ['src/umldiagrammer/UmlDiagrammer.py']
+DATA_FILES = [('umldiagrammer/resources', ['src/umldiagrammer/resources/loggingConfiguration.json']),
+              # ('umldiagrammer/resources/img', ['pyut/resources/img/pyut.ico']),
               ]
 OPTIONS = {}
 
@@ -24,7 +28,7 @@ setup(
     version=__version__,
     app=APP,
     data_files=DATA_FILES,
-    packages=find_packages(include=['pyut.*']),
+    packages=find_packages(include=['umldiagrammer.*']),
     include_package_data=True,
     zip_safe=False,
 
@@ -58,9 +62,9 @@ setup(
     setup_requires=['py2app'],
     install_requires=[
         'codeallybasic>=1.15.0',
-        'codeallyadvanced>=2.0.0',
+        'codeallyadvanced>=2.2.0',
         'pyutmodelv2>=2.2.6',
-        'umlshapes>=0.9.50',
+        'umlshapes>=0.9.100',
         'umlio>=0.4.2',
         'wxPython==4.2.3',
     ]

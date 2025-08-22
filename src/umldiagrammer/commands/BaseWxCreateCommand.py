@@ -1,0 +1,111 @@
+
+from logging import Logger
+from logging import getLogger
+
+from abc import abstractmethod
+from abc import ABCMeta
+
+from umlshapes.UmlDiagram import UmlDiagram
+from umlshapes.frames.UmlFrame import UmlFrame
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
+from umlshapes.types.UmlPosition import UmlPosition
+
+from umldiagrammer.UmlDocumentManager import UmlShape
+from umldiagrammer.commands.BaseWxCommand import BaseWxCommand
+from umldiagrammer.commands.CommandTypes import DoableObjectType
+from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+
+
+class MyMetaBaseWxCommand(ABCMeta, type(BaseWxCommand)):        # type: ignore
+    """
+    I have no idea why this works:
+    https://stackoverflow.com/questions/66591752/metaclass-conflict-when-trying-to-create-a-python-abstract-class-that-also-subcl
+    """
+    pass
+
+# noinspection PyAbstractClass
+class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
+    """
+    Did now inspection because was not catch that we are an ABC
+    """
+    def __init__(self, canUndo: bool, name: str, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine, umlFrame: UmlFrame, umlPosition: UmlPosition):
+
+        super().__init__(canUndo=canUndo, name=name, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+
+        self._baseWxCreateLogger: Logger = getLogger(__name__)
+        self._umlFrame:        UmlFrame        = umlFrame
+        self._umlPosition:     UmlPosition     = umlPosition
+
+        self._shape: DoableObjectType = self._createPrototypeInstance()
+
+    def GetName(self) -> str:
+        return self._name
+
+    def CanUndo(self):
+        return True
+
+    def Do(self) -> bool:
+        self._placeShapeOnFrame()
+        return True
+
+    def Undo(self) -> bool:
+        # self._eventEngine.sendEvent(EventType.ActiveUmlFrame, callback=self._cbGetActiveUmlFrameForUndo)
+
+        from umlshapes.frames.DiagramFrame import DiagramFrame
+        from umlshapes.UmlDiagram import UmlDiagram
+
+        umlFrame:   DiagramFrame = self._umlFrame
+        umlDiagram: UmlDiagram   = umlFrame.umlDiagram
+
+        self._baseWxCreateLogger.info(f'Undo create {self._shape}')
+        umlDiagram.RemoveShape(self._shape)
+        umlFrame.refresh()
+
+        return True
+
+    @abstractmethod
+    def _createPrototypeInstance(self) -> DoableObjectType:
+        """
+        Creates an appropriate class for the new command
+
+        Returns:    The newly created class
+        """
+        pass
+
+    @abstractmethod
+    def _placeShapeOnFrame(self):
+        """
+        Implemented by subclasses to support .Do
+        """
+        pass
+
+    def _addUmlShapeToFrame(self, umlFrame: UmlFrame, umlShape: UmlShape, umlPosition: UmlPosition):
+        """
+        This is common code needed to create Note, Text, Actor, and UseCase shapes.
+
+        Args:
+            umlFrame:
+            umlShape:
+            umlPosition:
+
+        """
+        self._baseWxCreateLogger.debug(f'{umlFrame=}')
+
+        umlShape.position = umlPosition
+        umlDiagram: UmlDiagram = umlFrame.umlDiagram
+        umlDiagram.AddShape(umlShape)
+
+        umlShape.Show(show=True)
+        if isinstance(umlShape, UmlClass):
+
+            eventHandler: UmlClassEventHandler = UmlClassEventHandler()
+            eventHandler.SetShape(umlShape)
+            eventHandler.umlPubSubEngine = self._umlPubSubEngine
+            eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
+            umlShape.SetEventHandler(eventHandler)
+
+        umlFrame.refresh()
+
+        self._baseWxCreateLogger.info(f'Created {self._shape}')

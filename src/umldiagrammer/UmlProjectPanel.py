@@ -10,6 +10,7 @@ from wx import SplitterWindow
 from umlio.IOTypes import UmlProject
 
 from umldiagrammer.DiagrammerTypes import FrameIdMap
+from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 
 from umldiagrammer.UmlDocumentManager import UmlDocumentManager
 from umldiagrammer.UmlProjectTree import TreeNodeData
@@ -47,7 +48,7 @@ class UmlProjectPanel(SplitterWindow):
 
         uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
         for uniqueId in uniqueNodeIds:
-            self.appEventEngine.subscribe(eventType=MessageType.DOCUMENT_SELECTION_CHANGED,
+            self.appEventEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                           uniqueId=uniqueId,
                                           callback=self._onDiagramSelectionChanged)
 
@@ -67,6 +68,10 @@ class UmlProjectPanel(SplitterWindow):
     def frameIdMap(self) -> FrameIdMap:
         return self._documentManager.frameIdMap
 
+    @property
+    def frameIdToTitleMap(self) -> FrameIdToTitleMap:
+        return self._documentManager.frameIdToTitleMap
+
     def _onDiagramSelectionChanged(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
-        self._documentManager.setPage(treeData.umlDocument)
+        self._documentManager.switchToDocument(treeData.umlDocument)

@@ -14,12 +14,14 @@ from codeallybasic.DynamicConfiguration import DynamicConfiguration
 from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
 
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
+from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
 
-DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SIZE_32.value
+DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SMALL.value
 DEFAULT_STARTUP_SIZE:     str = Dimensions(1024, 768).__str__()
 DEFAULT_STARTUP_POSITION: str = Position(5, 5).__str__()
 
 DEFAULT_FILE_HISTORY_DISPLAY: str = FileHistoryPreference.SHOW_NEVER.value
+DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.LEFT.value
 
 SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
     {
@@ -38,6 +40,7 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
         KeyName('startupSize'):        ValueDescription(defaultValue=DEFAULT_STARTUP_SIZE,     deserializer=Dimensions.deSerialize),
         KeyName('centerAppOnStartup'): ValueDescription(defaultValue='False',                  deserializer=SecureConversions.secureBoolean),
         KeyName('startupPosition'):    ValueDescription(defaultValue=DEFAULT_STARTUP_POSITION, deserializer=Position.deSerialize),
+        KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION, deserializer=ToolBarPosition),
     }
 )
 

@@ -19,11 +19,11 @@ class AppPubSubEngine(IAppPubSubEngine, BasePubSubEngine):
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
-    def subscribe(self, eventType: MessageType, uniqueId: UniqueId, callback: Callable):
-        self._subscribe(topic=self._toTopic(eventType, uniqueId), callback=callback)
+    def subscribe(self, messageType: MessageType, uniqueId: UniqueId, callback: Callable):
+        self._subscribe(topic=self._toTopic(messageType, uniqueId), callback=callback)
 
-    def sendMessage(self, eventType: MessageType, uniqueId: UniqueId, **kwargs):
-        self._sendMessage(topic=self._toTopic(eventType, uniqueId), **kwargs)
+    def sendMessage(self, messageType: MessageType, uniqueId: UniqueId, **kwargs):
+        self._sendMessage(topic=self._toTopic(messageType, uniqueId), **kwargs)
 
     def _toTopic(self, eventType: Enum, uniqueId: str) -> Topic:
         """
