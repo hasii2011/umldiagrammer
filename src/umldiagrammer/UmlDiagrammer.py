@@ -12,6 +12,9 @@ from os import sep as osSep
 from json import load as jsonLoad
 
 from wx import App
+from wx import FULLSCREEN_ALL
+from wx import FULLSCREEN_NOBORDER
+from wx import FULLSCREEN_NOSTATUSBAR
 from wx import ScreenDC
 from wx import Size
 
@@ -49,8 +52,6 @@ class UmlDiagrammer(App):
 
         self._wxFrame:         UmlDiagrammerAppFrame = cast(UmlDiagrammerAppFrame, None)
 
-        # self._demoEventEngine = DemoEventEngine(listeningWindow=self._frame)    # Our app event engine
-
         super().__init__(redirect=False)    # This calls OnInit()
 
     def OnInit(self):
@@ -65,12 +66,13 @@ class UmlDiagrammer(App):
 
         # Show full screen ?
         if self._preferences.fullScreen is True:
-            dc:   ScreenDC = ScreenDC()
-            size: Size     = dc.GetSize()
-
-            size.height -= HACK_ADJUST_EXIT_HEIGHT
-
-            self._wxFrame.SetSize(size)
+            self._wxFrame.ShowFullScreen(True, style=FULLSCREEN_NOBORDER)
+            # dc:   ScreenDC = ScreenDC()
+            # size: Size     = dc.GetSize()
+            #
+            # size.height -= HACK_ADJUST_EXIT_HEIGHT
+            #
+            # self._wxFrame.SetSize(size)
             # self._wxFrame.CentreOnScreen()
 
         return True

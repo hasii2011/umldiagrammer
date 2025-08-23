@@ -7,6 +7,7 @@ from enum import Enum
 from dataclasses import dataclass
 
 from wx import Bitmap
+from wx import BitmapBundle
 
 from wx import NewIdRef as wxNewIdRef
 
@@ -26,7 +27,7 @@ class ToolDefinition:
     """
     A unique ID for this tool
     """
-    img: Bitmap = cast(Bitmap, None)
+    img: BitmapBundle = cast(BitmapBundle, None)
     """
     An image for the tool
     """

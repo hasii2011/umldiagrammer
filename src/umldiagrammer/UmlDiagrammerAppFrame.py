@@ -17,6 +17,7 @@ from codeallybasic.Position import Position
 from codeallybasic.SecureConversions import SecureConversions
 
 from wx import BOTH
+from wx import CommandEvent
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
@@ -37,6 +38,7 @@ from wx import Notebook
 
 from wx import CallLater
 from wx import CallAfter
+from wx import Yield as wxYield
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
@@ -110,28 +112,26 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.CreateStatusBar(style=STB_DEFAULT_STYLE)  # should always do this when there's a resize border
         self.SetAutoLayout(True)
 
-        toolBarCreator: ToolBarCreator = ToolBarCreator(self)
-
-        self._tb:  ToolBar  = toolBarCreator.toolBar
-
-        self._overrideProgramExitSize:     bool = False
-        self._overrideProgramExitPosition: bool = False
-        """
-        Set to `True` by the preferences dialog when the end-user either manually specifies
-        the size or position of the Pyut application.  If it is False, then normal end
-        of application logic prevails;  The preferences dialog sends this class an
-        event; To change the value
-        """
-
+        toolBarCreator: ToolBarCreator = ToolBarCreator(self, newActionCallback=self._onNewAction)
+        self._tb:       ToolBar        = toolBarCreator.toolBar
         self.SetToolBar(self._tb)
         self._tb.Realize()
-        self.Show(True)
 
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
 
         self._subscribeToMessagesWeHandle()
 
         self._setApplicationPosition()
+
+        self._overrideProgramExitSize:     bool = False
+        self._overrideProgramExitPosition: bool = False
+        """
+        The above are set to `True` by the preferences dialog when the end-user either manually specifies
+        the size or position of the Pyut application.  If it is False, then normal end
+        of application logic prevails;  The preferences dialog sends this class an
+        event; To change the value
+        """
+        self.Show(True)
 
         self.Bind(EVT_CLOSE, self.Close)
 
@@ -266,6 +266,21 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _onOverrideProgramExitPosition(self):
         self._overrideProgramExitPosition = True
 
+    # noinspection PyUnusedLocal
+    def _onNewAction(self, event: CommandEvent):
+        """
+        Call the mediator to specify the current action.
+
+        Args:
+            event:
+        """
+        self.logger.info(f'Do an action --- TODO')
+        # currentAction: Action = SharedIdentifiers.ACTIONS[event.GetId()]
+        #
+        # self._eventEngine.sendEvent(EventType.SetToolAction, action=currentAction)
+        # self._doToolSelect(toolId=event.GetId())
+        wxYield()
+
     def _setApplicationPosition(self):
         """
         Observe preferences how to set the application position
@@ -291,18 +306,18 @@ class UmlDiagrammerAppFrame(SizedFrame):
         wxPython 4.2.0 update:  using FRAME_TOOL_WINDOW causes the title to be above the toolbar
         in production mode use FRAME_TOOL_WINDOW
 
-        Still the behavior in 4.2.2
+        Fixed in 4.2.3
 
         Returns:  An appropriate frame style
         """
-        appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
-        if appModeStr is None:
-            appMode: bool = False
-        else:
-            appMode = SecureConversions.secureBoolean(appModeStr)
+        # appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
+        # if appModeStr is None:
+        #     appMode: bool = False
+        # else:
+        #     appMode = SecureConversions.secureBoolean(appModeStr)
 
-        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
-        if appMode is True:
-            frameStyle = frameStyle | FRAME_TOOL_WINDOW
+        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT | FRAME_TOOL_WINDOW
+        # if appMode is True:
+        #     frameStyle = frameStyle | FRAME_TOOL_WINDOW
 
         return frameStyle
