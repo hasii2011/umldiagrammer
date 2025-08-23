@@ -75,6 +75,7 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
+from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
 DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
 DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
@@ -114,7 +115,18 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         toolBarCreator: ToolBarCreator = ToolBarCreator(self, newActionCallback=self._onNewAction)
         self._tb:       ToolBar        = toolBarCreator.toolBar
-        self.SetToolBar(self._tb)
+        #
+        # Set the icon size after realizing the tool bar
+        #
+        if self._preferences.toolBarIconSize == ToolBarIconSize.SMALL:
+            self._tb.SetToolBitmapSize(Size(16, 16))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
+            self._tb.SetToolBitmapSize(Size(24, 24))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
+            self._tb.SetToolBitmapSize(Size(32, 32))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
+            self._tb.SetToolBitmapSize(Size(64, 64))
+
         self._tb.Realize()
 
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
@@ -133,7 +145,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self.Show(True)
 
+        self.logger.info(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_CLOSE, self.Close)
+        CallLater(millis=100, callableObj=self.Raise)
 
     def Close(self, force: bool = False):
         """
@@ -159,7 +173,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 # See issue https://github.com/hasii2011/PyUt/issues/452
                 # I need to check this on a larger monitor;
                 # self._preferences.startupSize = Dimensions(width=ourSize.width, ourSize[1] - HACK_ADJUST_EXIT_HEIGHT)
-                self._preferences.startupSize = Dimensions(width=ourSize.width, height=ourSize.height - HACK_ADJUST_EXIT_HEIGHT)
+                self._preferences.startupSize = Dimensions(width=ourSize.GetWidth(), height=ourSize.GetHeight() - HACK_ADJUST_EXIT_HEIGHT)
                 self.logger.info(f'Set new startup size: {ourSize}')
 
         self.logger.info(f'Pyut execution complete')
@@ -310,14 +324,14 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         Returns:  An appropriate frame style
         """
-        # appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
-        # if appModeStr is None:
-        #     appMode: bool = False
-        # else:
-        #     appMode = SecureConversions.secureBoolean(appModeStr)
+        appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
+        if appModeStr is None:
+            appMode: bool = False
+        else:
+            appMode = SecureConversions.secureBoolean(appModeStr)
 
-        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT | FRAME_TOOL_WINDOW
-        # if appMode is True:
-        #     frameStyle = frameStyle | FRAME_TOOL_WINDOW
+        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
+        if appMode is True:
+            frameStyle = frameStyle | FRAME_TOOL_WINDOW
 
         return frameStyle

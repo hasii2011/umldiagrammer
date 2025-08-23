@@ -24,7 +24,6 @@ class ToolBarIconSize(Enum):
             toolBarIconSize = ToolBarIconSize.LARGE
 
         elif value == ToolBarIconSize.EXTRA_LARGE.value:
-
             toolBarIconSize = ToolBarIconSize.EXTRA_LARGE
 
         return toolBarIconSize

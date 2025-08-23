@@ -12,13 +12,18 @@ from wx import ITEM_CHECK
 from wx import ITEM_NORMAL
 from wx import NO_BORDER
 from wx import Size
+from wx import TB_BOTTOM
 from wx import TB_FLAT
 from wx import TB_HORIZONTAL
+from wx import TB_LEFT
+from wx import TB_RIGHT
 from wx import TB_TEXT
 
 from wx import Bitmap
 from wx import BitmapBundle
 from wx import Frame
+from wx import TB_TOP
+from wx import TB_VERTICAL
 from wx import ToolBar
 
 from wx import WindowIDRef
@@ -26,6 +31,7 @@ from wx import WindowIDRef
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 from umldiagrammer.toolbar.ToolBarIcons import IconName
+from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
 from umldiagrammer.toolbar.ToolDefinition import ToolGroup
 from umldiagrammer.toolbar.ToolDefinition import ToolDefinition
 from umldiagrammer.toolbar.ToolBarIcons import ToolBarIcons
@@ -44,22 +50,8 @@ class ToolBarCreator:
 
         self.logger: Logger = getLogger(__name__)
 
-        # self._toolBar: ToolBar = parent.CreateToolBar(TB_HORIZONTAL | NO_BORDER | TB_FLAT)
-        self._toolBar: ToolBar = parent.CreateToolBar(TB_HORIZONTAL)
-
-        diagrammerPreferences: DiagrammerPreferences = DiagrammerPreferences()
-
-        #
-        # Set the icon size before creating teh icons and realizing the tool bar
-        #
-        if diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SMALL:
-            self._toolBar.SetToolBitmapSize(Size(16, 16))
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
-            self._toolBar.SetToolBitmapSize(Size(24, 24))
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.LARGE:
-            self._toolBar.SetToolBitmapSize(Size(32, 32))
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
-            self._toolBar.SetToolBitmapSize(Size(64, 64))
+        wxToolBarPosition: int = ToolBarPosition.toWxpPosition(DiagrammerPreferences().toolBarPosition)
+        self._toolBar = parent.CreateToolBar(wxToolBarPosition)
 
         self._toolBarIcons: ToolBarIcons = ToolBarIcons()
 
