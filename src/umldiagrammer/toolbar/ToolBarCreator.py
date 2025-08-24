@@ -28,6 +28,7 @@ from wx import ToolBar
 
 from wx import WindowIDRef
 
+from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 from umldiagrammer.toolbar.ToolBarIcons import IconName
@@ -42,11 +43,12 @@ NO_TOOL_DEFINITION = cast(ToolDefinition, None)
 
 
 class ToolBarCreator:
-    def __init__(self, parent: Frame, newActionCallback: Callable):
+    def __init__(self, parent: Frame, fileMenuHandler: FileMenuHandler, newActionCallback: Callable):
 
         self._parent: Frame = parent
 
-        self._newActionCallback: Callable = newActionCallback
+        self._fileMenuHandler:   FileMenuHandler = fileMenuHandler
+        self._newActionCallback: Callable        = newActionCallback
 
         self.logger: Logger = getLogger(__name__)
 
@@ -101,7 +103,7 @@ class ToolBarCreator:
             caption='New Project',
             tooltip='Create a new project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.newProject,
             wxID=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT
             )
 
@@ -111,7 +113,7 @@ class ToolBarCreator:
             caption='Open Project',
             tooltip='Open diagrammer project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.openProject,
             wxID=UIIdentifiers.ID_FILE_MENU_OPEN_PROJECT
         )
         self._toolSaveProject = ToolDefinition(
@@ -120,7 +122,7 @@ class ToolBarCreator:
             caption='Save Project',
             tooltip='Save diagrammer project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.fileSave,
             wxID=UIIdentifiers.ID_MENU_FILE_PROJECT_SAVE
         )
 

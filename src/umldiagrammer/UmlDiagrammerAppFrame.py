@@ -12,10 +12,6 @@ from pathlib import Path
 
 from os import getenv as osGetEnv
 
-from codeallybasic.Dimensions import Dimensions
-from codeallybasic.Position import Position
-from codeallybasic.SecureConversions import SecureConversions
-
 from wx import BOTH
 from wx import CommandEvent
 from wx import DEFAULT_FRAME_STYLE
@@ -43,6 +39,10 @@ from wx import Yield as wxYield
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
+from codeallybasic.Dimensions import Dimensions
+from codeallybasic.Position import Position
+from codeallybasic.SecureConversions import SecureConversions
+
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
@@ -63,6 +63,8 @@ from umldiagrammer import START_STOP_MARKER
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
+from umldiagrammer.UIAction import UIAction
+from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
@@ -108,12 +110,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine: IAppPubSubEngine = AppPubSubEngine()
         self._umlPubSubEngine: UmlPubSubEngine  = UmlPubSubEngine()
 
-        self._createApplicationMenuBar()
+        uiMenuCreator: UIMenuCreator = self._createApplicationMenuBar()
 
         self.CreateStatusBar(style=STB_DEFAULT_STYLE)  # should always do this when there's a resize border
         self.SetAutoLayout(True)
 
-        toolBarCreator: ToolBarCreator = ToolBarCreator(self, newActionCallback=self._onNewAction)
+        toolBarCreator: ToolBarCreator = ToolBarCreator(self,
+                                                        fileMenuHandler=uiMenuCreator.fileMenuHandler,
+                                                        newActionCallback=self._onNewAction
+                                                        )
         self._tb:       ToolBar        = toolBarCreator.toolBar
         #
         # Set the icon size after realizing the tool bar
@@ -191,6 +196,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         menuBar.Append(fileMenu, 'File')
 
         self.SetMenuBar(menuBar)
+
+        return uiMenuCreator
 
     def _newProject(self):
         if self._notebook is None:
@@ -288,8 +295,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         Args:
             event:
         """
-        self.logger.info(f'Do an action --- TODO')
-        # currentAction: Action = SharedIdentifiers.ACTIONS[event.GetId()]
+        currentAction: UIAction = UIIdentifiers.ACTIONS[event.GetId()]
+
+        self.logger.info(f'Do an action {currentAction} --- TODO')
+
         #
         # self._eventEngine.sendEvent(EventType.SetToolAction, action=currentAction)
         # self._doToolSelect(toolId=event.GetId())

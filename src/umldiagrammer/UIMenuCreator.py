@@ -33,6 +33,10 @@ class UIMenuCreator:
 
         self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
+    @property
+    def fileMenuHandler(self) -> FileMenuHandler:
+        return self._fileMenuHandler
+
     def initializeMenus(self):
 
         self._initializeFileMenu()
