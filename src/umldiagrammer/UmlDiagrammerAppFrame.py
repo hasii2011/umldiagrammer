@@ -63,11 +63,14 @@ from umldiagrammer import START_STOP_MARKER
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
+
+from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
+from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
 
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
@@ -119,25 +122,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                         fileMenuHandler=uiMenuCreator.fileMenuHandler,
                                                         newActionCallback=self._onNewAction
                                                         )
-        self._tb:       ToolBar        = toolBarCreator.toolBar
+        self._tb: ToolBar = toolBarCreator.toolBar
         #
-        # Set the icon size after realizing the tool bar
+        # Set the icon size before realizing the tool bar
         #
-        if self._preferences.toolBarIconSize == ToolBarIconSize.SMALL:
-            self._tb.SetToolBitmapSize(Size(16, 16))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
-            self._tb.SetToolBitmapSize(Size(24, 24))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
-            self._tb.SetToolBitmapSize(Size(32, 32))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
-            self._tb.SetToolBitmapSize(Size(64, 64))
-
+        self._setToolbarIconSize()
         self._tb.Realize()
 
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
-
         self._subscribeToMessagesWeHandle()
-
         self._setApplicationPosition()
 
         self._overrideProgramExitSize:     bool = False
@@ -148,11 +141,25 @@ class UmlDiagrammerAppFrame(SizedFrame):
         of application logic prevails;  The preferences dialog sends this class an
         event; To change the value
         """
+        self._actionSupervisor: ActionSupervisor = ActionSupervisor(appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
         self.Show(True)
 
         self.logger.info(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_CLOSE, self.Close)
+
         CallLater(millis=100, callableObj=self.Raise)
+
+    def _setToolbarIconSize(self):
+        """
+        """
+        if self._preferences.toolBarIconSize == ToolBarIconSize.SMALL:
+            self._tb.SetToolBitmapSize(Size(16, 16))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
+            self._tb.SetToolBitmapSize(Size(24, 24))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
+            self._tb.SetToolBitmapSize(Size(32, 32))
+        elif self._preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
+            self._tb.SetToolBitmapSize(Size(64, 64))
 
     def Close(self, force: bool = False):
         """
@@ -281,7 +288,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             assert False, 'We should not get files with bad suffixes'
 
     def _onUpdateApplicationStatus(self, message: str):
-        self.logger.warning(f'{message=}')
+        self.logger.info(f'{message=}')
         self.SetStatusText(text=message)
 
     def _onOverrideProgramExitPosition(self):
@@ -290,14 +297,20 @@ class UmlDiagrammerAppFrame(SizedFrame):
     # noinspection PyUnusedLocal
     def _onNewAction(self, event: CommandEvent):
         """
-        Call the mediator to specify the current action.
+        The tool bar and associated menu selections activate this method;  The
+        action map is a map of wxPython events to UI actions.  Most of the
+        time actions are a 2 step process.  For example, placing a class symbol
+        on the diagrammer frame.  The user selects the action.  The UI waits for
+        the placement coordinate.  Then it does the placement.
+        Actions are cleared if the user selects the pointer tools.  AKA, the arrow
 
         Args:
             event:
         """
-        currentAction: UIAction = UIIdentifiers.ACTIONS[event.GetId()]
+        currentAction: UIAction = ActionMap[event.GetId()]
 
         self.logger.info(f'Do an action {currentAction} --- TODO')
+        self._actionSupervisor.currentAction = currentAction
 
         #
         # self._eventEngine.sendEvent(EventType.SetToolAction, action=currentAction)
@@ -316,13 +329,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _subscribeToMessagesWeHandle(self):
 
-        self._appPubSubEngine.subscribe(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
-        self._appPubSubEngine.subscribe(eventType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
 
-        self._appPubSubEngine.subscribe(eventType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
-        self._appPubSubEngine.subscribe(eventType=MessageType.UPDATE_APPLICATION_STATUS,    uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
+        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,  uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
+        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
 
-        self._appPubSubEngine.subscribe(eventType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._onOverrideProgramExitPosition)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._onOverrideProgramExitPosition)
 
     def _getFrameStyle(self) -> int:
         """

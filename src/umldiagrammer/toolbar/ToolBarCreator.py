@@ -313,7 +313,7 @@ class ToolBarCreator:
             tooltip='New note association',
             toolGroup=ToolGroup.Tool,
             actionCallback=self._newActionCallback,
-            wxID=UIIdentifiers.ID_REL_NOTE,
+            wxID=UIIdentifiers.ID_RELATIONSHIP_NOTE,
             isToggle=True
         )
 

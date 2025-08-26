@@ -129,7 +129,7 @@ class UmlProjectTree(TreeCtrl):
     def _popupProjectDiagramMenu(self):
         """
         """
-        self._appPubSubEngine.sendMessage(eventType=MessageType.UPDATE_APPLICATION_STATUS, uniqueId=APPLICATION_FRAME_ID, message='Select document action')
+        self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, message='Select document action')
 
         if self._documentPopupMenu is None:
 
@@ -180,4 +180,4 @@ class UmlProjectTree(TreeCtrl):
         Args:
             event:
         """
-        self._appPubSubEngine.sendMessage(eventType=MessageType.UPDATE_APPLICATION_STATUS, uniqueId=APPLICATION_FRAME_ID, message='')
+        self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, message='')

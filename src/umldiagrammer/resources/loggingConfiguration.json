@@ -29,6 +29,10 @@
         "umldiagrammer": {
             "level": "INFO",
             "propagate": "False"
+        },
+        "umlshapes": {
+            "level": "INFO",
+            "propagate": "False"
         }
     }
 }

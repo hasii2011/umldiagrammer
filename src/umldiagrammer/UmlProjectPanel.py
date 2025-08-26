@@ -47,7 +47,7 @@ class UmlProjectPanel(SplitterWindow):
 
         uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
         for uniqueId in uniqueNodeIds:
-            self.appEventEngine.subscribe(eventType=MessageType.DOCUMENT_SELECTION_CHANGED,
+            self.appEventEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                           uniqueId=uniqueId,
                                           callback=self._onDiagramSelectionChanged)
 

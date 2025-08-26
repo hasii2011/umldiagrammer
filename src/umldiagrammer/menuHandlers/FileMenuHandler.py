@@ -85,7 +85,7 @@ class FileMenuHandler:
 
     # noinspection PyUnusedLocal
     def newProject(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(eventType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
     def newClassDiagram(self, event: CommandEvent):
         pass
@@ -114,7 +114,7 @@ class FileMenuHandler:
 
     def _loadNewProject(self, umlProject: UmlProject):
 
-        self._appPubSubEngine.sendMessage(eventType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
     # noinspection PyUnusedLocal
     def _onPreferences(self, event: CommandEvent):
