@@ -130,10 +130,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                               newActionCallback=self._onNewAction
                                                               )
         self._tb: ToolBar = self._toolBarCreator.toolBar
-        #
-        # Set the icon size before realizing the tool bar
-        #
-        self._setToolbarIconSize()
         self._tb.Realize()
 
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
@@ -154,21 +150,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_CLOSE, self.Close)
 
-        CallLater(millis=100, callableObj=self.Raise)
-
-    def _setToolbarIconSize(self):
-        """
-        """
-        if self._preferences.toolBarIconSize == ToolBarIconSize.SMALL:
-            self._tb.SetToolBitmapSize(Size(16, 16))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
-            self._tb.SetToolBitmapSize(Size(24, 24))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
-            self._tb.SetToolBitmapSize(Size(32, 32))
-        elif self._preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
-            self._tb.SetToolBitmapSize(Size(64, 64))
-
-    def Close(self, force: bool = False):
+    def Close(self, force: bool = False) -> bool:
         """
         Closing handler overload. Save files and ask for confirmation.
 
@@ -198,6 +180,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'Pyut execution complete')
         self.logger.info(START_STOP_MARKER)
         self.Destroy()
+
+        return True
 
     def _createApplicationMenuBar(self):
 

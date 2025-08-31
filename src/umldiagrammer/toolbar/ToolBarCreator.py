@@ -72,6 +72,11 @@ class ToolBarCreator:
         wxToolBarPosition: int = ToolBarPosition.toWxpPosition(DiagrammerPreferences().toolBarPosition)
         self._toolBar = parent.CreateToolBar(wxToolBarPosition)
 
+        #
+        # Set the icon size before realizing the tool bar
+        #
+        self._setToolbarIconSize()
+
         self._toolBarIcons: ToolBarIcons = ToolBarIcons()
 
         self._toolNewProject:         ToolDefinition = NO_TOOL_DEFINITION
@@ -119,18 +124,18 @@ class ToolBarCreator:
         toolBarIcons: ToolBarIcons = self._toolBarIcons
 
         self._toolNewProject = ToolDefinition(
-            'diagrammer-new-project',
-            toolBarIcons.getIcon(IconName.NEW_PROJECT),
+            id='diagrammer-new-project',
+            image=toolBarIcons.getIcon(IconName.NEW_PROJECT),
             caption='New Project',
             tooltip='Create a new project',
             toolGroup=ToolGroup.Menu,
             actionCallback=self._fileMenuHandler.newProject,
-            wxID=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT
+            wxID=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT,
             )
 
         self._toolOpenProject = ToolDefinition(
-            "diagrammer-open-project",
-            toolBarIcons.getIcon(IconName.OPEN_PROJECT),
+            id="diagrammer-open-project",
+            image=toolBarIcons.getIcon(IconName.OPEN_PROJECT),
             caption='Open Project',
             tooltip='Open diagrammer project',
             toolGroup=ToolGroup.Menu,
@@ -138,8 +143,8 @@ class ToolBarCreator:
             wxID=UIIdentifiers.ID_FILE_MENU_OPEN_PROJECT
         )
         self._toolSaveProject = ToolDefinition(
-            'diagrammer-save-project',
-            toolBarIcons.getIcon(IconName.SAVE_PROJECT),
+            id='diagrammer-save-project',
+            image=toolBarIcons.getIcon(IconName.SAVE_PROJECT),
             caption='Save Project',
             tooltip='Save diagrammer project',
             toolGroup=ToolGroup.Menu,
@@ -148,8 +153,8 @@ class ToolBarCreator:
         )
 
         self._toolNewClassDiagram = ToolDefinition(
-            'diagrammer-new-class-diagram',
-            toolBarIcons.getIcon(IconName.NEW_CLASS_DIAGRAM),
+            id='diagrammer-new-class-diagram',
+            image=toolBarIcons.getIcon(IconName.NEW_CLASS_DIAGRAM),
             caption='New Class Diagram',
             tooltip='Create an empty class diagram',
             toolGroup=ToolGroup.Menu,
@@ -158,8 +163,8 @@ class ToolBarCreator:
         )
 
         self._toolNewUseCaseDiagram = ToolDefinition(
-            'diagrammer-new-use-case-diagram',
-            toolBarIcons.getIcon(IconName.NEW_USECASE_DIAGRAM),
+            id='diagrammer-new-use-case-diagram',
+            image=toolBarIcons.getIcon(IconName.NEW_USECASE_DIAGRAM),
             caption='New Use Case Diagram',
             tooltip='Create a use case diagram',
             toolGroup=ToolGroup.Menu,
@@ -168,8 +173,8 @@ class ToolBarCreator:
         )
 
         self._toolNewSequenceDiagram = ToolDefinition(
-            'diagrammer-new-sequence-diagram',
-            toolBarIcons.getIcon(IconName.NEW_SEQUENCE_DIAGRAM),
+            id='diagrammer-new-sequence-diagram',
+            image=toolBarIcons.getIcon(IconName.NEW_SEQUENCE_DIAGRAM),
             caption='New Class Diagram',
             tooltip='Create an sequence diagram',
             toolGroup=ToolGroup.Menu,
@@ -178,8 +183,8 @@ class ToolBarCreator:
         )
 
         self._toolUndo = ToolDefinition(
-            'diagrammer-undo',
-            toolBarIcons.getIcon(IconName.UNDO),
+            id='diagrammer-undo',
+            image=toolBarIcons.getIcon(IconName.UNDO),
             caption="Undo",
             tooltip="Undo the last action",
             toolGroup=ToolGroup.Menu,
@@ -189,8 +194,8 @@ class ToolBarCreator:
         )
 
         self._toolRedo = ToolDefinition(
-            'diagrammer-redo',
-            toolBarIcons.getIcon(IconName.REDO),
+            id='diagrammer-redo',
+            image=toolBarIcons.getIcon(IconName.REDO),
             caption="Redo",
             tooltip="Redo the action",
             toolGroup=ToolGroup.Menu,
@@ -205,8 +210,8 @@ class ToolBarCreator:
         toolBarIcons: ToolBarIcons = self._toolBarIcons
 
         self._toolArrow = ToolDefinition(
-            'diagrammer-arrow',
-            toolBarIcons.getIcon(IconName.POINTER),
+            id='diagrammer-arrow',
+            image=toolBarIcons.getIcon(IconName.POINTER),
             caption="Arrow",
             tooltip="Selection tool",
             toolGroup=ToolGroup.Tool,
@@ -216,8 +221,8 @@ class ToolBarCreator:
         )
 
         self._toolClass = ToolDefinition(
-            'diagrammer-class',
-            toolBarIcons.getIcon(IconName.CLASS),
+            id='diagrammer-class',
+            image=toolBarIcons.getIcon(IconName.CLASS),
             caption='Class',
             tooltip='Create a new class',
             toolGroup=ToolGroup.Tool,
@@ -227,8 +232,8 @@ class ToolBarCreator:
         )
 
         self._toolActor = ToolDefinition(
-            'diagrammer-actor',
-            toolBarIcons.getIcon(IconName.ACTOR),
+            id='diagrammer-actor',
+            image=toolBarIcons.getIcon(IconName.ACTOR),
             caption='Actor',
             tooltip='Create a new actor',
             toolGroup=ToolGroup.Tool,
@@ -238,8 +243,8 @@ class ToolBarCreator:
         )
 
         self._toolUseCase = ToolDefinition(
-            'diagrammer-use-case',
-            toolBarIcons.getIcon(IconName.USECASE),
+            id='diagrammer-use-case',
+            image=toolBarIcons.getIcon(IconName.USECASE),
             caption='Use Case',
             tooltip='Create a new use case',
             toolGroup=ToolGroup.Tool,
@@ -249,8 +254,8 @@ class ToolBarCreator:
         )
 
         self._toolNote = ToolDefinition(
-            'diagrammer-note',
-            toolBarIcons.getIcon(IconName.NOTE),
+            id='diagrammer-note',
+            image=toolBarIcons.getIcon(IconName.NOTE),
             caption="Note",
             tooltip="Create a new note",
             toolGroup=ToolGroup.Tool,
@@ -260,8 +265,8 @@ class ToolBarCreator:
         )
 
         self._toolText = ToolDefinition(
-            'diagrammer-text',
-            toolBarIcons.getIcon(IconName.TEXT),
+            id='diagrammer-text',
+            image=toolBarIcons.getIcon(IconName.TEXT),
             caption='New Text Box',
             tooltip='New Text Box',
             toolGroup=ToolGroup.Tool,
@@ -274,8 +279,8 @@ class ToolBarCreator:
         toolBarIcons: ToolBarIcons = self._toolBarIcons
 
         self._toolInheritance = ToolDefinition(
-            'diagrammer-inheritance',
-            toolBarIcons.getIcon(IconName.INHERITANCE),
+            id='diagrammer-inheritance',
+            image=toolBarIcons.getIcon(IconName.INHERITANCE),
             caption='New inheritance relation', tooltip="New inheritance relation",
             toolGroup=ToolGroup.Tool,
             actionCallback=self._newActionCallback,
@@ -284,8 +289,8 @@ class ToolBarCreator:
         )
 
         self._toolRealization = ToolDefinition(
-            'diagrammer-realization',
-            toolBarIcons.getIcon(IconName.REALIZATION),
+            id='diagrammer-realization',
+            image=toolBarIcons.getIcon(IconName.REALIZATION),
             caption='New Realization relation',
             tooltip='New Realization relation',
             toolGroup=ToolGroup.Tool,
@@ -295,8 +300,8 @@ class ToolBarCreator:
         )
 
         self._toolComposition = ToolDefinition(
-            'umldiagrammer-composition',
-            toolBarIcons.getIcon(IconName.COMPOSITION),
+            id='umldiagrammer-composition',
+            image=toolBarIcons.getIcon(IconName.COMPOSITION),
             caption='New composition relation',
             tooltip='New composition relation',
             toolGroup=ToolGroup.Tool,
@@ -306,8 +311,8 @@ class ToolBarCreator:
         )
 
         self._toolAggregation = ToolDefinition(
-            'umldiagrammer-aggregation',
-            toolBarIcons.getIcon(IconName.AGGREGATION),
+            id='umldiagrammer-aggregation',
+            image=toolBarIcons.getIcon(IconName.AGGREGATION),
             caption='New aggregation relation',
             tooltip='New aggregation relation',
             toolGroup=ToolGroup.Tool,
@@ -317,8 +322,8 @@ class ToolBarCreator:
         )
 
         self._toolAssociation = ToolDefinition(
-            'umldiagrammer-association',
-            toolBarIcons.getIcon(IconName.ASSOCIATION),
+            id='umldiagrammer-association',
+            image=toolBarIcons.getIcon(IconName.ASSOCIATION),
             caption="New association relation",
             tooltip="New association relation",
             toolGroup=ToolGroup.Tool,
@@ -328,8 +333,8 @@ class ToolBarCreator:
         )
 
         self._toolNoteAssociation = ToolDefinition(
-            'umldiagrammer-note-association',
-            toolBarIcons.getIcon(IconName.NOTE_ASSOCIATION),
+            id='umldiagrammer-note-association',
+            image=toolBarIcons.getIcon(IconName.NOTE_ASSOCIATION),
             caption='New note association',
             tooltip='New note association',
             toolGroup=ToolGroup.Tool,
@@ -339,8 +344,8 @@ class ToolBarCreator:
         )
 
         self._toolSDInstance = ToolDefinition(
-            'umldiagrammer-sd-instance',
-            toolBarIcons.getIcon(IconName.SEQUENCE_DIAGRAM_INSTANCE),
+            id='umldiagrammer-sd-instance',
+            image=toolBarIcons.getIcon(IconName.SEQUENCE_DIAGRAM_INSTANCE),
             caption='New sequence diagram instance object',
             tooltip='New sequence diagram instance object',
             toolGroup=ToolGroup.Tool,
@@ -350,8 +355,8 @@ class ToolBarCreator:
         )
 
         self._toolSDMessage = ToolDefinition(
-            'umldiagrammer-sd-message',
-            toolBarIcons.getIcon(IconName.SEQUENCE_DIAGRAM_MESSAGE),
+            id='umldiagrammer-sd-message',
+            image=toolBarIcons.getIcon(IconName.SEQUENCE_DIAGRAM_MESSAGE),
             caption='New sequence diagram message object',
             tooltip='New sequence diagram message object',
             toolGroup=ToolGroup.Tool,
@@ -381,7 +386,7 @@ class ToolBarCreator:
                 isToggle: bool = tool.isToggle
                 toolTip:  str  = tool.tooltip
 
-                bitMapBundle: BitmapBundle = tool.img
+                bitMapBundle: BitmapBundle = tool.image
 
                 if isToggle is True:
                     itemKind: int = ITEM_CHECK
@@ -395,3 +400,16 @@ class ToolBarCreator:
                 self._parent.Bind(EVT_TOOL, tool.actionCallback, id=tool.wxID)
             else:
                 self._toolBar.AddSeparator()
+
+    def _setToolbarIconSize(self):
+        """
+        """
+        preferences: DiagrammerPreferences = DiagrammerPreferences()
+        if preferences.toolBarIconSize == ToolBarIconSize.SMALL:
+            self._toolBar.SetToolBitmapSize(Size(16, 16))
+        elif preferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
+            self._toolBar.SetToolBitmapSize(Size(24, 24))
+        elif preferences.toolBarIconSize == ToolBarIconSize.LARGE:
+            self._toolBar.SetToolBitmapSize(Size(32, 32))
+        elif preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
+            self._toolBar.SetToolBitmapSize(Size(64, 64))

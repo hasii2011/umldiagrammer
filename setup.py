@@ -6,7 +6,7 @@ import pathlib
 
 from umldiagrammer import __version__
 
-# TODO:  Currently requires that PYTHONPAT point to the src directory
+# TODO:  Currently requires that PYTHONPATH point to the src directory
 # Perhaps, I should move the code out of the src directory
 #
 #

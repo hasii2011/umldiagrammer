@@ -1,3 +1,4 @@
+
 from typing import Callable
 from typing import NewType
 from typing import cast
@@ -27,7 +28,7 @@ class ToolDefinition:
     """
     A unique ID for this tool
     """
-    img: BitmapBundle = cast(BitmapBundle, None)
+    image: BitmapBundle = cast(BitmapBundle, None)
     """
     An image for the tool
     """
