@@ -17,9 +17,10 @@ html-testRunner~=1.2.1
 buildlackey==2.0.0
 
 wxPython==4.2.3
+semantic-version==2.10.0
 codeallybasic==1.15.0
 codeallyadvanced==2.2.0
 pyutmodelv2==2.2.6
 
-umlshapes==0.9.100
+umlshapes==0.9.125
 umlio==0.4.2

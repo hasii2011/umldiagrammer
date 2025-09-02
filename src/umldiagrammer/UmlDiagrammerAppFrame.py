@@ -2,7 +2,6 @@
 from typing import List
 from typing import NewType
 from typing import Optional
-from typing import Tuple
 from typing import cast
 
 from logging import Logger
@@ -12,10 +11,7 @@ from pathlib import Path
 
 from os import getenv as osGetEnv
 
-from pyutmodelv2.PyutClass import PyutClass
-from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-from umlshapes.frames.UmlFrame import UmlFrame
+
 from wx import BOTH
 from wx import BookCtrlEvent
 from wx import CommandEvent
@@ -24,14 +20,11 @@ from wx import EVT_CLOSE
 from wx import EVT_NOTEBOOK_PAGE_CHANGED
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
-from wx import GetClientDisplayRect
 from wx import ID_OK
 
 from wx import NB_LEFT
 from wx import Point
-from wx import Rect
 from wx import STB_DEFAULT_STYLE
-from wx import ScreenDC
 from wx import Size
 
 from wx import ToolBar
@@ -46,11 +39,17 @@ from wx import Yield as wxYield
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
+from pyutmodelv2.PyutClass import PyutClass
+
+
 from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
 from codeallybasic.SecureConversions import SecureConversions
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
+
+from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
+from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
@@ -73,7 +72,6 @@ from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.UIAction import UIAction
-from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
@@ -87,7 +85,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
-from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
 DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
 DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
@@ -190,8 +187,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         menuBar:  MenuBar = MenuBar()
         fileMenu: Menu    = uiMenuCreator.fileMenu
+        helpMenu: Menu    = uiMenuCreator.helpMenu
 
         menuBar.Append(fileMenu, 'File')
+        menuBar.Append(helpMenu, 'Help')
 
         self.SetMenuBar(menuBar)
 
@@ -340,7 +339,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self.logger.debug(f"Edit: {pyutClass}")
 
-        with DlgEditClass(umlFrame, eventEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
+        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 # Sends its own modify event

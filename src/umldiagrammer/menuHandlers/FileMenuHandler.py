@@ -19,6 +19,7 @@ from wx import ID_SAVEAS
 
 from wx import FileSelector
 from wx import CommandEvent
+from wx import Menu
 from wx import Notebook
 
 from wx.lib.sized_controls import SizedFrame
@@ -32,6 +33,7 @@ from umlio.Reader import Reader
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.UIIdentifiers import UIIdentifiers
+from umldiagrammer.menuHandlers.BaseMenuHandler import BaseMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
@@ -40,7 +42,7 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
 
-class FileMenuHandler:
+class FileMenuHandler(BaseMenuHandler):
     """
     In general the file menu handler can do the operations.  However, some are global in that
     the outer application frame controls the UI and this it must process some of these
@@ -51,15 +53,14 @@ class FileMenuHandler:
     one EVT_MENU() macro for both a menu item and a toolbar button.
 
     """
-    def __init__(self, sizedFrame: SizedFrame, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, sizedFrame: SizedFrame, menu: Menu, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
 
+        super().__init__(sizedFrame=sizedFrame, menu=menu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._sizedFrame: SizedFrame = sizedFrame
 
         self._openProjects: List[UmlProject] = []
-        self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
-        self._umlPubSubEngine: UmlPubSubEngine  = umlPubSubEngine
 
         self._notebook:     Notebook = cast(Notebook, None)
 

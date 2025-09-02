@@ -13,7 +13,9 @@ from wx import Menu
 from wx.lib.sized_controls import SizedFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from wx.py.frame import ID_ABOUT
 
+from umldiagrammer.menuHandlers.HelpMenuHandler import HelpMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
@@ -31,19 +33,27 @@ class UIMenuCreator:
         self._toolMenu: Menu = Menu()
         self._helpMenu: Menu = Menu()
 
-        self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, menu=self._fileMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        self._helpMenuHandler: HelpMenuHandler = HelpMenuHandler(sizedFrame=frame, menu=self._helpMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
     @property
     def fileMenuHandler(self) -> FileMenuHandler:
         return self._fileMenuHandler
 
-    def initializeMenus(self):
+    def helpMenuHandler(self) -> HelpMenuHandler:
+        return self._helpMenuHandler
 
+    def initializeMenus(self):
         self._initializeFileMenu()
+        self._initializeHelpMenu()
 
     @property
-    def fileMenu(self):
+    def fileMenu(self) -> Menu:
         return self._fileMenu
+
+    @property
+    def helpMenu(self) -> Menu:
+        return self._helpMenu
 
     def _initializeFileMenu(self):
 
@@ -78,3 +88,9 @@ class UIMenuCreator:
         fileMenu.AppendSeparator()
 
         fileMenu.Append(ID_EXIT, "E&xit", "Exit UML Diagrammer")
+
+    def _initializeHelpMenu(self):
+
+        helpMenu: Menu = self._helpMenu
+
+        helpMenu.Append(ID_ABOUT, '&About', 'Uml Diagrammer Information')
