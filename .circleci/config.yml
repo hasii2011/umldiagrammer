@@ -34,7 +34,7 @@ jobs:
             pip install attrdict3~=2.0.2  
             pip install -v -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython
             pip install semantic-version==2.10.0
-            pip install codeallybasic==1.20.0
+            pip install codeallybasic==1.30.0
             pip install codeallyadvanced==2.2.0
             pip install pyutmodelv2==2.2.6
             pip install umlshapes==0.9.130
