@@ -18,7 +18,6 @@ from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.UIIdentifiers import UIIdentifiers

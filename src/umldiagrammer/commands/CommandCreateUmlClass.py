@@ -6,10 +6,7 @@ from logging import getLogger
 
 from pyutmodelv2.PyutClass import PyutClass
 
-from umlshapes.UmlDiagram import UmlDiagram
-
 from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -19,9 +16,7 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
-from umldiagrammer.commands.BaseWxCommand import BaseWxCommand
 from umldiagrammer.commands.BaseWxCreateCommand import BaseWxCreateCommand
-from umldiagrammer.commands.CommandTypes import DoableObjectType
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType

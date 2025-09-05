@@ -2,18 +2,19 @@
 from logging import Logger
 from logging import getLogger
 
-from wx import Frame
+from wx import ID_ABOUT
 from wx import ID_EXIT
 from wx import ID_OPEN
 from wx import ID_PREFERENCES
 from wx import ID_SAVE
 from wx import ID_SAVEAS
+
+from wx import Frame
 from wx import Menu
 
 from wx.lib.sized_controls import SizedFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
-from wx.py.frame import ID_ABOUT
 
 from umldiagrammer.menuHandlers.HelpMenuHandler import HelpMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -93,4 +94,5 @@ class UIMenuCreator:
 
         helpMenu: Menu = self._helpMenu
 
+        helpMenu.Append(UIIdentifiers.ID_MENU_HELP_PUB_SUB_ENGINE, 'Debug App Pub Sub', 'Pub Sub Engine Diagnostics')
         helpMenu.Append(ID_ABOUT, '&About', 'Uml Diagrammer Information')

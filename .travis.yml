@@ -40,7 +40,7 @@ install:
   - pip install six==1.16.0
   - pip install attrdict3
   - pip install semantic-version==2.10.0
-  - pip install codeallybasic==1.15.0
+  - pip install codeallybasic==1.20.0
   - pip install pyutmodelv2==2.2.6
   - pip install untangle==1.2.1
   - URL=https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04

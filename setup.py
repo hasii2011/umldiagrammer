@@ -61,11 +61,12 @@ setup(
     ),
     setup_requires=['py2app'],
     install_requires=[
+        'Pypubsub==4.0.3',
         'semantic-version==2.10.0',
-        'codeallybasic>=1.15.0',
+        'codeallybasic>=1.20.0',
         'codeallyadvanced>=2.2.0',
         'pyutmodelv2>=2.2.6',
-        'umlshapes>=0.9.125',
+        'umlshapes>=0.9.130',
         'umlio>=0.4.2',
         'wxPython==4.2.3',
     ]

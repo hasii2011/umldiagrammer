@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: &deps1-cache deps1-{{ .Branch }}-{{ checksum "pyproject.toml" }}
+          key: &deps1-cache deps1-{{ .Branch }}-{{ checksum "setup.py" }}
       - run:
           name: Install library dependencies
           command: |
@@ -34,13 +34,14 @@ jobs:
             pip install attrdict3~=2.0.2  
             pip install -v -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython
             pip install semantic-version==2.10.0
-            pip install codeallybasic==1.15.0
+            pip install codeallybasic==1.20.0
             pip install codeallyadvanced==2.2.0
             pip install pyutmodelv2==2.2.6
-            pip install umlshapes==0.9.125
+            pip install umlshapes==0.9.130
             pip install umlio==0.4.2
             pip install buildlackey==2.0.0
             pip install semantic-version==2.10.0
+            pip install Pypubsub==4.0.3
       - save_cache:
           key: *deps1-cache
           paths:
