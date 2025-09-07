@@ -3,6 +3,7 @@
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import Size
 from wx import Window
 from wx import SplitterWindow
@@ -24,23 +25,23 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 
 class UmlProjectPanel(SplitterWindow):
-    def __init__(self, parent: Window, appPubSubEngine: IAppPubSubEngine, umlPubSibEngine: UmlPubSubEngine, umlProject: UmlProject):
+    def __init__(self, parent: Window, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, umlProject: UmlProject):
         """
 
         Args:
             parent:
             appPubSubEngine:    The event engine that the applications uses to communicate within its UI components
-            umlPubSibEngine:    The pub sub engine that UML Shapes uses to communicate within itself and the wrapper application
+            umlPubSubEngine:    The pub sub engine that UML Shapes uses to communicate within itself and the wrapper application
             umlProject:
         """
 
         self.logger: Logger = getLogger(__name__)
         super().__init__(parent=parent)
 
-        self.appEventEngine: IAppPubSubEngine = appPubSubEngine
+        self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
         self._projectTree:     UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
-        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self, umlPubSubEngine=umlPubSibEngine, umlDocuments=umlProject.umlDocuments)
+        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self, umlPubSubEngine=umlPubSubEngine, umlDocuments=umlProject.umlDocuments)
 
         self.SetMinimumPaneSize(200)            # TODO: This should be a preference
 
@@ -48,9 +49,9 @@ class UmlProjectPanel(SplitterWindow):
 
         uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
         for uniqueId in uniqueNodeIds:
-            self.appEventEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
-                                          uniqueId=uniqueId,
-                                          callback=self._onDiagramSelectionChanged)
+            self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
+                                            uniqueId=uniqueId,
+                                            callback=self._diagramSelectionChangedListener)
 
         windowSize: Size = parent.GetSize()
 
@@ -72,6 +73,6 @@ class UmlProjectPanel(SplitterWindow):
     def frameIdToTitleMap(self) -> FrameIdToTitleMap:
         return self._documentManager.frameIdToTitleMap
 
-    def _onDiagramSelectionChanged(self, treeData: TreeNodeData):
+    def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
         self._documentManager.switchToDocument(treeData.umlDocument)

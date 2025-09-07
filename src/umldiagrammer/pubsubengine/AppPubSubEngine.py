@@ -6,6 +6,8 @@ from logging import Logger
 
 from enum import Enum
 
+from pubsub import pub
+
 from codeallybasic.BasePubSubEngine import BasePubSubEngine
 from codeallybasic.BasePubSubEngine import Topic
 
@@ -25,6 +27,9 @@ class AppPubSubEngine(IAppPubSubEngine, BasePubSubEngine):
 
     def sendMessage(self, messageType: MessageType, uniqueId: UniqueId, **kwargs):
         self._sendMessage(topic=self._toTopic(messageType, uniqueId), **kwargs)
+
+    def debugSubscribeAllTopics(self, listener):
+        self._subscribe(pub.ALL_TOPICS, listener=listener)
 
     def _toTopic(self, eventType: Enum, uniqueId: str) -> Topic:
         """

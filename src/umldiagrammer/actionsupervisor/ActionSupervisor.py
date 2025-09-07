@@ -5,6 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import Command
 from wx import ICON_ERROR
 from wx import OK
@@ -26,7 +27,6 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.commands.CommandCreateUmlClass import CommandCreateUmlClass
 
 from umldiagrammer.pubsubengine.MessageType import MessageType
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -61,10 +61,10 @@ MESSAGES: Dict[UIAction, str] = {
 
 
 class ActionSupervisor(metaclass=SingletonV3):
-    def __init__(self, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
-        self._umlPubSubEngine: UmlPubSubEngine  = umlPubSubEngine
+        self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
 
         self.logger:          Logger          = getLogger(__name__)
 

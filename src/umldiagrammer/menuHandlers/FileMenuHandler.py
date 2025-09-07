@@ -28,6 +28,8 @@ from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+
 from umlio.Reader import Reader
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
@@ -41,7 +43,6 @@ from umldiagrammer.menuHandlers.BaseMenuHandler import BaseMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -57,7 +58,7 @@ class FileMenuHandler(BaseMenuHandler):
     one EVT_MENU() macro for both a menu item and a toolbar button.
 
     """
-    def __init__(self, sizedFrame: SizedFrame, menu: Menu, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, sizedFrame: SizedFrame, menu: Menu, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
 

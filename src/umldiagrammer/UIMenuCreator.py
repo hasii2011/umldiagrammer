@@ -2,6 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import ID_ABOUT
 from wx import ID_EXIT
 from wx import ID_OPEN
@@ -14,8 +15,6 @@ from wx import Menu
 
 from wx.lib.sized_controls import SizedFrame
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
-
 from umldiagrammer.menuHandlers.HelpMenuHandler import HelpMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -24,7 +23,7 @@ from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 
 class UIMenuCreator:
-    def __init__(self, frame: SizedFrame, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, frame: SizedFrame, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
         self._frame: Frame  = frame
@@ -64,6 +63,7 @@ class UIMenuCreator:
 
         self.mnuFileNew.Append(UIIdentifiers.ID_FILE_MENU_NEW_PROJECT,          '&New project\tCtrl-N', 'New project')
         self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    'New c&lass diagram\tCtrl-L',    'New class diagram')
+        # noinspection SpellCheckingInspection
         self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, 'New s&equence diagram\tCtrl-E', 'New sequence diagram')
         self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  "New &use-case diagram\tCtrl-U", 'New use-case diagram')
 

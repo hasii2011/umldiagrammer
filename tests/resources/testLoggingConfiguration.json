@@ -25,6 +25,10 @@
         "__main__": {
             "level": "INFO",
             "propagate": "False"
+        },
+      "umldiagrammer": {
+            "level": "INFO",
+            "propagate": "False"
         }
     }
 }

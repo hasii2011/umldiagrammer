@@ -7,7 +7,9 @@ from abc import ABCMeta
 
 from umlshapes.UmlDiagram import UmlDiagram
 from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 from umlshapes.types.UmlPosition import UmlPosition
@@ -30,7 +32,7 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
     """
     Did now inspection because was not catch that we are an ABC
     """
-    def __init__(self, canUndo: bool, name: str, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine, umlFrame: UmlFrame, umlPosition: UmlPosition):
+    def __init__(self, canUndo: bool, name: str, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, umlFrame: UmlFrame, umlPosition: UmlPosition):
 
         super().__init__(canUndo=canUndo, name=name, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 

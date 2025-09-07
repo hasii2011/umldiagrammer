@@ -4,10 +4,12 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from wx import SHOW_EFFECT_SLIDE_TO_RIGHT
+# from wx import SHOW_EFFECT_SLIDE_TO_RIGHT
 
 from wx import Window
 from wx import Simplebook
+
+from umlio.IOTypes import UmlDocumentTitle
 
 from umlshapes.lib.ogl import ShapeEvtHandler
 
@@ -17,6 +19,10 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.ClassDiagramFrame import CreateLollipopCallback
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
+
+from umlshapes.frames.DiagramFrame import FrameId
+
+from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
@@ -44,7 +50,7 @@ from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLo
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlio.IOTypes import UmlActors
 from umlio.IOTypes import UmlClasses
@@ -63,9 +69,11 @@ from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreference
 
 UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
 
+MODIFIED_INDICATOR: str = '*'
+
 
 class UmlDocumentManager(Simplebook):
-    def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: IUmlPubSubEngine):
         """
 
         Args:
@@ -80,16 +88,16 @@ class UmlDocumentManager(Simplebook):
 
         super().__init__(parent=parent)
 
-        self._umlDocuments:    UmlDocuments    = umlDocuments
-        self._umlPubSubEngine: UmlPubSubEngine = umlPubSubEngine
+        self._umlDocuments:    UmlDocuments     = umlDocuments
+        self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
 
         self._frameIdToTitleMap:     FrameIdToTitleMap      = FrameIdToTitleMap({})
         self._frameIdMap:            FrameIdMap             = FrameIdMap({})
         self._umlDocumentTileToPage: UmlDocumentTitleToPage = UmlDocumentTitleToPage({})
 
         # doing any effect should be an application preference
-        self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
-        self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
+        # self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
+        # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
 
         self._createPages()
 
@@ -137,9 +145,11 @@ class UmlDocumentManager(Simplebook):
                 umlDiagram.SetGridSpacing(self._umlPreferences.backgroundGridInterval)
             else:
                 umlDiagram.SetSnapToGrid(snap=False)
+
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
+            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, callback=self._frameModifiedListener)
             self._frameIdMap[diagramFrame.id]             = diagramFrame
             self._frameIdToTitleMap[diagramFrame.id]      = umlDocument.documentTitle
             self._umlDocumentTileToPage[umlDocumentTitle] = self.GetPageCount() - 1
@@ -272,3 +282,15 @@ class UmlDocumentManager(Simplebook):
         umlShape.Show(True)
 
         diagramFrame.refresh()
+
+    def _frameModifiedListener(self, modifiedFrameId: FrameId):
+
+        titleStr:         str = self._frameIdToTitleMap[modifiedFrameId]
+        modifiedTitleStr: str = f'{titleStr} {MODIFIED_INDICATOR}'
+
+        pageNumber: int = self._umlDocumentTileToPage[UmlDocumentTitle(titleStr)]
+
+        # TODO: Investigate why this does not change the title
+        answer: bool = self.SetPageText(page=pageNumber, text=modifiedTitleStr)
+
+        self.logger.info(f'Page answer: {answer}')

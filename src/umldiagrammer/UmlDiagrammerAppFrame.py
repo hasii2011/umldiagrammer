@@ -11,7 +11,7 @@ from pathlib import Path
 
 from os import getenv as osGetEnv
 
-
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import BOTH
 from wx import BookCtrlEvent
 from wx import CommandEvent
@@ -115,7 +115,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._openProjects:    List[UmlProject] = []
         self._appPubSubEngine: IAppPubSubEngine = AppPubSubEngine()
-        self._umlPubSubEngine: UmlPubSubEngine  = UmlPubSubEngine()
+        self._umlPubSubEngine: IUmlPubSubEngine  = UmlPubSubEngine()
 
         uiMenuCreator: UIMenuCreator = self._createApplicationMenuBar()
 
@@ -146,6 +146,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self.logger.info(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_CLOSE, self.Close)
+
+        uiMenuCreator.helpMenuHandler().setupPubSubTracing()
 
     def Close(self, force: bool = False) -> bool:
         """
@@ -196,7 +198,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return uiMenuCreator
 
-    def _newProject(self):
+    def _newProjectListener(self):
         if self._notebook is None:
             self._createTheApplicationNotebook()
             #
@@ -208,9 +210,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 documentTitle=DEFAULT_PROJECT_TITLE
             )
             umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
-            self._loadProject(umlProject=umlProject)
+            self._loadProjectListener(umlProject=umlProject)
 
-    def _loadProject(self, umlProject: UmlProject):
+    def _loadProjectListener(self, umlProject: UmlProject):
 
         self.logger.info(f'Loading: {umlProject.fileName}')
 
@@ -219,7 +221,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._notebook,
                                                         appPubSubEngine=self._appPubSubEngine,
-                                                        umlPubSibEngine=self._umlPubSubEngine,
+                                                        umlPubSubEngine=self._umlPubSubEngine,
                                                         umlProject=umlProject
                                                         )
         self._notebook.AddPage(page=projectPanel, text=umlProject.fileName.stem, select=True)   # TODO add an image
@@ -230,7 +232,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         for frameId in frameIdMap.keys():
             self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
                                             frameId=frameId,
-                                            callback=self._onUpdateApplicationStatus)
+                                            callback=self._updateApplicationStatusListener)
+            self._umlPubSubEngine.subscribe(UmlMessageType.FRAME_MODIFIED,
+                                            frameId=frameId,
+                                            callback=self._frameModifiedListener)
+
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 
     def _createTheApplicationNotebook(self):
@@ -260,7 +266,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             CallAfter(self._notebook.Destroy)
             self._notebook = None
 
-    def _onLoadDroppedFile(self, filename: str):
+    def _loadDroppedFileListener(self, filename: str):
         """
         This is the handler for the FILES_DROPPED_ON_APPLICATION topic
         TODO: This is a slight duplicated of the code in the FileMenuHandler,
@@ -275,20 +281,31 @@ class UmlDiagrammerAppFrame(SizedFrame):
         reader:       Reader = Reader()
         if suffix == XML_SUFFIX:
             umlProject: UmlProject = reader.readXmlFile(fileName=Path(fileNamePath))
-            self._loadProject(umlProject)
+            self._loadProjectListener(umlProject)
 
         elif suffix == PROJECT_SUFFIX:
             umlProject = reader.readProjectFile(fileName=fileNamePath)
-            self._loadProject(umlProject)
+            self._loadProjectListener(umlProject)
 
         else:
             assert False, 'We should not get files with bad suffixes'
 
-    def _onUpdateApplicationStatus(self, message: str):
+    def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
         self.SetStatusText(text=message)
 
-    def _onOverrideProgramExitPosition(self):
+    def _frameModifiedListener(self, modifiedFrameId: str):
+        """
+        TODO: Indicate to the end-user that the currently viewable frame is
+        modified or not
+
+        Args:
+            modifiedFrameId:
+
+        """
+        self.logger.info(f'Frame Modified - {modifiedFrameId=}')
+
+    def _overrideProgramExitPositionListener(self):
         self._overrideProgramExitPosition = True
 
     # noinspection PyUnusedLocal
@@ -314,7 +331,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         # self._doToolSelect(toolId=event.GetId())
         wxYield()
 
-    def _onSelectTool(self, toolId: int):
+    def _selectToolListener(self, toolId: int):
         """
         First clean them all, then select the required one
 
@@ -333,7 +350,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         toolBar.ToggleTool(toolId, True)
 
-    def _onEditClass(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
+    def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
 
         # umlFrame: UmlDiagramsFrame = self._projectManager.currentFrame
 
@@ -342,7 +359,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
-                # Sends its own modify event
+                umlFrame.frameModified = True
 
     def _setApplicationPosition(self):
         """
@@ -356,15 +373,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _subscribeToMessagesWeHandle(self):
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProject)
-        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProject)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,  uniqueId=APPLICATION_FRAME_ID, callback=self._onSelectTool)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID,  callback=self._selectToolListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,   uniqueId=APPLICATION_FRAME_ID, callback=self._onLoadDroppedFile)
-        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, callback=self._onUpdateApplicationStatus)
-        self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._onOverrideProgramExitPosition)
+        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,   uniqueId=APPLICATION_FRAME_ID, callback=self._loadDroppedFileListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, callback=self._updateApplicationStatusListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._overrideProgramExitPositionListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, callback=self._onEditClass)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, callback=self._editClassListener)
 
     def _getFrameStyle(self) -> int:
         """

@@ -8,7 +8,7 @@ from pyutmodelv2.PyutClass import PyutClass
 
 from umlshapes.frames.UmlFrame import UmlFrame
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlshapes.shapes.UmlClass import UmlClass
 
@@ -26,7 +26,7 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
 
     clsCounter: int = 1
 
-    def __init__(self, umlFrame: UmlFrame, umlPosition: UmlPosition, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, umlFrame: UmlFrame, umlPosition: UmlPosition, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
         """
         If the caller provides a ready-made class this command uses it and does not
         invoke the class editor

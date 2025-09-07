@@ -6,6 +6,7 @@ from logging import getLogger
 
 from wx import Command
 
+
 from pyutmodelv2.PyutLinkedObject import PyutLinkedObject
 
 from umlshapes.frames.UmlFrame import UmlFrame
@@ -20,11 +21,10 @@ from umlshapes.types.Common import UmlShapeList
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.UmlDiagram import UmlDiagram
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.commands.CommandTypes import DoableObjectType
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
@@ -33,7 +33,7 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 class BaseWxCommand(Command):
 
-    def __init__(self, canUndo: bool, name: str,  appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, canUndo: bool, name: str,  appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
         """
 
         Args:
@@ -46,7 +46,7 @@ class BaseWxCommand(Command):
 
         self._baseLogger:      Logger           = getLogger(__name__)
         self._name:            str              = name
-        self._umlPubSubEngine: UmlPubSubEngine  = umlPubSubEngine
+        self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
         self._umlPreferences:  UmlPreferences        = UmlPreferences()
