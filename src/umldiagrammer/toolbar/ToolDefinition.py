@@ -1,16 +1,12 @@
 
 from typing import Callable
-from typing import NewType
 from typing import cast
 
 from enum import Enum
 
 from dataclasses import dataclass
 
-from wx import Bitmap
 from wx import BitmapBundle
-
-from wx import NewIdRef as wxNewIdRef
 
 
 class ToolGroup(Enum):

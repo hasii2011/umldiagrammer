@@ -30,11 +30,8 @@ from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandl
 from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
 from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEventHandler
 
-from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
-from umlshapes.shapes.UmlText import UmlText
-from umlshapes.shapes.UmlUseCase import UmlUseCase
 
 from umlshapes.links.UmlNoteLink import UmlNoteLink
 from umlshapes.links.UmlAssociation import UmlAssociation
@@ -65,9 +62,8 @@ from umlio.IOTypes import UmlUseCases
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
+from umldiagrammer.DiagrammerTypes import UmlShape
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
-
-UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
 
 MODIFIED_INDICATOR: str = '*'
 

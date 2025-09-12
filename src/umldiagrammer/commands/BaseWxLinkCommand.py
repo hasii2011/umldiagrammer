@@ -33,6 +33,15 @@ class BaseWxLinkCommand(Command):
     def __init__(self, partialName: str, linkType: PyutLinkType,
                  umlFrame: UmlFrame,
                  appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
+        """
+
+        Args:
+            partialName: The name of the link;  I call it partial, because it will enhanced here
+            linkType:   Type of link
+            umlFrame:   The frame it will appear on
+            appPubSubEngine:    The application publish/subscribe engine
+            umlPubSubEngine:    The UML Shape publish/subscribe engine
+        """
 
         self._name: str = f'{partialName} {self._toCommandName(linkType=linkType)}'
 

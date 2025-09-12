@@ -147,7 +147,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_CLOSE, self.Close)
 
-        uiMenuCreator.helpMenuHandler().setupPubSubTracing()
+        uiMenuCreator.helpMenuHandler.setupPubSubTracing()
 
     def Close(self, force: bool = False) -> bool:
         """
@@ -189,9 +189,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         menuBar:  MenuBar = MenuBar()
         fileMenu: Menu    = uiMenuCreator.fileMenu
+        editMenu: Menu    = uiMenuCreator.editMenu
         helpMenu: Menu    = uiMenuCreator.helpMenu
 
         menuBar.Append(fileMenu, 'File')
+        menuBar.Append(editMenu, 'Edit')
         menuBar.Append(helpMenu, 'Help')
 
         self.SetMenuBar(menuBar)
@@ -326,9 +328,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'Do an action {currentAction} --- TODO')
         self._actionSupervisor.currentAction = currentAction
 
-        #
-        # self._eventEngine.sendEvent(EventType.SetToolAction, action=currentAction)
-        # self._doToolSelect(toolId=event.GetId())
+        self._doToolSelect(toolId=event.GetId())
         wxYield()
 
     def _selectToolListener(self, toolId: int):

@@ -9,6 +9,11 @@ from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 
 from umlio.IOTypes import UmlDocumentTitle
+from umlshapes.shapes.UmlActor import UmlActor
+from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.shapes.UmlNote import UmlNote
+from umlshapes.shapes.UmlText import UmlText
+from umlshapes.shapes.UmlUseCase import UmlUseCase
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 
@@ -21,3 +26,5 @@ APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area
 
 APP_MODE: str = 'APP_MODE'
+
+UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass

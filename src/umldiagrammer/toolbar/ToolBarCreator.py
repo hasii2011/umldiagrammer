@@ -11,23 +11,11 @@ from wx import ID_REDO
 from wx import ID_UNDO
 from wx import ITEM_CHECK
 from wx import ITEM_NORMAL
-from wx import NO_BORDER
-from wx import TB_BOTTOM
-from wx import TB_FLAT
-from wx import TB_HORIZONTAL
-from wx import TB_LEFT
-from wx import TB_RIGHT
-from wx import TB_TEXT
-from wx import TB_TOP
-from wx import TB_VERTICAL
-
-from wx import Bitmap
 from wx import BitmapBundle
 from wx import Frame
+from wx import TB_VERTICAL
 from wx import ToolBar
 from wx import Size
-
-from wx import WindowIDRef
 
 from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
@@ -60,9 +48,9 @@ TOOL_BAR_IDs: List[int] = [
 
 
 class ToolBarCreator:
-    def __init__(self, parent: Frame, fileMenuHandler: FileMenuHandler, newActionCallback: Callable):
+    def __init__(self, appFrame: Frame, fileMenuHandler: FileMenuHandler, newActionCallback: Callable):
 
-        self._parent: Frame = parent
+        self._appFrame: Frame = appFrame
 
         self._fileMenuHandler:   FileMenuHandler = fileMenuHandler
         self._newActionCallback: Callable        = newActionCallback
@@ -70,12 +58,10 @@ class ToolBarCreator:
         self.logger: Logger = getLogger(__name__)
 
         wxToolBarPosition: int = ToolBarPosition.toWxpPosition(DiagrammerPreferences().toolBarPosition)
-        self._toolBar = parent.CreateToolBar(wxToolBarPosition)
-
+        # self._toolBar: ToolBar = parent.CreateToolBar(wxToolBarPosition)
+        # Manually create my own tool bar so that the icons sizes are honored
         #
-        # Set the icon size before realizing the tool bar
-        #
-        self._setToolbarIconSize()
+        self._toolBar: ToolBar = ToolBar(parent=appFrame, style=wxToolBarPosition | TB_VERTICAL)
 
         self._toolBarIcons: ToolBarIcons = ToolBarIcons()
 
@@ -105,8 +91,14 @@ class ToolBarCreator:
         self._createMenuTools()
         self._createElementTools()
         self._createRelationshipTools()
+        #
+        # Set the icon size before realizing the tool bar
+        #
+        self._setToolbarIconSize()
 
         self._populateToolBar()
+
+        self._appFrame.SetToolBar(self._toolBar)
 
     @property
     def toolBar(self) -> ToolBar:
@@ -397,7 +389,7 @@ class ToolBarCreator:
                 """
                 self._toolBar.AddTool(toolId=toolId, shortHelp=toolTip, bitmap=bitMapBundle, label=caption, kind=itemKind)
 
-                self._parent.Bind(EVT_TOOL, tool.actionCallback, id=tool.wxID)
+                self._appFrame.Bind(EVT_TOOL, tool.actionCallback, id=tool.wxID)
             else:
                 self._toolBar.AddSeparator()
 

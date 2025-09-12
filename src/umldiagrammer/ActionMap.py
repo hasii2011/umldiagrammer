@@ -8,7 +8,7 @@ from umldiagrammer.UIIdentifiers import UIIdentifiers
 # wxPython either via a menu selection or a toolbar click issues a wxPython
 # event.  We have to convert that to something the UML Diagrammer wants
 # to do.  That is called a UI Action.
-# We set the UI into am mode where we wait for the next UmlFrame click
+# We set the UI into a mode where we wait for the next UmlFrame click
 # event from the umlshapes module.  When we get that event we check which
 # UI Action mode we are in and do that
 #

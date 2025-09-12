@@ -10,15 +10,16 @@ class UIAction(Enum):
     NEW_NOTE             = 'NewNote'
     NEW_IMPLEMENT_LINK   = 'NewImplementLink'
     NEW_INTERFACE        = 'NewInterface'
-    NEW_INHERIT_LINK     = 'NewInheritLink'
     NEW_AGGREGATION_LINK = 'NewAggregationLink',
     NEW_COMPOSITION_LINK = 'NewCompositionLink'
     NEW_ASSOCIATION_LINK = 'NewAssociationLink'
     NEW_NOTE_LINK        = 'NewNoteLink'
     NEW_TEXT             = 'NewText'
 
+    NEW_INHERIT_LINK         = 'NewInheritLink'
+    DESTINATION_INHERIT_LINK = 'DestinationInheritLink'
+
     DESTINATION_IMPLEMENT_LINK   = 'DestinationImplementLink'
-    DESTINATION_INHERIT_LINK     = 'DestinationInheritLink'
     DESTINATION_AGGREGATION_LINK = 'DestinationAggregationLink'
     DESTINATION_COMPOSITION_LINK = 'DestinationCompositionLink'
     DESTINATION_ASSOCIATION_LINK = 'DestinationAssociationLink'
