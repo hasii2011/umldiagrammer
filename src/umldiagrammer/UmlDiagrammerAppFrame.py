@@ -170,13 +170,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
             if self._overrideProgramExitSize is False:
                 ourSize: Size = self.GetSize()
 
-                # See issue https://github.com/hasii2011/PyUt/issues/452
+                # See issue https://github.com/hasii2011/umldiagrammer/issues/3q1
                 # I need to check this on a larger monitor;
-                # self._preferences.startupSize = Dimensions(width=ourSize.width, ourSize[1] - HACK_ADJUST_EXIT_HEIGHT)
                 self._preferences.startupSize = Dimensions(width=ourSize.GetWidth(), height=ourSize.GetHeight() - HACK_ADJUST_EXIT_HEIGHT)
                 self.logger.info(f'Set new startup size: {ourSize}')
 
-        self.logger.info(f'Pyut execution complete')
+        self.logger.info(f'UML Diagrammer execution complete')
         self.logger.info(START_STOP_MARKER)
         self.Destroy()
 
@@ -234,10 +233,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         for frameId in frameIdMap.keys():
             self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
                                             frameId=frameId,
-                                            callback=self._updateApplicationStatusListener)
+                                            listener=self._updateApplicationStatusListener)
             self._umlPubSubEngine.subscribe(UmlMessageType.FRAME_MODIFIED,
                                             frameId=frameId,
-                                            callback=self._frameModifiedListener)
+                                            listener=self._frameModifiedListener)
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 

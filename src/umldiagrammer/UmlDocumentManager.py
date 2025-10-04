@@ -145,7 +145,7 @@ class UmlDocumentManager(Simplebook):
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
-            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, callback=self._frameModifiedListener)
+            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, listener=self._frameModifiedListener)
             self._frameIdMap[diagramFrame.id]             = diagramFrame
             self._frameIdToTitleMap[diagramFrame.id]      = umlDocument.documentTitle
             self._umlDocumentTileToPage[umlDocumentTitle] = self.GetPageCount() - 1

@@ -10,8 +10,8 @@ from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umldiagrammer.DiagrammerTypes import UmlShape
 from umldiagrammer.commands.BaseWxLinkCommand import BaseWxLinkCommand
-from umldiagrammer.commands.CommandTypes import DoableObjectType
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -22,34 +22,32 @@ class CommandCreateUmlLink(BaseWxLinkCommand):
                  umlFrame: UmlFrame,
                  appPubSubEngine: IAppPubSubEngine,
                  umlPubSubEngine: IUmlPubSubEngine,
-                 source:       DoableObjectType,
-                 destination: DoableObjectType,
+                 source:       UmlShape,
+                 destination:  UmlShape,
                  linkType: PyutLinkType = PyutLinkType.INHERITANCE
                  ):
         """
         Lollipop Interface
         ------------------
-
         Destination == Implementing Class
+
 
         Inheritance Link
         ----------------
-
         source == SubClass
         destination == Base Class.  (arrow here)
 
 
         Note Links
         ----------
-
         source == Note
         destination == UmlClass
 
 
         Association Links
         ----------------
-
         source has the diamond
+
 
         Args:
             umlFrame:           The frame which we will create a UML Link

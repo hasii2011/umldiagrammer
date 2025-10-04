@@ -1,3 +1,4 @@
+
 from typing import Union
 
 from umlshapes.links.UmlInterface import UmlInterface

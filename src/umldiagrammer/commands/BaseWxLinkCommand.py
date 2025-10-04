@@ -22,7 +22,7 @@ from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umldiagrammer.commands.CommandTypes import DoableObjectType
+from umldiagrammer.DiagrammerTypes import UmlShape
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 
@@ -53,8 +53,8 @@ class BaseWxLinkCommand(Command):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self._umlFrame:        UmlFrame         = umlFrame
 
-        self._sourceUmlShape:      DoableObjectType = cast(DoableObjectType, None)
-        self._destinationUmlShape: DoableObjectType = cast(DoableObjectType, None)
+        self._sourceUmlShape:      UmlShape = cast(UmlShape, None)
+        self._destinationUmlShape: UmlShape = cast(UmlShape, None)
 
         self._linkType: PyutLinkType = linkType
 
@@ -137,7 +137,7 @@ class BaseWxLinkCommand(Command):
 
         self._linkLogger.info(f'Create: {self._link}')
 
-    def _createLink(self) -> UmlInheritance | None:
+    def _createLink(self) -> UmlLink:
         """
 
         Returns:  A specific UmlLink instance depending on the link type
@@ -146,16 +146,16 @@ class BaseWxLinkCommand(Command):
         # srcPos:   Point        = self._srcPoint
         # dstPos:   Point        = self._dstPoint
 
-        if linkType == PyutLinkType.INHERITANCE:
-            """
-            source == SubClass
-            destination == Base Class.  (arrow here)
-            """
-            subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
-            baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        # if linkType == PyutLinkType.INHERITANCE:
+        """
+        source == SubClass
+        destination == Base Class.  (arrow here)
+        """
+        subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
+        baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-            umlInheritance: UmlInheritance = self._createInheritanceLink(subClass=subClass, baseClass=baseClass)
-            return umlInheritance
+        umlInheritance: UmlInheritance = self._createInheritanceLink(subClass=subClass, baseClass=baseClass)
+        return umlInheritance
 
         # elif linkType == PyutLinkType.SD_MESSAGE:
         #     srcSdInstance: OglSDInstance = cast(OglSDInstance, self._srcUmlShape)

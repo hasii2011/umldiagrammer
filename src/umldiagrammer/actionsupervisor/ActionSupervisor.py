@@ -195,8 +195,7 @@ class ActionSupervisor(metaclass=SingletonV3):
         self._setStatusText(msg)
 
     def registerNewFrame(self, frameId: FrameId):
-        self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_LEFT_CLICK,   frameId=frameId, callback=self._frameClickListener)
-        self._umlPubSubEngine.subscribe(messageType=UmlMessageType.UML_SHAPE_SELECTED, frameId=frameId, callback=self._shapeSelectedListener)
+        self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_LEFT_CLICK,   frameId=frameId, listener=self._frameClickListener)
 
     def doAction(self, umlFrame: UmlFrame, umlPosition: UmlPosition):
         """

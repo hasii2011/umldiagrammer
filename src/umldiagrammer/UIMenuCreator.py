@@ -4,13 +4,19 @@ from logging import getLogger
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import ID_ABOUT
+from wx import ID_COPY
+from wx import ID_CUT
 from wx import ID_EXIT
 from wx import ID_OPEN
+from wx import ID_PASTE
 from wx import ID_PREFERENCES
+from wx import ID_REDO
 from wx import ID_SAVE
 from wx import ID_SAVEAS
 
 from wx import Frame
+from wx import ID_SELECTALL
+from wx import ID_UNDO
 from wx import Menu
 
 from wx.lib.sized_controls import SizedFrame
@@ -40,16 +46,25 @@ class UIMenuCreator:
     def fileMenuHandler(self) -> FileMenuHandler:
         return self._fileMenuHandler
 
+    # @property
+    # def editMenuHandler(self) -> EditMenuHandler:
+
+    @property
     def helpMenuHandler(self) -> HelpMenuHandler:
         return self._helpMenuHandler
 
     def initializeMenus(self):
         self._initializeFileMenu()
+        self._initializeEditMenu()
         self._initializeHelpMenu()
 
     @property
     def fileMenu(self) -> Menu:
         return self._fileMenu
+
+    @property
+    def editMenu(self) -> Menu:
+        return self._editMenu
 
     @property
     def helpMenu(self) -> Menu:
@@ -89,6 +104,23 @@ class UIMenuCreator:
         fileMenu.AppendSeparator()
 
         fileMenu.Append(ID_EXIT, "E&xit", "Exit UML Diagrammer")
+
+    def _initializeEditMenu(self):
+
+        editMenu: Menu = self._editMenu
+
+        editMenu.Append(ID_UNDO)
+        editMenu.Append(ID_REDO)
+        editMenu.AppendSeparator()
+        #
+        # Use all the stock properties
+        #
+        editMenu.Append(ID_CUT)
+        editMenu.Append(ID_COPY)
+        editMenu.Append(ID_PASTE)
+        editMenu.AppendSeparator()
+        editMenu.Append(ID_SELECTALL)
+        editMenu.AppendSeparator()
 
     def _initializeHelpMenu(self):
 
