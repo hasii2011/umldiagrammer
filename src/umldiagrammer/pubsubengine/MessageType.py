@@ -15,4 +15,6 @@ class MessageType(Enum):
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 
+    ACTIVE_DOCUMENT_CHANGED        = 'Active Document Changed'
+
     NO_EVENT = 'NoEvent'

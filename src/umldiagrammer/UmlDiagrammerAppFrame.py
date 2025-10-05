@@ -11,36 +11,27 @@ from pathlib import Path
 
 from os import getenv as osGetEnv
 
-from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import BOTH
-from wx import BookCtrlEvent
-from wx import CommandEvent
+from wx import STB_DEFAULT_STYLE
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
-from wx import EVT_NOTEBOOK_PAGE_CHANGED
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
 from wx import ID_OK
 
-from wx import NB_LEFT
 from wx import Point
-from wx import STB_DEFAULT_STYLE
 from wx import Size
-
 from wx import ToolBar
 from wx import Menu
 from wx import MenuBar
-from wx import Notebook
+from wx import CommandEvent
 
-from wx import CallLater
-from wx import CallAfter
 from wx import Yield as wxYield
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
 from pyutmodelv2.PyutClass import PyutClass
-
 
 from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
@@ -53,6 +44,7 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlio.Reader import Reader
 
@@ -74,6 +66,7 @@ from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.UIAction import UIAction
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
+from umldiagrammer.UmlNotebook import UmlNotebook
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
 
@@ -110,10 +103,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
+        sizedPanel.SetSizerType('vertical')
 
-        self._notebook: Notebook = cast(Notebook, None)
+        self._umlNotebook: UmlNotebook = cast(UmlNotebook, None)
 
-        self._openProjects:    List[UmlProject] = []
         self._appPubSubEngine: IAppPubSubEngine = AppPubSubEngine()
         self._umlPubSubEngine: IUmlPubSubEngine  = UmlPubSubEngine()
 
@@ -200,34 +193,41 @@ class UmlDiagrammerAppFrame(SizedFrame):
         return uiMenuCreator
 
     def _newProjectListener(self):
-        if self._notebook is None:
-            self._createTheApplicationNotebook()
-            #
-            # Create an empty project here
-            #
-            umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
-            umlDocument: UmlDocument = UmlDocument(
-                documentType=UmlDocumentType.CLASS_DOCUMENT,
-                documentTitle=DEFAULT_PROJECT_TITLE
-            )
-            umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
-            self._loadProjectListener(umlProject=umlProject)
+        """
+        Create an empty project
+        """
+
+        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
+        umlDocument: UmlDocument = UmlDocument(
+            documentType=UmlDocumentType.CLASS_DOCUMENT,
+            documentTitle=DEFAULT_PROJECT_TITLE
+        )
+        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
+        #
+        # Hmm, using a listener directly
+        self._loadProjectListener(umlProject=umlProject)
 
     def _loadProjectListener(self, umlProject: UmlProject):
 
         self.logger.info(f'Loading: {umlProject.fileName}')
 
-        if self._notebook is None:
-            self._createTheApplicationNotebook()
+        if self._umlNotebook is None:
+            # Lazy UI creation
+            # self._createTheApplicationNotebook()
+            sizedPanel: SizedPanel = self.GetContentsPane()
+            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine)
 
-        projectPanel: UmlProjectPanel = UmlProjectPanel(self._notebook,
+        projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
                                                         appPubSubEngine=self._appPubSubEngine,
                                                         umlPubSubEngine=self._umlPubSubEngine,
                                                         umlProject=umlProject
                                                         )
-        self._notebook.AddPage(page=projectPanel, text=umlProject.fileName.stem, select=True)   # TODO add an image
-        self._openProjects.append(umlProject)
-
+        self._umlNotebook.addProject(projectPanel=projectPanel)
+        # self.logger.info(f'{projectPanel.currentUmlFrameId=}')
+        # self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
+        #                                   uniqueId=EDIT_MENU_HANDLER_ID,
+        #                                   activeFrameId=projectPanel.currentUmlFrameId
+        #                                   )
         frameIdMap: FrameIdToTitleMap = projectPanel.frameIdToTitleMap
 
         for frameId in frameIdMap.keys():
@@ -239,33 +239,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                             listener=self._frameModifiedListener)
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
-
-    def _createTheApplicationNotebook(self):
-        """
-        Lazy UI creation
-        """
-        sizedPanel: SizedPanel = self.GetContentsPane()
-        sizedPanel.SetSizerProps(expand=True, proportion=1)
-        sizedPanel.SetSizerType('vertical')
-
-        self._notebook = Notebook(sizedPanel, style=NB_LEFT)    # TODO: should be an application preference
-        self._notebook.SetSizerProps(expand=True, proportion=1)
-        CallLater(millis=100, callableObj=self._notebook.PostSizeEventToParent)
-        self.Bind(EVT_NOTEBOOK_PAGE_CHANGED, self._onNewProjectDisplayed)
-
-    def _onNewProjectDisplayed(self, event: BookCtrlEvent):
-        self.logger.info(f'{event.GetSelection()=} {self._notebook.GetCurrentPage()=}')
-
-    # noinspection PyUnusedLocal
-    def _onPageClosing(self, event):
-        """
-        Event handler that is called when a page in the notebook is closing
-        """
-        page = self._notebook.GetCurrentPage()
-        page.Close()
-        if len(self._openProjects) == 0:
-            CallAfter(self._notebook.Destroy)
-            self._notebook = None
 
     def _loadDroppedFileListener(self, filename: str):
         """
@@ -372,15 +345,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _subscribeToMessagesWeHandle(self):
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._loadProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT,  uniqueId=APPLICATION_FRAME_ID, callback=self._newProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID,  callback=self._selectToolListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._newProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,   uniqueId=APPLICATION_FRAME_ID, callback=self._loadDroppedFileListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, callback=self._updateApplicationStatusListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, callback=self._overrideProgramExitPositionListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, listener=self._loadDroppedFileListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, callback=self._editClassListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
 
     def _getFrameStyle(self) -> int:
         """

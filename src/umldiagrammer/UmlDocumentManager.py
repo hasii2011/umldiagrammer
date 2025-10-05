@@ -1,17 +1,15 @@
 
+from typing import Dict
+from typing import NewType
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-# from wx import SHOW_EFFECT_SLIDE_TO_RIGHT
-
 from wx import Window
 from wx import Simplebook
 
 from umlio.IOTypes import UmlDocumentTitle
-
-from umlshapes.lib.ogl import ShapeEvtHandler
 
 from umlshapes.UmlDiagram import UmlDiagram
 
@@ -32,6 +30,7 @@ from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEven
 
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
+from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
 
 from umlshapes.links.UmlNoteLink import UmlNoteLink
 from umlshapes.links.UmlAssociation import UmlAssociation
@@ -67,6 +66,8 @@ from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreference
 
 MODIFIED_INDICATOR: str = '*'
 
+NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
+
 
 class UmlDocumentManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: IUmlPubSubEngine):
@@ -91,6 +92,8 @@ class UmlDocumentManager(Simplebook):
         self._frameIdMap:            FrameIdMap             = FrameIdMap({})
         self._umlDocumentTileToPage: UmlDocumentTitleToPage = UmlDocumentTitleToPage({})
 
+        self._noteBookPageIdxToFrameId: NoteBookPageIdxToFrameId = NoteBookPageIdxToFrameId({})
+
         # doing any effect should be an application preference
         # self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
         # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
@@ -109,6 +112,13 @@ class UmlDocumentManager(Simplebook):
 
     def switchToDocument(self, umlDocument: UmlDocument):
         self.SetSelection(self._umlDocumentTileToPage[umlDocument.documentTitle])
+
+    @property
+    def currentUmlFrameId(self) -> FrameId:
+        currentSelection: int     = self.GetSelection()
+        currentFrameId:   FrameId = self._noteBookPageIdxToFrameId[currentSelection]
+
+        return currentFrameId
 
     def _createPages(self):
 
@@ -146,9 +156,13 @@ class UmlDocumentManager(Simplebook):
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
             self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, listener=self._frameModifiedListener)
+
+            pageIndex: int = self.GetPageCount() - 1
+
             self._frameIdMap[diagramFrame.id]             = diagramFrame
             self._frameIdToTitleMap[diagramFrame.id]      = umlDocument.documentTitle
-            self._umlDocumentTileToPage[umlDocumentTitle] = self.GetPageCount() - 1
+            self._umlDocumentTileToPage[umlDocumentTitle] = pageIndex
+            self._noteBookPageIdxToFrameId[pageIndex]     = diagramFrame.id
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
 
@@ -257,7 +271,7 @@ class UmlDocumentManager(Simplebook):
                 lollipopEventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
                 umlLollipopInterface.SetEventHandler(lollipopEventHandler)
 
-    def _layoutShape(self, umlShape: UmlShape, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[ShapeEvtHandler]):
+    def _layoutShape(self, umlShape: UmlShape, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
         """
 
         Args:
@@ -269,8 +283,9 @@ class UmlDocumentManager(Simplebook):
         umlShape.umlFrame = diagramFrame
         diagram: UmlDiagram = diagramFrame.umlDiagram
 
-        eventHandler: ShapeEvtHandler = eventHandlerClass()
+        eventHandler: UmlBaseEventHandler = eventHandlerClass()
         eventHandler.SetShape(umlShape)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
         umlShape.SetEventHandler(eventHandler)
 

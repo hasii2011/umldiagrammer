@@ -1,15 +1,18 @@
 
-
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import Size
 from wx import Window
 from wx import SplitterWindow
 
+from umlshapes.frames.DiagramFrame import FrameId
+
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+
 from umlio.IOTypes import UmlProject
 
+from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 
@@ -20,8 +23,6 @@ from umldiagrammer.UmlProjectTree import UmlProjectTree
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueIds
 from umldiagrammer.pubsubengine.MessageType import MessageType
-
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 
 class UmlProjectPanel(SplitterWindow):
@@ -51,7 +52,7 @@ class UmlProjectPanel(SplitterWindow):
         for uniqueId in uniqueNodeIds:
             self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                             uniqueId=uniqueId,
-                                            callback=self._diagramSelectionChangedListener)
+                                            listener=self._diagramSelectionChangedListener)
 
         windowSize: Size = parent.GetSize()
 
@@ -73,6 +74,20 @@ class UmlProjectPanel(SplitterWindow):
     def frameIdToTitleMap(self) -> FrameIdToTitleMap:
         return self._documentManager.frameIdToTitleMap
 
+    @property
+    def currentUmlFrameId(self) -> FrameId:
+        return self._documentManager.currentUmlFrameId
+
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
         self._documentManager.switchToDocument(treeData.umlDocument)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
+                                          uniqueId=EDIT_MENU_HANDLER_ID,
+                                          activeFrameId=self.currentUmlFrameId
+                                          )
+
+    def __str__(self) -> str:
+        return self._umlProject.fileName.stem
+
+    def __repr__(self) -> str:
+        return self.__str__()

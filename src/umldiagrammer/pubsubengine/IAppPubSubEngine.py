@@ -14,7 +14,7 @@ UniqueIds = NewType('UniqueIds', List[UniqueId])
 class IAppPubSubEngine(ABC):
 
     @abstractmethod
-    def subscribe(self, messageType: MessageType, uniqueId: UniqueId, callback: Callable):
+    def subscribe(self, messageType: MessageType, uniqueId: UniqueId, listener: Callable):
         pass
 
     @abstractmethod

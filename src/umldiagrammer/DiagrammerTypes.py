@@ -22,6 +22,7 @@ FrameIdToTitleMap      = NewType('FrameIdToTitleMap',      Dict[FrameId, UmlDocu
 UmlDocumentTitleToPage = NewType('UmlDocumentTitleToPage', Dict[UmlDocumentTitle, int])
 
 APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
+EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')
 
 HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area
 

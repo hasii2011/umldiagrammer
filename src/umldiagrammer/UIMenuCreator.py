@@ -21,6 +21,7 @@ from wx import Menu
 
 from wx.lib.sized_controls import SizedFrame
 
+from umldiagrammer.menuHandlers.EditMenuHandler import EditMenuHandler
 from umldiagrammer.menuHandlers.HelpMenuHandler import HelpMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -40,14 +41,16 @@ class UIMenuCreator:
         self._helpMenu: Menu = Menu()
 
         self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, menu=self._fileMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        self._editMenuHandler: EditMenuHandler = EditMenuHandler(sizedFrame=frame, menu=self._editMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._helpMenuHandler: HelpMenuHandler = HelpMenuHandler(sizedFrame=frame, menu=self._helpMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
     @property
     def fileMenuHandler(self) -> FileMenuHandler:
         return self._fileMenuHandler
 
-    # @property
-    # def editMenuHandler(self) -> EditMenuHandler:
+    @property
+    def editMenuHandler(self) -> EditMenuHandler:
+        return self._editMenuHandler
 
     @property
     def helpMenuHandler(self) -> HelpMenuHandler:
