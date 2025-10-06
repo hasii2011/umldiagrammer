@@ -51,9 +51,6 @@ from umlio.Reader import Reader
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
-from umlio.IOTypes import UmlDocument
-from umlio.IOTypes import UmlDocumentTitle
-from umlio.IOTypes import UmlDocumentType
 
 from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
@@ -78,9 +75,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
-
-DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
-DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -192,21 +186,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return uiMenuCreator
 
-    def _newProjectListener(self):
-        """
-        Create an empty project
-        """
-
-        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
-        umlDocument: UmlDocument = UmlDocument(
-            documentType=UmlDocumentType.CLASS_DOCUMENT,
-            documentTitle=DEFAULT_PROJECT_TITLE
-        )
-        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
-        #
-        # Hmm, using a listener directly
-        self._loadProjectListener(umlProject=umlProject)
-
     def _loadProjectListener(self, umlProject: UmlProject):
 
         self.logger.info(f'Loading: {umlProject.fileName}')
@@ -223,11 +202,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                         umlProject=umlProject
                                                         )
         self._umlNotebook.addProject(projectPanel=projectPanel)
-        # self.logger.info(f'{projectPanel.currentUmlFrameId=}')
-        # self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
-        #                                   uniqueId=EDIT_MENU_HANDLER_ID,
-        #                                   activeFrameId=projectPanel.currentUmlFrameId
-        #                                   )
+
         frameIdMap: FrameIdToTitleMap = projectPanel.frameIdToTitleMap
 
         for frameId in frameIdMap.keys():
@@ -346,11 +321,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _subscribeToMessagesWeHandle(self):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._newProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,  uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, listener=self._loadDroppedFileListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,   uniqueId=APPLICATION_FRAME_ID, listener=self._loadDroppedFileListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)

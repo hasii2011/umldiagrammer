@@ -2,18 +2,21 @@
 from typing import Dict
 from typing import NewType
 
+from pathlib import Path
+
 from umlshapes.frames.DiagramFrame import FrameId
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 
-from umlio.IOTypes import UmlDocumentTitle
 from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlText import UmlText
 from umlshapes.shapes.UmlUseCase import UmlUseCase
+
+from umlio.IOTypes import UmlDocumentTitle
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 
@@ -29,3 +32,6 @@ HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and 
 APP_MODE: str = 'APP_MODE'
 
 UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
+
+DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
+DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')

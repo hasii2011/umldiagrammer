@@ -31,7 +31,11 @@ from umlio.IOTypes import XML_SUFFIX
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlio.Reader import Reader
+from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlDocumentType
 
+from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
+from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
@@ -87,11 +91,21 @@ class FileMenuHandler(BaseMenuHandler):
             reader: Reader = Reader()
 
             umlProject: UmlProject = reader.readProjectFile(fileName=Path(selectedFile))
-            self._loadNewProject(umlProject)
+            self._loadProject(umlProject)
 
     # noinspection PyUnusedLocal
     def newProject(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID)
+        """
+        Create an empty project
+        """
+
+        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
+        umlDocument: UmlDocument = UmlDocument(
+            documentType=UmlDocumentType.CLASS_DOCUMENT,
+            documentTitle=DEFAULT_PROJECT_TITLE
+        )
+        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
+        self._loadProject(umlProject=umlProject)
 
     def newClassDiagram(self, event: CommandEvent):
         pass
@@ -113,12 +127,12 @@ class FileMenuHandler(BaseMenuHandler):
             reader: Reader = Reader()
             umlProject: UmlProject = reader.readXmlFile(fileName=Path(selectedFile))
             self.logger.debug(f'{umlProject=}')
-            self._loadNewProject(umlProject)
+            self._loadProject(umlProject)
 
     def _onFileSaveAs(self, event: CommandEvent):
         pass
 
-    def _loadNewProject(self, umlProject: UmlProject):
+    def _loadProject(self, umlProject: UmlProject):
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
