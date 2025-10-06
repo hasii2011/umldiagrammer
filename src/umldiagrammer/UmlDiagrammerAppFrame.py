@@ -1,4 +1,5 @@
 
+from typing import Callable
 from typing import List
 from typing import NewType
 from typing import Optional
@@ -259,6 +260,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self._doToolSelect(toolId=toolId)
 
+    def _getCurrentUmlProjectListener(self, callback: Callable):
+        umlProject: UmlProject = self._umlNotebook.currentProject
+        callback(umlProject)
+
     def _doToolSelect(self, toolId: int):
 
         toolBar:    ToolBar   = self._toolBarCreator.toolBar
@@ -304,6 +309,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
+        self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
 
     def _getFrameStyle(self) -> int:

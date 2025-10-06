@@ -14,5 +14,6 @@ class MessageType(Enum):
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 
     ACTIVE_DOCUMENT_CHANGED        = 'Active Document Changed'
+    GET_CURRENT_UML_PROJECT        = 'Get Current UML Project'
 
     NO_EVENT = 'NoEvent'

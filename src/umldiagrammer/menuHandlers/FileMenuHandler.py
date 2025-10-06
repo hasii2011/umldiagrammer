@@ -24,15 +24,15 @@ from wx import Notebook
 
 from wx.lib.sized_controls import SizedFrame
 
+from umlio.Reader import Reader
+from umlio.Writer import Writer
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
-
-from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
-
-from umlio.Reader import Reader
 from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlDocumentType
+
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
@@ -43,6 +43,7 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.menuHandlers.BaseMenuHandler import BaseMenuHandler
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
@@ -64,7 +65,8 @@ class FileMenuHandler(BaseMenuHandler):
     """
     def __init__(self, sizedFrame: SizedFrame, menu: Menu, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
-        self.logger: Logger = getLogger(__name__)
+        self.logger:       Logger                = getLogger(__name__)
+        self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 
         super().__init__(sizedFrame=sizedFrame, menu=menu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._sizedFrame: SizedFrame = sizedFrame
@@ -116,8 +118,9 @@ class FileMenuHandler(BaseMenuHandler):
     def newSequenceDiagram(self, event: CommandEvent):
         pass
 
+    # noinspection PyUnusedLocal
     def fileSave(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._currentUMLProjectCallback)
 
     # noinspection PyUnusedLocal
     def openXmlFile(self, event: CommandEvent):
@@ -144,3 +147,17 @@ class FileMenuHandler(BaseMenuHandler):
                 self.logger.info(f'Got answer')
             else:
                 self.logger.info(f'Cancelled')
+
+    def _currentUMLProjectCallback(self, umlProject: UmlProject):
+
+        fileName: Path = umlProject.fileName
+        self.logger.info(f'{fileName=}')
+        if fileName.suffix != PROJECT_SUFFIX:
+            if self._preferences.saveOnlyWritesCompressed is True:
+                newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
+                umlProject.fileName = newFilename
+            else:
+                assert False, 'Write as XML not yet supported'
+
+        writer: Writer = Writer()
+        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)

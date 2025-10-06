@@ -31,6 +31,8 @@ SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
 
         KeyName('toolBarIconSize'):         ValueDescription(defaultValue=DEFAULT_TB_ICON_SIZE,         deserializer=ToolBarIconSize.deSerialize, enumUseValue=True),
         KeyName('fileHistoryDisplay'):      ValueDescription(defaultValue=DEFAULT_FILE_HISTORY_DISPLAY, deserializer=FileHistoryPreference,       enumUseValue=True),
+
+        KeyName('saveOnlyWritesCompressed'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
     }
 )
 

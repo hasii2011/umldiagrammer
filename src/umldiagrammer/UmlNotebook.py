@@ -13,6 +13,7 @@ from wx import CallLater
 
 from wx.lib.sized_controls import SizedPanel
 
+from umlio.IOTypes import UmlProject
 
 from umlshapes.frames.DiagramFrame import FrameId
 
@@ -41,6 +42,11 @@ class UmlNotebook(Notebook):
 
         self.Bind(EVT_NOTEBOOK_PAGE_CHANGED, self._onNewProjectDisplayed)
         CallLater(millis=100, callableObj=self.PostSizeEventToParent)
+
+    @property
+    def currentProject(self) -> UmlProject:
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        return projectPanel.umlProject
 
     def addProject(self, projectPanel: UmlProjectPanel):
         """

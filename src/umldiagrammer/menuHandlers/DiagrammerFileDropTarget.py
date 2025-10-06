@@ -67,6 +67,7 @@ class DiagrammerFileDropTarget(FileDropTarget):
             caption: str    = 'Unsupported File Type'
             booBoo: MessageDialog = MessageDialog(parent=None, message=message, caption=caption, style=OK | ICON_ERROR)
             booBoo.ShowModal()
+            return False
 
         return True
 
