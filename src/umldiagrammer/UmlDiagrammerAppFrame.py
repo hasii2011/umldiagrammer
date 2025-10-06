@@ -191,7 +191,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             # Lazy UI creation
             # self._createTheApplicationNotebook()
             sizedPanel: SizedPanel = self.GetContentsPane()
-            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine)
+            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
 
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
                                                         appPubSubEngine=self._appPubSubEngine,
@@ -206,26 +206,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
             self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
                                             frameId=frameId,
                                             listener=self._updateApplicationStatusListener)
-            self._umlPubSubEngine.subscribe(UmlMessageType.FRAME_MODIFIED,
-                                            frameId=frameId,
-                                            listener=self._frameModifiedListener)
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
         self.SetStatusText(text=message)
-
-    def _frameModifiedListener(self, modifiedFrameId: str):
-        """
-        TODO: Indicate to the end-user that the currently viewable frame is
-        modified or not
-
-        Args:
-            modifiedFrameId:
-
-        """
-        self.logger.info(f'Frame Modified - {modifiedFrameId=}')
 
     def _overrideProgramExitPositionListener(self):
         self._overrideProgramExitPosition = True

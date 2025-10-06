@@ -1,7 +1,5 @@
 
 from typing import cast
-from typing import List
-from typing import NewType
 
 from logging import Logger
 from logging import getLogger
@@ -120,7 +118,7 @@ class UmlProjectTree(TreeCtrl):
         if selectedItem != self.root:
             treeData: TreeNodeData = self.GetItemData(selectedItem)
 
-            self.logger.info(f'{treeData=}')
+            self.logger.debug(f'{treeData=}')
 
             self._appPubSubEngine.sendMessage(MessageType.DOCUMENT_SELECTION_CHANGED,
                                               uniqueId=treeData.uniqueNodeId,

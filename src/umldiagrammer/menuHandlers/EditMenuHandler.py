@@ -50,7 +50,7 @@ class EditMenuHandler(BaseMenuHandler):
                                         )
 
     def _activeDocumentChangedListener(self, activeFrameId: FrameId):
-        self.logger.info(f'{activeFrameId=}')
+        self.logger.debug(f'{activeFrameId=}')
         self._activeFrameId = activeFrameId
 
     def _onEditMenu(self, event: CommandEvent):

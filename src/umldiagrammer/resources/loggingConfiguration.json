@@ -26,12 +26,16 @@
             "level": "INFO",
             "propagate": "False"
         },
-        "umldiagrammer": {
+      "umldiagrammer": {
+            "level": "WARNING",
+            "propagate": "False"
+        },
+      "umldiagrammer.UmlDocumentManager": {
             "level": "INFO",
             "propagate": "False"
         },
         "umlshapes": {
-            "level": "INFO",
+            "level": "WARNING",
             "propagate": "False"
         }
     }

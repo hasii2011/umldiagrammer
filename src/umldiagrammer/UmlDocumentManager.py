@@ -9,8 +9,6 @@ from logging import getLogger
 from wx import Window
 from wx import Simplebook
 
-from umlio.IOTypes import UmlDocumentTitle
-
 from umlshapes.UmlDiagram import UmlDiagram
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
@@ -19,8 +17,6 @@ from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 
 from umlshapes.frames.DiagramFrame import FrameId
-
-from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
@@ -64,15 +60,13 @@ from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
 from umldiagrammer.DiagrammerTypes import UmlShape
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
-MODIFIED_INDICATOR: str = '*'
-
 NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
 
 
 class UmlDocumentManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: IUmlPubSubEngine):
         """
-
+        Assumes that the provided UML documents all belong to the same project
         Args:
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
@@ -99,7 +93,6 @@ class UmlDocumentManager(Simplebook):
         # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
 
         self._createPages()
-
         self.SetSelection(0)
 
     @property
@@ -154,8 +147,6 @@ class UmlDocumentManager(Simplebook):
 
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
-
-            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, listener=self._frameModifiedListener)
 
             pageIndex: int = self.GetPageCount() - 1
 
@@ -249,8 +240,8 @@ class UmlDocumentManager(Simplebook):
                 umlNoteLink.SetEventHandler(eventHandler)
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
-                source = umlLink.sourceShape
-                dest   = umlLink.destinationShape
+                source      = umlLink.sourceShape
+                # destination = umlLink.destinationShape
                 source.addLink(umlLink, dest)  # type: ignore
 
                 diagramFrame.umlDiagram.AddShape(umlLink)
@@ -293,15 +284,3 @@ class UmlDocumentManager(Simplebook):
         umlShape.Show(True)
 
         diagramFrame.refresh()
-
-    def _frameModifiedListener(self, modifiedFrameId: FrameId):
-
-        titleStr:         str = self._frameIdToTitleMap[modifiedFrameId]
-        modifiedTitleStr: str = f'{titleStr} {MODIFIED_INDICATOR}'
-
-        pageNumber: int = self._umlDocumentTileToPage[UmlDocumentTitle(titleStr)]
-
-        # TODO: Investigate why this does not change the title
-        answer: bool = self.SetPageText(page=pageNumber, text=modifiedTitleStr)
-
-        self.logger.info(f'Page answer: {answer}')

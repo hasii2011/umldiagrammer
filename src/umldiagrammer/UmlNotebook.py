@@ -17,6 +17,9 @@ from umlio.IOTypes import UmlProject
 
 from umlshapes.frames.DiagramFrame import FrameId
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
+
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
@@ -24,16 +27,19 @@ from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
+MODIFIED_INDICATOR: str = '*'
+
 
 class UmlNotebook(Notebook):
     """
     Our own version of a notebook.  Essentially, we need to keep track when the notebook page selection
     changes.  This includes when we add new project tabs
     """
-    def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine):
+    def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
         self.logger:           Logger           = getLogger(__name__)
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
+        self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
 
         super().__init__(sizedPanel, style=NB_LEFT)  # TODO: should be an application preference
 
@@ -55,6 +61,9 @@ class UmlNotebook(Notebook):
         Args:
             projectPanel:
         """
+        for frameId in projectPanel.frameIdMap.keys():
+            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=frameId, listener=self._frameModifiedListener)
+
         self.AddPage(page=projectPanel, text=projectPanel.umlProject.fileName.stem, select=True)
 
         self.logger.info(f'{projectPanel.currentUmlFrameId=}')
@@ -74,3 +83,15 @@ class UmlNotebook(Notebook):
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=frameId
                                           )
+
+    def _frameModifiedListener(self, modifiedFrameId: FrameId):
+
+        # Will only be issued when developer on current project
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+
+        titleStr:         str = projectPanel.frameIdToTitleMap[modifiedFrameId]
+        modifiedTitleStr: str = f'{titleStr} {MODIFIED_INDICATOR}'
+        pagIndex: int = self.GetSelection()
+
+        self.SetPageText(pagIndex, modifiedTitleStr)
+        projectPanel.umlProjectModified = True
