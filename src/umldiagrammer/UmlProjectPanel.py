@@ -60,11 +60,21 @@ class UmlProjectPanel(SplitterWindow):
         self.logger.info(f'{sashPosition=}')
         self.SetSashPosition(position=sashPosition, redraw=True)
 
-        self._umlProject: UmlProject = umlProject
+        self._umlProject:         UmlProject = umlProject
+        self._umlProjectModified: bool       = False
 
     @property
     def umlProject(self) -> UmlProject:
+        self._umlProject.umlDocuments = self._documentManager.umlDocuments
         return self._umlProject
+
+    @property
+    def umlProjectModified(self) -> bool:
+        return self._umlProjectModified
+
+    @umlProjectModified.setter
+    def umlProjectModified(self, modified: bool):
+        self._umlProjectModified = modified
 
     @property
     def frameIdMap(self) -> FrameIdMap:

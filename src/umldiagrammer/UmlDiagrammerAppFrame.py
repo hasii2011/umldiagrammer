@@ -1,4 +1,5 @@
 
+from typing import Callable
 from typing import List
 from typing import NewType
 from typing import Optional
@@ -6,8 +7,6 @@ from typing import cast
 
 from logging import Logger
 from logging import getLogger
-
-from pathlib import Path
 
 from os import getenv as osGetEnv
 
@@ -46,14 +45,9 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umlio.Reader import Reader
-
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
-from umlio.IOTypes import UmlDocument
-from umlio.IOTypes import UmlDocumentTitle
-from umlio.IOTypes import UmlDocumentType
 
 from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
@@ -63,6 +57,7 @@ from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
+from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.UIAction import UIAction
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
@@ -78,9 +73,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
-
-DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
-DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -192,21 +184,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return uiMenuCreator
 
-    def _newProjectListener(self):
-        """
-        Create an empty project
-        """
-
-        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
-        umlDocument: UmlDocument = UmlDocument(
-            documentType=UmlDocumentType.CLASS_DOCUMENT,
-            documentTitle=DEFAULT_PROJECT_TITLE
-        )
-        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
-        #
-        # Hmm, using a listener directly
-        self._loadProjectListener(umlProject=umlProject)
-
     def _loadProjectListener(self, umlProject: UmlProject):
 
         self.logger.info(f'Loading: {umlProject.fileName}')
@@ -215,7 +192,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             # Lazy UI creation
             # self._createTheApplicationNotebook()
             sizedPanel: SizedPanel = self.GetContentsPane()
-            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine)
+            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
 
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
                                                         appPubSubEngine=self._appPubSubEngine,
@@ -223,61 +200,19 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                         umlProject=umlProject
                                                         )
         self._umlNotebook.addProject(projectPanel=projectPanel)
-        # self.logger.info(f'{projectPanel.currentUmlFrameId=}')
-        # self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
-        #                                   uniqueId=EDIT_MENU_HANDLER_ID,
-        #                                   activeFrameId=projectPanel.currentUmlFrameId
-        #                                   )
+
         frameIdMap: FrameIdToTitleMap = projectPanel.frameIdToTitleMap
 
         for frameId in frameIdMap.keys():
             self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
                                             frameId=frameId,
                                             listener=self._updateApplicationStatusListener)
-            self._umlPubSubEngine.subscribe(UmlMessageType.FRAME_MODIFIED,
-                                            frameId=frameId,
-                                            listener=self._frameModifiedListener)
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
-
-    def _loadDroppedFileListener(self, filename: str):
-        """
-        This is the handler for the FILES_DROPPED_ON_APPLICATION topic
-        TODO: This is a slight duplicated of the code in the FileMenuHandler,
-        can we keep it DRY?
-
-        Args:
-            filename:  Should end with either PROJECT_SUFFIX or XML_SUFFIX
-        """
-
-        fileNamePath: Path   = Path(filename)
-        suffix:       str    = fileNamePath.suffix
-        reader:       Reader = Reader()
-        if suffix == XML_SUFFIX:
-            umlProject: UmlProject = reader.readXmlFile(fileName=Path(fileNamePath))
-            self._loadProjectListener(umlProject)
-
-        elif suffix == PROJECT_SUFFIX:
-            umlProject = reader.readProjectFile(fileName=fileNamePath)
-            self._loadProjectListener(umlProject)
-
-        else:
-            assert False, 'We should not get files with bad suffixes'
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
         self.SetStatusText(text=message)
-
-    def _frameModifiedListener(self, modifiedFrameId: str):
-        """
-        TODO: Indicate to the end-user that the currently viewable frame is
-        modified or not
-
-        Args:
-            modifiedFrameId:
-
-        """
-        self.logger.info(f'Frame Modified - {modifiedFrameId=}')
 
     def _overrideProgramExitPositionListener(self):
         self._overrideProgramExitPosition = True
@@ -312,6 +247,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self._doToolSelect(toolId=toolId)
 
+    def _getCurrentUmlProjectListener(self, callback: Callable):
+        projectInfo: ProjectInformation = self._umlNotebook.currentProject
+        callback(projectInfo)
+
     def _doToolSelect(self, toolId: int):
 
         toolBar:    ToolBar   = self._toolBarCreator.toolBar
@@ -323,9 +262,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
         toolBar.ToggleTool(toolId, True)
 
     def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
+        """
+        This handles the case when a new UML Class is created
+        TODO:  Does this really belong here
 
-        # umlFrame: UmlDiagramsFrame = self._projectManager.currentFrame
+        Args:
+            umlFrame:
+            pyutClass:
 
+        """
         self.logger.debug(f"Edit: {pyutClass}")
 
         with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
@@ -346,13 +291,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _subscribeToMessagesWeHandle(self):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._newProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,  uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, listener=self._loadDroppedFileListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
+        self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
 
     def _getFrameStyle(self) -> int:

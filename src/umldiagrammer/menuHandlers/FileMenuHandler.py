@@ -24,13 +24,20 @@ from wx import Notebook
 
 from wx.lib.sized_controls import SizedFrame
 
+from umlio.Reader import Reader
+from umlio.Writer import Writer
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
+from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlDocumentType
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umlio.Reader import Reader
+from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
+from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
+from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
+from umldiagrammer.DiagrammerTypes import ProjectInformation
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 
@@ -39,6 +46,7 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.menuHandlers.BaseMenuHandler import BaseMenuHandler
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
@@ -54,13 +62,14 @@ class FileMenuHandler(BaseMenuHandler):
     requests
     The public methods are used for the tool bar creator
     From the docs:
-    The toolbar class emits menu commands in the same way that a frame menubar does, so you can use
+    The toolbar class emits menu commands in the same way that a frame menu bar does, so you can use
     one EVT_MENU() macro for both a menu item and a toolbar button.
 
     """
     def __init__(self, sizedFrame: SizedFrame, menu: Menu, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
-        self.logger: Logger = getLogger(__name__)
+        self.logger:       Logger                = getLogger(__name__)
+        self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 
         super().__init__(sizedFrame=sizedFrame, menu=menu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._sizedFrame: SizedFrame = sizedFrame
@@ -87,11 +96,21 @@ class FileMenuHandler(BaseMenuHandler):
             reader: Reader = Reader()
 
             umlProject: UmlProject = reader.readProjectFile(fileName=Path(selectedFile))
-            self._loadNewProject(umlProject)
+            self._loadProject(umlProject)
 
     # noinspection PyUnusedLocal
     def newProject(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(messageType=MessageType.NEW_PROJECT, uniqueId=APPLICATION_FRAME_ID)
+        """
+        Create an empty project
+        """
+
+        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
+        umlDocument: UmlDocument = UmlDocument(
+            documentType=UmlDocumentType.CLASS_DOCUMENT,
+            documentTitle=DEFAULT_PROJECT_TITLE
+        )
+        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
+        self._loadProject(umlProject=umlProject)
 
     def newClassDiagram(self, event: CommandEvent):
         pass
@@ -102,8 +121,9 @@ class FileMenuHandler(BaseMenuHandler):
     def newSequenceDiagram(self, event: CommandEvent):
         pass
 
+    # noinspection PyUnusedLocal
     def fileSave(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._currentUMLProjectCallback)
 
     # noinspection PyUnusedLocal
     def openXmlFile(self, event: CommandEvent):
@@ -113,12 +133,12 @@ class FileMenuHandler(BaseMenuHandler):
             reader: Reader = Reader()
             umlProject: UmlProject = reader.readXmlFile(fileName=Path(selectedFile))
             self.logger.debug(f'{umlProject=}')
-            self._loadNewProject(umlProject)
+            self._loadProject(umlProject)
 
     def _onFileSaveAs(self, event: CommandEvent):
         pass
 
-    def _loadNewProject(self, umlProject: UmlProject):
+    def _loadProject(self, umlProject: UmlProject):
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
@@ -130,3 +150,28 @@ class FileMenuHandler(BaseMenuHandler):
                 self.logger.info(f'Got answer')
             else:
                 self.logger.info(f'Cancelled')
+
+    def _currentUMLProjectCallback(self, projectInformation: ProjectInformation):
+
+        if projectInformation.modified is True:
+            umlProject: UmlProject = projectInformation.umlProject
+            fileName:   Path       = umlProject.fileName
+
+            self.logger.info(f'{fileName=}')
+            if fileName.suffix != PROJECT_SUFFIX:
+                if self._preferences.saveOnlyWritesCompressed is True:
+                    newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
+                    umlProject.fileName = newFilename
+                else:
+                    assert False, 'Write as XML not yet supported'
+
+            writer: Writer = Writer()
+            writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+            self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                              uniqueId=NOTEBOOK_ID,
+                                              projectPath=umlProject.fileName
+                                              )
+        else:
+            self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,
+                                              uniqueId=APPLICATION_FRAME_ID,
+                                              message='No save needed, project not modified')

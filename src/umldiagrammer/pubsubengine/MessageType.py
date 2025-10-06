@@ -6,15 +6,15 @@ class MessageType(Enum):
     UPDATE_APPLICATION_STATUS_MSG = 'Update Application Status Message'
     DOCUMENT_SELECTION_CHANGED    = 'Diagram Selection Changed'
     OPEN_PROJECT                  = 'Open Project'
-    NEW_PROJECT                   = 'New Project'
     SELECT_TOOL                   = 'Select Tool'
 
     EDIT_CLASS                    = 'Edit Class'
 
-    FILES_DROPPED_ON_APPLICATION   = 'Files Dropped On Application'
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 
     ACTIVE_DOCUMENT_CHANGED        = 'Active Document Changed'
+    GET_CURRENT_UML_PROJECT        = 'Get Current UML Project'
+    CURRENT_PROJECT_SAVED          = 'Current Project Saved'
 
     NO_EVENT = 'NoEvent'

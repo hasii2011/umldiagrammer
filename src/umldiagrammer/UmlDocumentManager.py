@@ -9,18 +9,21 @@ from logging import getLogger
 from wx import Window
 from wx import Simplebook
 
-from umlio.IOTypes import UmlDocumentTitle
+from umlshapes.frames.UmlFrame import UmlFrame
+from umlshapes.links.UmlLink import UmlLink
+from umlshapes.shapes.UmlActor import UmlActor
+from umlshapes.shapes.UmlText import UmlText
+from umlshapes.shapes.UmlUseCase import UmlUseCase
+from umlshapes.types.Common import UmlShapeList
 
 from umlshapes.UmlDiagram import UmlDiagram
 
+from umlshapes.frames.DiagramFrame import FrameId
+from umlshapes.frames.DiagramFrame import DiagramFrame
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.ClassDiagramFrame import CreateLollipopCallback
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
-
-from umlshapes.frames.DiagramFrame import FrameId
-
-from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
@@ -33,6 +36,7 @@ from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
 
 from umlshapes.links.UmlNoteLink import UmlNoteLink
+from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlInheritance import UmlInheritance
 from umlshapes.links.UmlComposition import UmlComposition
@@ -57,14 +61,14 @@ from umlio.IOTypes import UmlLinks
 from umlio.IOTypes import UmlNotes
 from umlio.IOTypes import UmlTexts
 from umlio.IOTypes import UmlUseCases
+from umlio.IOTypes import UmlDocumentTitle
 
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
 from umldiagrammer.DiagrammerTypes import UmlShape
-from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
-MODIFIED_INDICATOR: str = '*'
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
 
@@ -72,7 +76,7 @@ NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId
 class UmlDocumentManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: IUmlPubSubEngine):
         """
-
+        Assumes that the provided UML documents all belong to the same project
         Args:
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
@@ -99,8 +103,47 @@ class UmlDocumentManager(Simplebook):
         # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
 
         self._createPages()
-
         self.SetSelection(0)
+
+    @property
+    def umlDocuments(self) -> UmlDocuments:
+        """
+        The input document at UI creation may be out of date.  So recreate it by
+        re-reading the shapes from the frames;  Update the internal variable and
+        return it
+
+        Returns:  The updated UML Documents
+
+        """
+        umlDocuments: UmlDocuments = UmlDocuments({})
+        pageCount: int = self.GetPageCount()
+
+        for pageIdx in range(0, pageCount):
+
+            umlDocument: UmlDocument = UmlDocument()
+            page: Window = self.GetPage(pageIdx)
+            if isinstance(page, ClassDiagramFrame):
+                classDiagramFrame: ClassDiagramFrame = page
+                umlDocument.documentType = UmlDocumentType.CLASS_DOCUMENT
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=classDiagramFrame)
+            elif isinstance(page, UseCaseDiagramFrame):
+                useCaseDiagramFrame: UseCaseDiagramFrame = page
+                umlDocument.documentType = UmlDocumentType.USE_CASE_DOCUMENT
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=useCaseDiagramFrame)
+                self.logger.warning('Not yet implemented')
+            elif isinstance(page, SequenceDiagramFrame):
+                umlDocument.documentType = UmlDocumentType.SEQUENCE_DOCUMENT
+                sequenceDiagramFrame: SequenceDiagramFrame = page
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=sequenceDiagramFrame)
+                self.logger.warning('Not yet implemented')
+            else:
+                assert False, 'No such frame type'
+
+            umlDocument = self._populateUmlDocument(page=page, umlDocument=umlDocument)
+            umlDocuments[umlDocument.documentTitle] = umlDocument
+
+        self._umlDocuments = umlDocuments
+        return self._umlDocuments
 
     @property
     def frameIdToTitleMap(self) -> FrameIdToTitleMap:
@@ -154,8 +197,6 @@ class UmlDocumentManager(Simplebook):
 
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
-
-            self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=diagramFrame.id, listener=self._frameModifiedListener)
 
             pageIndex: int = self.GetPageCount() - 1
 
@@ -249,8 +290,8 @@ class UmlDocumentManager(Simplebook):
                 umlNoteLink.SetEventHandler(eventHandler)
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
-                source = umlLink.sourceShape
-                dest   = umlLink.destinationShape
+                source      = umlLink.sourceShape
+                # destination = umlLink.destinationShape
                 source.addLink(umlLink, dest)  # type: ignore
 
                 diagramFrame.umlDiagram.AddShape(umlLink)
@@ -294,14 +335,62 @@ class UmlDocumentManager(Simplebook):
 
         diagramFrame.refresh()
 
-    def _frameModifiedListener(self, modifiedFrameId: FrameId):
+    def _toBasicUmlDocument(self, umlDocument: UmlDocument, diagramFrame: DiagramFrame) -> UmlDocument:
+        """
+        Document type set by caller
+        Args:
+            umlDocument:    Partial UML Document
+            diagramFrame:   The associated diagram frame
 
-        titleStr:         str = self._frameIdToTitleMap[modifiedFrameId]
-        modifiedTitleStr: str = f'{titleStr} {MODIFIED_INDICATOR}'
+        Returns:  The updated UML Document (additional meta data)
+        """
 
-        pageNumber: int = self._umlDocumentTileToPage[UmlDocumentTitle(titleStr)]
+        frameId: FrameId = diagramFrame.id
+        documentTitle: UmlDocumentTitle = self._frameIdToTitleMap[frameId]
+        scrollPosX, scrollPosY = diagramFrame.GetViewStart()
 
-        # TODO: Investigate why this does not change the title
-        answer: bool = self.SetPageText(page=pageNumber, text=modifiedTitleStr)
+        xUnit, yUnit = diagramFrame.GetScrollPixelsPerUnit()
 
-        self.logger.info(f'Page answer: {answer}')
+        umlDocument.documentTitle   = documentTitle
+        umlDocument.scrollPositionX = scrollPosX
+        umlDocument.scrollPositionY = scrollPosY
+        umlDocument.pixelsPerUnitX  = xUnit
+        umlDocument.pixelsPerUnitY  = yUnit
+
+        return umlDocument
+
+    def _populateUmlDocument(self, page: Window, umlDocument: UmlDocument) -> UmlDocument:
+
+        umlFrame: UmlFrame = cast(UmlFrame, page)
+
+        umlShapes: UmlShapeList = umlFrame.umlShapes
+
+        for umlShape in umlShapes:
+            match umlShape:
+                case UmlClass() as umlShape:
+                    umlDocument.umlClasses.append(umlShape)
+                case UmlInheritance() | UmlInterface() | UmlAssociation() as umlShape:
+                    umlDocument.umlLinks.append(umlShape)
+                case UmlLollipopInterface() as umlShape:
+                    umlDocument.umlLinks.append(cast(UmlLink, umlShape))  # temp cast until umlio supports UmlLollipopInterfaces
+                case UmlNote() as umlShape:
+                    umlDocument.umlNotes.append(umlShape)
+                case UmlText() as umlShape:
+                    umlDocument.umlTexts.append(umlShape)
+                case UmlUseCase() as umlShape:
+                    umlDocument.umlUseCases.append(umlShape)
+                case UmlActor() as umlShape:
+                    umlDocument.umlActors.append(umlShape)
+                # case OglSDMessage() as umlShape:  # Put here so it does not fall into OglLink
+                #     oglSDMessage: OglSDMessage = cast(OglSDMessage, umlShape)
+                #     modelId: int = oglSDMessage.pyutObject.id
+                #     oglDocument.oglSDMessages[modelId] = oglSDMessage
+                #
+                # case OglSDInstance() as umlShape:
+                #     oglSDInstance: OglSDInstance = cast(OglSDInstance, umlShape)
+                #     modelId = oglSDInstance.pyutSDInstance.id
+                #     umlDocument.oglSDInstances[modelId] = oglSDInstance
+                case _:
+                    self.logger.error(f'Unknown ogl object type: {umlShape}, not saved')
+
+        return umlDocument
