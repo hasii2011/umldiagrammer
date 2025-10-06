@@ -10,7 +10,6 @@ class MessageType(Enum):
 
     EDIT_CLASS                    = 'Edit Class'
 
-    FILES_DROPPED_ON_APPLICATION   = 'Files Dropped On Application'
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 

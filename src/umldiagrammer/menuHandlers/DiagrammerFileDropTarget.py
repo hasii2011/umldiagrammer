@@ -6,6 +6,8 @@ from logging import INFO
 from logging import Logger
 from logging import getLogger
 
+from pathlib import Path
+
 from wx import ICON_ERROR
 from wx import OK
 
@@ -16,6 +18,9 @@ from wx import Yield as wxYield
 
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
+from umlio.IOTypes import UmlProject
+
+from umlio.Reader import Reader
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
@@ -69,9 +74,30 @@ class DiagrammerFileDropTarget(FileDropTarget):
 
         for filename in filenames:
             wxYield()
-            self._appPubSubEngine.sendMessage(MessageType.FILES_DROPPED_ON_APPLICATION, uniqueId=APPLICATION_FRAME_ID, filename=filename)
+            self._loadDroppedFile(filename=filename)
 
         return True
+
+    def _loadDroppedFile(self, filename: str):
+        """
+
+        Args:
+            filename:  Should end with either PROJECT_SUFFIX or XML_SUFFIX
+        """
+
+        fileNamePath: Path   = Path(filename)
+        suffix:       str    = fileNamePath.suffix
+        reader:       Reader = Reader()
+        if suffix == XML_SUFFIX:
+            umlProject: UmlProject = reader.readXmlFile(fileName=Path(fileNamePath))
+            self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
+
+        elif suffix == PROJECT_SUFFIX:
+            umlProject = reader.readProjectFile(fileName=fileNamePath)
+            self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
+
+        else:
+            assert False, 'We should not get files with bad suffixes'
 
     def _displayError(self, message: str):
 

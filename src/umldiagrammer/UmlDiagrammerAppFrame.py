@@ -7,8 +7,6 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from pathlib import Path
-
 from os import getenv as osGetEnv
 
 from wx import BOTH
@@ -45,8 +43,6 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
-
-from umlio.Reader import Reader
 
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
@@ -215,30 +211,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 
-    def _loadDroppedFileListener(self, filename: str):
-        """
-        This is the handler for the FILES_DROPPED_ON_APPLICATION topic
-        TODO: This is a slight duplicated of the code in the FileMenuHandler,
-        can we keep it DRY?
-
-        Args:
-            filename:  Should end with either PROJECT_SUFFIX or XML_SUFFIX
-        """
-
-        fileNamePath: Path   = Path(filename)
-        suffix:       str    = fileNamePath.suffix
-        reader:       Reader = Reader()
-        if suffix == XML_SUFFIX:
-            umlProject: UmlProject = reader.readXmlFile(fileName=Path(fileNamePath))
-            self._loadProjectListener(umlProject)
-
-        elif suffix == PROJECT_SUFFIX:
-            umlProject = reader.readProjectFile(fileName=fileNamePath)
-            self._loadProjectListener(umlProject)
-
-        else:
-            assert False, 'We should not get files with bad suffixes'
-
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
         self.SetStatusText(text=message)
@@ -298,9 +270,15 @@ class UmlDiagrammerAppFrame(SizedFrame):
         toolBar.ToggleTool(toolId, True)
 
     def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
+        """
+        This handles the case when a new UML Class is created
+        TODO:  Does this really belong here
 
-        # umlFrame: UmlDiagramsFrame = self._projectManager.currentFrame
+        Args:
+            umlFrame:
+            pyutClass:
 
+        """
         self.logger.debug(f"Edit: {pyutClass}")
 
         with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
@@ -323,7 +301,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,  uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.FILES_DROPPED_ON_APPLICATION,   uniqueId=APPLICATION_FRAME_ID, listener=self._loadDroppedFileListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
