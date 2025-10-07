@@ -2,10 +2,11 @@
 from typing import Dict
 from typing import NewType
 
+from dataclasses import dataclass
+
 from pathlib import Path
 
 from umlshapes.frames.DiagramFrame import FrameId
-
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
@@ -16,9 +17,17 @@ from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlText import UmlText
 from umlshapes.shapes.UmlUseCase import UmlUseCase
 
+from umlio.IOTypes import UmlProject
 from umlio.IOTypes import UmlDocumentTitle
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
+
+
+@dataclass
+class ProjectInformation:
+    umlProject: UmlProject
+    modified:   bool = False
+
 
 FrameIdMap             = NewType('FrameIdMap',             Dict[FrameId, ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame])
 FrameIdToTitleMap      = NewType('FrameIdToTitleMap',      Dict[FrameId, UmlDocumentTitle])

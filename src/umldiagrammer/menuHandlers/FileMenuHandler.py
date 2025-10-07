@@ -36,6 +36,8 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
+from umldiagrammer.DiagrammerTypes import ProjectInformation
+
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
@@ -59,7 +61,7 @@ class FileMenuHandler(BaseMenuHandler):
     requests
     The public methods are used for the tool bar creator
     From the docs:
-    The toolbar class emits menu commands in the same way that a frame menubar does, so you can use
+    The toolbar class emits menu commands in the same way that a frame menu bar does, so you can use
     one EVT_MENU() macro for both a menu item and a toolbar button.
 
     """
@@ -148,16 +150,23 @@ class FileMenuHandler(BaseMenuHandler):
             else:
                 self.logger.info(f'Cancelled')
 
-    def _currentUMLProjectCallback(self, umlProject: UmlProject):
+    def _currentUMLProjectCallback(self, projectInformation: ProjectInformation):
 
-        fileName: Path = umlProject.fileName
-        self.logger.info(f'{fileName=}')
-        if fileName.suffix != PROJECT_SUFFIX:
-            if self._preferences.saveOnlyWritesCompressed is True:
-                newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
-                umlProject.fileName = newFilename
-            else:
-                assert False, 'Write as XML not yet supported'
+        if projectInformation.modified is True:
+            umlProject: UmlProject = projectInformation.umlProject
+            fileName:   Path       = umlProject.fileName
 
-        writer: Writer = Writer()
-        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+            self.logger.info(f'{fileName=}')
+            if fileName.suffix != PROJECT_SUFFIX:
+                if self._preferences.saveOnlyWritesCompressed is True:
+                    newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
+                    umlProject.fileName = newFilename
+                else:
+                    assert False, 'Write as XML not yet supported'
+
+            writer: Writer = Writer()
+            writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+        else:
+            self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,
+                                              uniqueId=APPLICATION_FRAME_ID,
+                                              message='No save needed, project not modified')

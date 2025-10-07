@@ -1,7 +1,8 @@
 
+from typing import cast
+
 from logging import Logger
 from logging import getLogger
-from typing import cast
 
 from wx import NB_LEFT
 from wx import EVT_NOTEBOOK_PAGE_CHANGED
@@ -13,13 +14,12 @@ from wx import CallLater
 
 from wx.lib.sized_controls import SizedPanel
 
-from umlio.IOTypes import UmlProject
-
 from umlshapes.frames.DiagramFrame import FrameId
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
+from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
@@ -28,7 +28,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 MODIFIED_INDICATOR: str = '*'
-
 
 class UmlNotebook(Notebook):
     """
@@ -50,9 +49,12 @@ class UmlNotebook(Notebook):
         CallLater(millis=100, callableObj=self.PostSizeEventToParent)
 
     @property
-    def currentProject(self) -> UmlProject:
+    def currentProject(self) -> ProjectInformation:
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
-        return projectPanel.umlProject
+        return ProjectInformation(
+            umlProject=projectPanel.umlProject,
+            modified=projectPanel.umlProjectModified
+        )
 
     def addProject(self, projectPanel: UmlProjectPanel):
         """

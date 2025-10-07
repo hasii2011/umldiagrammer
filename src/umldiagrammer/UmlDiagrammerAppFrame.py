@@ -57,6 +57,7 @@ from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
+from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.UIAction import UIAction
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
@@ -247,8 +248,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._doToolSelect(toolId=toolId)
 
     def _getCurrentUmlProjectListener(self, callback: Callable):
-        umlProject: UmlProject = self._umlNotebook.currentProject
-        callback(umlProject)
+        projectInfo: ProjectInformation = self._umlNotebook.currentProject
+        callback(projectInfo)
 
     def _doToolSelect(self, toolId: int):
 
