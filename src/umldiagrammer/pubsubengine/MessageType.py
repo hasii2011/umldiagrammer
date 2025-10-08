@@ -15,5 +15,6 @@ class MessageType(Enum):
 
     ACTIVE_DOCUMENT_CHANGED        = 'Active Document Changed'
     GET_CURRENT_UML_PROJECT        = 'Get Current UML Project'
+    CURRENT_PROJECT_SAVED          = 'Current Project Saved'
 
     NO_EVENT = 'NoEvent'

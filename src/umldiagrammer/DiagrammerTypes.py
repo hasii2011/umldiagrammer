@@ -35,6 +35,7 @@ UmlDocumentTitleToPage = NewType('UmlDocumentTitleToPage', Dict[UmlDocumentTitle
 
 APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')
+NOTEBOOK_ID:          UniqueId = UniqueId('SURRENDER MONKEYS')
 
 HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area
 

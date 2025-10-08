@@ -36,6 +36,7 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
 from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
+from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import ProjectInformation
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
@@ -166,6 +167,10 @@ class FileMenuHandler(BaseMenuHandler):
 
             writer: Writer = Writer()
             writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+            self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                              uniqueId=NOTEBOOK_ID,
+                                              projectName=umlProject.fileName
+                                              )
         else:
             self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,
                                               uniqueId=APPLICATION_FRAME_ID,

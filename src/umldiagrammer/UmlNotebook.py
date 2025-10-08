@@ -19,6 +19,7 @@ from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
+from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 
@@ -47,6 +48,10 @@ class UmlNotebook(Notebook):
 
         self.Bind(EVT_NOTEBOOK_PAGE_CHANGED, self._onNewProjectDisplayed)
         CallLater(millis=100, callableObj=self.PostSizeEventToParent)
+        self._appPubSubEngine.subscribe(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._currentProjectSavedListener
+                                        )
 
     @property
     def currentProject(self) -> ProjectInformation:
@@ -97,3 +102,6 @@ class UmlNotebook(Notebook):
 
         self.SetPageText(pagIndex, modifiedTitleStr)
         projectPanel.umlProjectModified = True
+
+    def _currentProjectSavedListener(self, projectName):
+        pass
