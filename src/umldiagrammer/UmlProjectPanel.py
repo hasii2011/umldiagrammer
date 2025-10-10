@@ -65,6 +65,7 @@ class UmlProjectPanel(SplitterWindow):
 
     @property
     def umlProject(self) -> UmlProject:
+        self._umlProject.umlDocuments = self._documentManager.umlDocuments
         return self._umlProject
 
     @property

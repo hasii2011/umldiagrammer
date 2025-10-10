@@ -169,7 +169,7 @@ class FileMenuHandler(BaseMenuHandler):
             writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
             self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
                                               uniqueId=NOTEBOOK_ID,
-                                              projectName=umlProject.fileName
+                                              projectPath=umlProject.fileName
                                               )
         else:
             self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,

@@ -1,4 +1,4 @@
-
+from pathlib import Path
 from typing import cast
 
 from logging import Logger
@@ -91,17 +91,37 @@ class UmlNotebook(Notebook):
                                           activeFrameId=frameId
                                           )
 
+    # noinspection PyUnusedLocal
     def _frameModifiedListener(self, modifiedFrameId: FrameId):
+        """
+        Will only be issued when developer modifies current project
 
-        # Will only be issued when developer on current project
+        Args:
+            modifiedFrameId:
+        """
+        idx:          int             = self.GetSelection()
+        projectTitle: str             = self.GetPageText(idx)
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
 
-        titleStr:         str = projectPanel.frameIdToTitleMap[modifiedFrameId]
-        modifiedTitleStr: str = f'{titleStr} {MODIFIED_INDICATOR}'
+        modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
         pagIndex: int = self.GetSelection()
 
         self.SetPageText(pagIndex, modifiedTitleStr)
         projectPanel.umlProjectModified = True
 
-    def _currentProjectSavedListener(self, projectName):
-        pass
+    def _currentProjectSavedListener(self, projectPath: Path):
+        """
+        Will only be issued when the developer is on the current project
+
+        Args:
+            projectPath:
+
+        """
+        idx:          int             = self.GetSelection()
+        projectTitle: str             = self.GetPageText(idx)
+        modifiedTitleStr: str = projectTitle.strip(MODIFIED_INDICATOR)
+
+        assert projectPath.stem == modifiedTitleStr, 'I guess my assumption was wrong'
+
+        self.logger.info(f'{modifiedTitleStr}')
+        self.SetPageText(idx, modifiedTitleStr)
