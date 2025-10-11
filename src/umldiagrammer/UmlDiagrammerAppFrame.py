@@ -10,13 +10,19 @@ from logging import getLogger
 
 from os import getenv as osGetEnv
 
+from wx import ActivateEvent
+from wx import EVT_ACTIVATE
+from wx import EVT_WINDOW_DESTROY
+from wx import ID_OK
 from wx import BOTH
+from wx import ID_FILE1
+from wx import FileHistory
 from wx import STB_DEFAULT_STYLE
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
-from wx import ID_OK
+
 
 from wx import Point
 from wx import Size
@@ -24,6 +30,7 @@ from wx import ToolBar
 from wx import Menu
 from wx import MenuBar
 from wx import CommandEvent
+from wx import WindowDestroyEvent
 
 from wx import Yield as wxYield
 
@@ -59,6 +66,7 @@ from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.UIAction import UIAction
+from umldiagrammer.FileHistoryConfiguration import FileHistoryConfiguration
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
@@ -67,6 +75,7 @@ from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
 
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
 
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -79,6 +88,10 @@ XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFF
 
 ID_REFERENCE = NewType('ID_REFERENCE', int)
 
+FILE_HISTORY_BASE_FILENAME: str = 'umlDiagrammerRecentFiles.ini'
+VENDOR_NAME:                str = 'ElGatoMalo'
+APPLICATION_NAME:           str = 'UmlDiagrammer'
+
 
 class UmlDiagrammerAppFrame(SizedFrame):
     def __init__(self):
@@ -87,9 +100,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
         self._umlPreferences: UmlPreferences        = UmlPreferences()
 
-        appSize: Size = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
-
-        frameStyle:  int             = self._getFrameStyle()
+        appSize:    Size = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
+        frameStyle: int  = self._getFrameStyle()
 
         super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=frameStyle)
 
@@ -103,6 +115,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._umlPubSubEngine: IUmlPubSubEngine  = UmlPubSubEngine()
 
         uiMenuCreator: UIMenuCreator = self._createApplicationMenuBar()
+
+        # incestuous stuff going on here !!!
+        self._fileHistory: FileHistory = self._setupFileHistory(fileMenu=uiMenuCreator.fileMenu)
+
+        uiMenuCreator.fileMenuHandler.fileHistory = self._fileHistory
 
         self.CreateStatusBar(style=STB_DEFAULT_STYLE)  # should always do this when there's a resize border
         self.SetAutoLayout(True)
@@ -120,6 +137,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._overrideProgramExitSize:     bool = False
         self._overrideProgramExitPosition: bool = False
+        self._tipsAlreadyDisplayed:        bool = False
         """
         The above are set to `True` by the preferences dialog when the end-user either manually specifies
         the size or position of the Pyut application.  If it is False, then normal end
@@ -130,7 +148,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.Show(True)
 
         self.logger.info(f'{self._tb.GetToolSize()=}')
-        self.Bind(EVT_CLOSE, self.Close)
+        self.Bind(EVT_ACTIVATE, self._onActivate)
+        self.Bind(EVT_CLOSE,    self.Close)
+        self.Bind(EVT_WINDOW_DESTROY, self._onWindowDestroy)
 
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
 
@@ -238,6 +258,47 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._doToolSelect(toolId=event.GetId())
         wxYield()
 
+    # noinspection PyUnusedLocal
+    def _onWindowDestroy(self, event: WindowDestroyEvent):
+        """
+        TODO: Maybe this belongs in the Close handler
+        A little extra cleanup is required for the FileHistory control;
+        Take time to persist the file history
+        Args:
+            event:
+        """
+        #
+        # On OS X this gets stored in ~/Library/Preferences
+        # Nothing I did to the FileHistoryConfiguration object seemed to change that
+        fileHistoryConfiguration: FileHistoryConfiguration = FileHistoryConfiguration(appName=APPLICATION_NAME,
+                                                                                      vendorName=VENDOR_NAME,
+                                                                                      localFilename=FILE_HISTORY_BASE_FILENAME)
+
+        self._fileHistory.Save(fileHistoryConfiguration)
+
+    def _onActivate(self, event: ActivateEvent):
+        """
+        EVT_ACTIVATE Callback; display tips frame.
+        But only on the first activation
+        TODO: This belongs somewhere else
+
+        Args:
+            event:
+        """
+        self.logger.warning(f'_onActivate event: {event.GetActive()=}')
+        if self._tipsAlreadyDisplayed is True:
+            pass
+        else:
+            self.logger.warning(f'Displaying Tips is not yet implemented')
+            #     # Display tips frame
+            #     prefs: PyutPreferences = PyutPreferences()
+            #     self.logger.debug(f'Show tips on startup: {self._prefs.showTipsOnStartup=}')
+            #     if prefs.showTipsOnStartup is True:
+            #         # noinspection PyUnusedLocal
+            #         tipsFrame: DlgTipsV2 = DlgTipsV2(self)
+            #         tipsFrame.Show(show=True)
+            self._tipsAlreadyDisplayed = True
+
     def _selectToolListener(self, toolId: int):
         """
         First clean them all, then select the required one
@@ -319,3 +380,26 @@ class UmlDiagrammerAppFrame(SizedFrame):
             frameStyle = frameStyle | FRAME_TOOL_WINDOW
 
         return frameStyle
+
+    def _setupFileHistory(self, fileMenu: Menu) -> FileHistory:
+        """
+        The file is at ~/Library/Preferences/pyutRecentFiles.ini
+        Args:
+            fileMenu: The file menu object
+
+        Returns:  A FileHistory object
+        """
+        fileHistory: FileHistory = FileHistory(idBase=ID_FILE1)
+        fhStyle:     int | None  = FileHistoryPreference.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
+        fileHistory.SetMenuPathStyle(style=fhStyle)
+
+        fileHistoryConfiguration: FileHistoryConfiguration = FileHistoryConfiguration(appName=APPLICATION_NAME,
+                                                                                      vendorName=VENDOR_NAME,
+                                                                                      localFilename=FILE_HISTORY_BASE_FILENAME)
+
+        fileHistory.UseMenu(fileMenu)
+        fileHistory.Load(fileHistoryConfiguration)
+
+        self.logger.info(f'{fileHistoryConfiguration.GetPath()=}')
+
+        return fileHistory

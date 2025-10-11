@@ -17,12 +17,15 @@ class FileHistoryPreference(Enum):
     @classmethod
     def toWxMenuPathStyle(cls, value: 'FileHistoryPreference') -> int | None:
 
+        pathStyle: int = FH_PATH_SHOW_IF_DIFFERENT
         match value:
             case FileHistoryPreference.SHOW_IF_DIFFERENT:
-                pathStyle: int = FH_PATH_SHOW_IF_DIFFERENT
+                pathStyle = FH_PATH_SHOW_IF_DIFFERENT
             case FileHistoryPreference.SHOW_NEVER:
                 pathStyle = FH_PATH_SHOW_NEVER
             case FileHistoryPreference.SHOW_ALWAYS:
                 pathStyle = FH_PATH_SHOW_ALWAYS
+            case _:
+                assert False, 'Unknown file history preference type'
 
         return pathStyle

@@ -1,5 +1,6 @@
 
 from typing import List
+from typing import NewType
 from typing import cast
 
 from logging import Logger
@@ -8,9 +9,13 @@ from logging import getLogger
 from pathlib import Path
 
 from wx import EVT_MENU
+from wx import EVT_MENU_RANGE
 from wx import FD_CHANGE_DIR
 from wx import FD_FILE_MUST_EXIST
 from wx import FD_OPEN
+from wx import FileHistory
+from wx import ID_FILE1
+from wx import ID_FILE9
 from wx import ID_OK
 from wx import ID_OPEN
 from wx import ID_PREFERENCES
@@ -55,6 +60,9 @@ from umldiagrammer.pubsubengine.MessageType import MessageType
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
 
+FileNames = NewType('FileNames', List[str])
+
+
 class FileMenuHandler(BaseMenuHandler):
     """
     In general the file menu handler can do the operations.  However, some are global in that
@@ -76,7 +84,8 @@ class FileMenuHandler(BaseMenuHandler):
 
         self._openProjects: List[UmlProject] = []
 
-        self._notebook:     Notebook = cast(Notebook, None)
+        self._notebook:    Notebook    = cast(Notebook, None)
+        self._fileHistory: FileHistory = cast(FileHistory, None)    # Must be injected
 
         sizedFrame.Bind(EVT_MENU, self.openProject,        id=ID_OPEN)
         sizedFrame.Bind(EVT_MENU, self.newProject,         id=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT)
@@ -88,6 +97,14 @@ class FileMenuHandler(BaseMenuHandler):
         sizedFrame.Bind(EVT_MENU, self.fileSave,       id=ID_SAVE)
         sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,  id=ID_SAVEAS)
         sizedFrame.Bind(EVT_MENU, self._onPreferences, id=ID_PREFERENCES)
+
+        sizedFrame.Bind(EVT_MENU_RANGE, self._onOpenRecent, id=ID_FILE1, id2=ID_FILE9)
+
+    def _setFileHistory(self, fileHistory: FileHistory):
+        self._fileHistory = fileHistory
+
+    # noinspection PyTypeChecker
+    fileHistory = property(fget=None, fset=_setFileHistory)
 
     # noinspection PyUnusedLocal
     def openProject(self, event: CommandEvent):
@@ -150,6 +167,22 @@ class FileMenuHandler(BaseMenuHandler):
                 self.logger.info(f'Got answer')
             else:
                 self.logger.info(f'Cancelled')
+
+    def _onOpenRecent(self, event: CommandEvent):
+        """
+        Opens the selected 'recently' opened file
+        Args:
+            event:
+        """
+        assert self._fileHistory is not None, 'Developer forgot to inject file history handler'
+        fileNum:  int = event.GetId() - ID_FILE1
+        fileName: str = self._fileHistory.GetHistoryFile(fileNum)
+
+        self.logger.info(f'{event=} - filename: {fileName}')
+        reader: Reader = Reader()
+
+        umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
+        self._loadProject(umlProject)
 
     def _currentUMLProjectCallback(self, projectInformation: ProjectInformation):
 
