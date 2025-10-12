@@ -8,6 +8,8 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from pathlib import Path
+
 from os import getenv as osGetEnv
 
 from wx import ActivateEvent
@@ -55,6 +57,8 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
+
+from umlio.Reader import Reader
 
 from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
@@ -185,6 +189,17 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.Destroy()
 
         return True
+
+    def loadLastOpenedProject(self):
+
+        lastOpenFileName: str    = self._fileHistory.GetHistoryFile(0)
+        reader:           Reader = Reader()
+
+        umlProject: UmlProject = reader.readProjectFile(fileName=Path(lastOpenFileName))
+        #
+        # uh oh using a listener directly
+        #
+        self._loadProjectListener(umlProject=umlProject)
 
     def _createApplicationMenuBar(self):
 

@@ -75,6 +75,9 @@ class UmlDiagrammer(App):
             # self._wxFrame.SetSize(size)
             # self._wxFrame.CentreOnScreen()
 
+        if self._preferences.loadLastOpenedProject is True:
+            self._wxFrame.loadLastOpenedProject()
+
         return True
 
     def MacOpenFiles(self, fileNames: List[str]):
