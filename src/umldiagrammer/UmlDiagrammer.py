@@ -12,11 +12,6 @@ from os import sep as osSep
 from json import load as jsonLoad
 
 from wx import App
-from wx import FULLSCREEN_ALL
-from wx import FULLSCREEN_NOBORDER
-from wx import FULLSCREEN_NOSTATUSBAR
-from wx import ScreenDC
-from wx import Size
 
 from codeallybasic.ResourceManager import ResourceManager
 
@@ -24,7 +19,6 @@ from umlshapes.lib.ogl import OGLInitialize
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 from umldiagrammer.SystemMetrics import SystemMetrics
 from umldiagrammer.Versions import Versions
 from umldiagrammer.UmlDiagrammerAppFrame import UmlDiagrammerAppFrame
@@ -63,17 +57,6 @@ class UmlDiagrammer(App):
         self._wxFrame = UmlDiagrammerAppFrame()
 
         self.SetTopWindow(self._wxFrame)
-
-        # Show full screen ?
-        if self._preferences.fullScreen is True:
-            self._wxFrame.ShowFullScreen(True, style=FULLSCREEN_NOBORDER)
-            # dc:   ScreenDC = ScreenDC()
-            # size: Size     = dc.GetSize()
-            #
-            # size.height -= HACK_ADJUST_EXIT_HEIGHT
-            #
-            # self._wxFrame.SetSize(size)
-            # self._wxFrame.CentreOnScreen()
 
         if self._preferences.loadLastOpenedProject is True:
             self._wxFrame.loadLastOpenedProject()

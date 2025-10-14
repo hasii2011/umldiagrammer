@@ -27,6 +27,7 @@ from wx import FRAME_TOOL_WINDOW
 
 
 from wx import Point
+from wx import ScreenDC
 from wx import Size
 from wx import ToolBar
 from wx import Menu
@@ -109,10 +110,23 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
         self._umlPreferences: UmlPreferences        = UmlPreferences()
 
-        appSize:    Size = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
-        frameStyle: int  = self._getFrameStyle()
+        # Show full screen ?
+        if self._preferences.fullScreen is True:
 
-        super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=frameStyle)
+            dc:   ScreenDC = ScreenDC()
+            appSize: Size     = dc.GetSize()
+
+            appSize.height -= HACK_ADJUST_EXIT_HEIGHT
+            # self.SetSize(appSize)
+            super().__init__(parent=None, title='UML Diagrammer')
+            self.ShowFullScreen(True)
+            self.ShowFullScreen(show=True)
+            self.CentreOnScreen()
+        else:
+            appSize = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
+            frameStyle: int  = self._getFrameStyle()
+
+            super().__init__(parent=None, title='UML Diagrammer', size=appSize, style=frameStyle)
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
@@ -167,7 +181,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def Close(self, force: bool = False) -> bool:
         """
         Closing handler overload. Save files and ask for confirmation.
-
         """
         # Close all files
         # self._pyutUI.handleUnsavedProjects()
@@ -179,7 +192,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 self._preferences.startupPosition = pos
                 self.logger.info(f'Set new startup position: {pos}')
 
-            # Show full screen ?
+        # Show full screen ?
         if self._preferences.fullScreen is False:
 
             if self._overrideProgramExitSize is False:
