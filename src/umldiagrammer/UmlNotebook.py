@@ -1,8 +1,10 @@
-from pathlib import Path
+
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
+
+from pathlib import Path
 
 from wx import NB_LEFT
 from wx import EVT_NOTEBOOK_PAGE_CHANGED
@@ -34,6 +36,9 @@ class UmlNotebook(Notebook):
     """
     Our own version of a notebook.  Essentially, we need to keep track when the notebook page selection
     changes.  This includes when we add new project tabs
+
+    Project Names are just the project file name with the suffix (aka, just the stem)
+
     """
     def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
@@ -47,10 +52,15 @@ class UmlNotebook(Notebook):
         self.SetSizerProps(expand=True, proportion=1)
 
         self.Bind(EVT_NOTEBOOK_PAGE_CHANGED, self._onNewProjectDisplayed)
+
         CallLater(millis=100, callableObj=self.PostSizeEventToParent)
         self._appPubSubEngine.subscribe(messageType=MessageType.CURRENT_PROJECT_SAVED,
                                         uniqueId=NOTEBOOK_ID,
                                         listener=self._currentProjectSavedListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.PROJECT_RENAMED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._projectRenamedListener
                                         )
 
     @property
@@ -101,15 +111,16 @@ class UmlNotebook(Notebook):
         Args:
             modifiedFrameId:
         """
-        idx:          int             = self.GetSelection()
-        projectTitle: str             = self.GetPageText(idx)
-        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        if self._currentProjectPanel.umlProjectModified is False:
+            idx:              int = self.GetSelection()
+            projectTitle:     str = self.GetPageText(idx)
+            modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
 
-        modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
-        pagIndex: int = self.GetSelection()
+            pageIndex: int = self.GetSelection()
+            self.SetPageText(pageIndex, modifiedTitleStr)
 
-        self.SetPageText(pagIndex, modifiedTitleStr)
-        projectPanel.umlProjectModified = True
+            projectPanel: UmlProjectPanel = self._currentProjectPanel
+            projectPanel.umlProjectModified = True
 
     def _currentProjectSavedListener(self, projectPath: Path):
         """
@@ -119,8 +130,8 @@ class UmlNotebook(Notebook):
             projectPath:
 
         """
-        idx:          int             = self.GetSelection()
-        projectTitle: str             = self.GetPageText(idx)
+        idx:              int = self.GetSelection()
+        projectTitle:     str = self._currentProjectTitle
         modifiedTitleStr: str = projectTitle.strip(MODIFIED_INDICATOR)
 
         assert projectPath.stem == modifiedTitleStr, 'I guess my assumption was wrong'
@@ -130,3 +141,34 @@ class UmlNotebook(Notebook):
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         projectPanel.umlProjectModified = False
+
+    def _projectRenamedListener(self, oldName: str, newName: str):
+        """
+        Will only be issued when developer modifies current project
+
+        Args:
+            oldName:  Old project name (bare file name)
+            newName:  New project name (bare file name)
+        """
+        idx:          int = self.GetSelection()
+        projectTitle: str = self.GetPageText(idx)
+        assert projectTitle == oldName, 'I guess my assumption was wrong'
+        self._renameCurrentProject(newName=newName)
+
+    @property
+    def _currentProjectPanel(self) -> UmlProjectPanel:
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+
+        return projectPanel
+
+    @property
+    def _currentProjectTitle(self) -> str:
+
+        idx:          int = self.GetSelection()
+        projectTitle: str = self.GetPageText(idx)
+        return projectTitle
+
+    def _renameCurrentProject(self, newName: str):
+
+        idx: int = self.GetSelection()
+        self.SetPageText(idx, newName)

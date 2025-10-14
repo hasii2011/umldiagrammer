@@ -81,7 +81,6 @@ class UmlProjectPanel(SplitterWindow):
         if modified is False:
             self._documentManager.markFramesSaved()
 
-
     @property
     def frameIdMap(self) -> FrameIdMap:
         return self._documentManager.frameIdMap

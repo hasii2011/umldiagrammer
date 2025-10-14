@@ -63,7 +63,12 @@ class ToolBarCreator:
         # self._toolBar: ToolBar = parent.CreateToolBar(wxToolBarPosition)
         # Manually create my own tool bar so that the icons sizes are honored
         #
-        self._toolBar: ToolBar = ToolBar(parent=appFrame, style=wxToolBarPosition | TB_VERTICAL)
+        self._toolBar: ToolBar = ToolBar(parent=appFrame, style=wxToolBarPosition)
+
+        #
+        # Set the icon size before realizing the tool bar
+        #
+        self._setToolbarIconSize()
 
         self._toolBarIcons: ToolBarIcons = ToolBarIcons()
 
@@ -93,11 +98,6 @@ class ToolBarCreator:
         self._createMenuTools()
         self._createElementTools()
         self._createRelationshipTools()
-        #
-        # Set the icon size before realizing the tool bar
-        #
-        self._setToolbarIconSize()
-
         self._populateToolBar()
 
         self._appFrame.SetToolBar(self._toolBar)

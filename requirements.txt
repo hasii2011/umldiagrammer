@@ -1,7 +1,8 @@
 wheel==0.44.0
 # https://github.com/ronaldoussoren/py2app/issues/538#issuecomment-3193389958
 # Don't upgrade past this version as 70.x.x does not work
-setuptools==70.1.1
+# setuptools==70.1.1
+setuptools==70.3.0
 
 # the following necessary when building the
 # application with py2App

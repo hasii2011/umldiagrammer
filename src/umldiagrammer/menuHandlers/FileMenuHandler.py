@@ -206,38 +206,54 @@ class FileMenuHandler(BaseMenuHandler):
                                               message='No save needed, project not modified')
 
     def _fileSaveAsCallback(self, projectInformation: ProjectInformation):
+        """
+
+        Args:
+            projectInformation:  Contains a reference to the actual UmlProject !!!
+        """
 
         if len(projectInformation.umlProject.umlDocuments) == 0:
             booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
             booBoo.ShowModal()
         else:
-            with FileDialog(None, defaultDir=self._preferences.diagramsDirectory,
-                            wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
-                            style=FD_SAVE | FD_OVERWRITE_PROMPT) as fDialog:
-                # Return False if canceled
-                if fDialog.ShowModal() != ID_OK:
-                    fDialog.Destroy()
-                else:
-                    # See if a specified project is already open
+            with (FileDialog(None,
+                             defaultDir=self._preferences.diagramsDirectory,
+                             wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
+                             style=FD_SAVE | FD_OVERWRITE_PROMPT)
+                  as fDialog):
+                if fDialog.ShowModal() == ID_OK:
                     specifiedFileName: str = fDialog.GetPath()
                     if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
-                        eMsg: str = f'Error ! This project {specifiedFileName} is currently open.  Please choose another name!'
+                        eMsg: str = f'Error ! This project `{Path(specifiedFileName).stem}` is currently open.  Please choose another name!'
                         with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
                             dlg.ShowModal()
-                            dlg.Destroy()
                     else:
-                        umlProject: UmlProject = projectInformation.umlProject
-                        oldName:    Path = projectInformation.umlProject.fileName
-                        newName:    Path = Path(specifiedFileName)
-                        umlProject.fileName = newName
+                        self._writeSaveAsProject(projectInformation.umlProject, specifiedFileName)
 
-                        writer: Writer = Writer()
-                        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
-                        self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
-                                                          uniqueId=NOTEBOOK_ID,
-                                                          projectPath=umlProject.fileName
-                                                          )
-                        self.logger.info(f'Project {oldName} saved as {newName}')
+    def _writeSaveAsProject(self, umlProject: UmlProject, specifiedFileName: str):
+        """
+
+        Args:
+            umlProject:
+            specifiedFileName:
+        """
+
+        oldName: Path = umlProject.fileName
+        newName: Path = Path(specifiedFileName)
+        umlProject.fileName = newName
+
+        self._appPubSubEngine.sendMessage(messageType=MessageType.PROJECT_RENAMED,
+                                          uniqueId=NOTEBOOK_ID,
+                                          oldName=oldName.stem,
+                                          newName=newName.stem
+                                          )
+        writer: Writer = Writer()
+        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                          uniqueId=NOTEBOOK_ID,
+                                          projectPath=umlProject.fileName
+                                          )
+        self.logger.info(f'Project {oldName} saved as {newName}')
 
     def _isProjectAlreadyOpen(self, fileName: str) -> bool:
         """

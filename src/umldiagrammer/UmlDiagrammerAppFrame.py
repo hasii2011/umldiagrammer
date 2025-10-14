@@ -393,17 +393,19 @@ class UmlDiagrammerAppFrame(SizedFrame):
         wxPython 4.2.0 update:  using FRAME_TOOL_WINDOW causes the title to be above the toolbar
         in production mode use FRAME_TOOL_WINDOW
 
-        Fixed in 4.2.3
+        Note:  Getting the environment variable from the plist dictionary (LSEnvironment) only works
+        by double-clicking on the built application;  We simulate that with a PyCharm custom Run/Debug
+        configuration
 
         Returns:  An appropriate frame style
         """
         appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
+
         if appModeStr is None:
             appMode: bool = False
         else:
             appMode = SecureConversions.secureBoolean(appModeStr)
-
-        frameStyle: int = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
+        frameStyle: int  = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
         if appMode is True:
             frameStyle = frameStyle | FRAME_TOOL_WINDOW
 
