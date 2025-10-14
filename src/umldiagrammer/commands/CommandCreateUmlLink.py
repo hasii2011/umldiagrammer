@@ -35,8 +35,12 @@ class CommandCreateUmlLink(BaseWxLinkCommand):
         Inheritance Link
         ----------------
         source == SubClass
-        destination == Base Class.  (arrow here)
+        destination == Base Class.  (arrow to here)
 
+        Interface Link
+        ----------------
+        source == Implementing cass
+        destination == Interface class (arrow to here)
 
         Note Links
         ----------

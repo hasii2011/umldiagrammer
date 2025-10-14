@@ -5,6 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
 from wx import Command
 from wx import Point
@@ -22,6 +23,7 @@ from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umldiagrammer.DiagrammerTypes import UmlLinkType
 from umldiagrammer.DiagrammerTypes import UmlShape
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -30,9 +32,12 @@ class BaseWxLinkCommand(Command):
 
     NO_NAME_MESSAGE: str = "testMessage()"
 
-    def __init__(self, partialName: str, linkType: PyutLinkType,
-                 umlFrame: UmlFrame,
-                 appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
+    def __init__(self,
+                 partialName: str,
+                 linkType:    PyutLinkType,
+                 umlFrame:    UmlFrame,
+                 appPubSubEngine: IAppPubSubEngine,
+                 umlPubSubEngine: IUmlPubSubEngine):
         """
 
         Args:
@@ -108,17 +113,17 @@ class BaseWxLinkCommand(Command):
 
         # umlFrame.diagram.AddShape(self._link, withModelUpdate=False)
 
-        if isinstance(self._link, UmlInheritance):
-            umlFrame.umlDiagram.AddShape(self._link)
-            self._link.Show(True)
+        # if isinstance(self._link, UmlInheritance) or isinstance(self._link, UmlInterface):
+        umlFrame.umlDiagram.AddShape(self._link)
+        self._link.Show(True)
 
-        elif isinstance(self._link, UmlAssociation):
-            umlAssociation: UmlAssociation = cast(UmlAssociation, self._link)
-            self._linkLogger.info(f'{umlAssociation.associationName} -- NOT IMPLEMENTED')
+        # elif isinstance(self._link, UmlAssociation):
+        #     umlAssociation: UmlAssociation = cast(UmlAssociation, self._link)
+        #     self._linkLogger.info(f'{umlAssociation.associationName} -- NOT IMPLEMENTED')
 
-            # umlFrame.diagram.AddShape(shape=oglAssociation.centerLabel)
-            # umlFrame.diagram.AddShape(shape=oglAssociation.sourceCardinality)
-            # umlFrame.diagram.AddShape(shape=oglAssociation.destinationCardinality)
+        # umlFrame.diagram.AddShape(shape=oglAssociation.centerLabel)
+        # umlFrame.diagram.AddShape(shape=oglAssociation.sourceCardinality)
+        # umlFrame.diagram.AddShape(shape=oglAssociation.destinationCardinality)
 
         # get the view start and end position and assign it to the
         # model position, then the view position is updated from
@@ -135,28 +140,34 @@ class BaseWxLinkCommand(Command):
         #
         umlFrame.Refresh()
 
-        self._linkLogger.info(f'Create: {self._link}')
+        self._linkLogger.info(f'Created: {self._link}')
 
-    def _createLink(self) -> UmlLink:
+    def _createLink(self) -> UmlLinkType:
         """
 
         Returns:  A specific UmlLink instance depending on the link type
         """
         linkType: PyutLinkType = self._linkType
-        # srcPos:   Point        = self._srcPoint
-        # dstPos:   Point        = self._dstPoint
 
-        # if linkType == PyutLinkType.INHERITANCE:
-        """
-        source == SubClass
-        destination == Base Class.  (arrow here)
-        """
-        subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
-        baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        if linkType == PyutLinkType.INHERITANCE:
+            """
+            source == SubClass
+            destination == Base Class.  (arrow here)
+            """
+            subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
+            baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        umlInheritance: UmlInheritance = self._createInheritanceLink(subClass=subClass, baseClass=baseClass)
-        return umlInheritance
+            umlInheritance: UmlInheritance = self._createInheritanceLink(subClass=subClass, baseClass=baseClass)
+            return umlInheritance
+        elif linkType == PyutLinkType.INTERFACE:
 
+            interface:      UmlClass = cast(UmlClass, self._destinationUmlShape)
+            implementation: UmlClass = cast(UmlClass, self._sourceUmlShape)
+
+            umlInterface: UmlInterface = self._createInterfaceLink(interfaceClass=interface, implementingClass=implementation)
+            return umlInterface
+        else:
+            assert False, 'Unknown link type'
         # elif linkType == PyutLinkType.SD_MESSAGE:
         #     srcSdInstance: OglSDInstance = cast(OglSDInstance, self._srcUmlShape)
         #     dstSdInstance: OglSDInstance = cast(OglSDInstance, self._dstUmShape)
@@ -232,17 +243,12 @@ class BaseWxLinkCommand(Command):
         destinationModelClass: PyutClass = cast(PyutClass, baseClass.pyutClass)
         pyutLink:              PyutLink  = PyutLink("", linkType=PyutLinkType.INHERITANCE, source=sourceModelClass, destination=destinationModelClass)
 
-        # oglLink:          OglLink   = getOglLinkFactory().getOglLink(child, pyutLink, parent, PyutLinkType.INHERITANCE)
         umlLink: UmlInheritance = UmlInheritance(pyutLink=pyutLink, baseClass=baseClass, subClass=subClass)
         umlLink.umlFrame = self._umlFrame
         umlLink.MakeLineControlPoints(n=2)       # Make this configurable
 
-        # child.addLink(oglLink)
-        # parent.addLink(oglLink)
         subClass.addLink(umlLink=umlLink, destinationClass=baseClass)
 
-        # self._placeAnchorsInCorrectPosition(oglLink=oglLink)
-        # self._createNeededControlPoints(oglLink=oglLink)
         # add it to the PyutClass
         subClassPyutClass: PyutClass = cast(PyutClass, subClass.pyutClass)
         basePyutClass:     PyutClass = cast(PyutClass, baseClass.pyutClass)
@@ -256,6 +262,23 @@ class BaseWxLinkCommand(Command):
 
         return umlLink
 
+    def _createInterfaceLink(self, implementingClass: UmlClass, interfaceClass: UmlClass) -> UmlInterface:
+        implementorModelClass: PyutClass = implementingClass.pyutClass
+        interfaceModelClass:   PyutClass = interfaceClass.pyutClass
+        pyutLink:              PyutLink  = PyutLink('', linkType=PyutLinkType.INTERFACE, source=implementorModelClass, destination=interfaceModelClass)
+
+        umlInterface: UmlInterface = UmlInterface(pyutLink=pyutLink, interfaceClass=interfaceClass, implementingClass=implementingClass)
+        umlInterface.umlFrame = self._umlFrame
+        umlInterface.MakeLineControlPoints(n=2)
+
+        implementingClass.addLink(umlLink=umlInterface, destinationClass=interfaceClass)
+
+        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInterface)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+        eventHandler.SetPreviousHandler(umlInterface.GetEventHandler())
+        umlInterface.SetEventHandler(eventHandler)
+
+        return umlInterface
     # def _createSDMessage(self, src: OglSDInstance, dest: OglSDInstance, srcPos: Point, destPos: Point) -> OglSDMessage:
     #
     #     srcRelativeCoordinates:  Tuple[int, int] = src.ConvertCoordToRelative(0, srcPos[1])

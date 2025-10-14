@@ -169,8 +169,8 @@ class ActionSupervisor(metaclass=SingletonV3):
         self._currentAction:           UIAction = UIAction.SELECTOR
         self._currentActionPersistent: bool     = False
 
-        self._src: UmlShape = cast(UmlShape, None)
-        self._dst: UmlShape = cast(UmlShape, None)
+        self._source:      UmlShape = NONE_UML_OBJECT
+        self._destination: UmlShape = NONE_UML_OBJECT
 
     @property
     def currentAction(self) -> UIAction:
@@ -196,6 +196,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
     def registerNewFrame(self, frameId: FrameId):
         self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_LEFT_CLICK,   frameId=frameId, listener=self._frameClickListener)
+        self._umlPubSubEngine.subscribe(messageType=UmlMessageType.UML_SHAPE_SELECTED, frameId=frameId, listener=self._shapeSelectedListener)
 
     def doAction(self, umlFrame: UmlFrame, umlPosition: UmlPosition):
         """
@@ -307,9 +308,8 @@ class ActionSupervisor(metaclass=SingletonV3):
             self._currentAction = NEXT_ACTION[self._currentAction]
 
             self.logger.debug(f'Save source - shape {umlShape}')
-            self._src    = umlShape
+            self._source    = umlShape
         else:
-            # PyutUtils.displayWarning(msg=result.errorMessage, title='Invalid Source')
             with MessageDialog(parent=None, message=result.errorMessage, caption='Invalid Source', style=OK | ICON_WARNING) as dlg:
                 dlg.ShowModal()
 
@@ -323,9 +323,15 @@ class ActionSupervisor(metaclass=SingletonV3):
         """
         result: ValidationResult = self._validateDestinationAction(umlShape=umlShape)
         if result.isValid is True:
-            self._dst = umlShape
+            self._destination = umlShape
 
-            self._createLink()
+            command:  CommandCreateUmlLink = self._createLinkCommand()
+            umlFrame: UmlFrame             = self._source.umlFrame
+
+            umlFrame.commandProcessor.Submit(command=command, storeIt=True)
+
+            self._source = NONE_UML_OBJECT
+            self._destination = NONE_UML_OBJECT
 
             if self._currentActionPersistent:
                 self._currentAction = self._oldAction
@@ -333,7 +339,6 @@ class ActionSupervisor(metaclass=SingletonV3):
                 self._currentAction = UIAction.SELECTOR
                 self._selectActionSelectorTool()
         else:
-            # PyutUtils.displayWarning(msg=result.errorMessage, title='Invalid Destination')
             with MessageDialog(parent=None, message=result.errorMessage, caption='Invalid Destination', style=OK | ICON_WARNING) as dlg:
                 dlg.ShowModal()
 
@@ -392,22 +397,19 @@ class ActionSupervisor(metaclass=SingletonV3):
     def _selectActionSelectorTool(self):
         self._selectTool(UIIdentifiers.ID_ARROW)
 
-    def _createLink(self):
+    def _createLinkCommand(self) -> CommandCreateUmlLink:
 
-        assert self._src is not None, 'Developer error: do not have the link source'
-        assert self._dst is not None, 'Developer error: do have the the link destination '
+        assert self._source is not None, 'Developer error: The link source is not set'
+        assert self._destination is not None, 'Developer error: The link destination is not set'
         linkType: PyutLinkType = UI_ACTION_TO_LINK_TYPE[self._currentAction]
 
-        umlFrame: UmlFrame = self._src.umlFrame
+        umlFrame: UmlFrame = self._source.umlFrame
 
         command: CommandCreateUmlLink = CommandCreateUmlLink(umlFrame=umlFrame,
                                                              appPubSubEngine=self._appPubSubEngine,
                                                              umlPubSubEngine=self._umlPubSubEngine,
-                                                             source=self._src,
-                                                             destination=self._dst,
-                                                             linkType=linkType,
-
+                                                             source=self._source,
+                                                             destination=self._destination,
+                                                             linkType=linkType
                                                              )
-        umlFrame.commandProcessor.Submit(command=command, storeIt=True)
-        self._src = NONE_UML_OBJECT
-        self._dst = NONE_UML_OBJECT
+        return command

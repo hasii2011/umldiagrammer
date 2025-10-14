@@ -1,24 +1,19 @@
 
+from typing import cast
 from typing import Dict
 from typing import NewType
-from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-from umlio.IOTypes import UmlLollipopInterfaces
 from wx import Window
 from wx import Simplebook
 
-from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.links.UmlLink import UmlLink
-from umlshapes.shapes.UmlActor import UmlActor
-from umlshapes.shapes.UmlText import UmlText
-from umlshapes.shapes.UmlUseCase import UmlUseCase
-from umlshapes.types.Common import UmlShapeList
-
 from umlshapes.UmlDiagram import UmlDiagram
 
+from umlshapes.types.Common import UmlShapeList
+
+from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.DiagramFrame import DiagramFrame
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
@@ -34,8 +29,14 @@ from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEven
 
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
+from umlshapes.shapes.UmlActor import UmlActor
+from umlshapes.shapes.UmlText import UmlText
+from umlshapes.shapes.UmlUseCase import UmlUseCase
+from umlshapes.shapes.UmlControlPoint import UmlControlPoint
+
 from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
 
+from umlshapes.links.UmlLink import UmlLink
 from umlshapes.links.UmlNoteLink import UmlNoteLink
 from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.UmlAssociation import UmlAssociation
@@ -63,6 +64,7 @@ from umlio.IOTypes import UmlNotes
 from umlio.IOTypes import UmlTexts
 from umlio.IOTypes import UmlUseCases
 from umlio.IOTypes import UmlDocumentTitle
+from umlio.IOTypes import UmlLollipopInterfaces
 
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
@@ -378,6 +380,7 @@ class UmlDocumentManager(Simplebook):
         umlShapes: UmlShapeList = umlFrame.umlShapes
 
         for umlShape in umlShapes:
+            # noinspection PyUnusedLocal
             match umlShape:
                 case UmlClass() as umlShape:
                     umlDocument.umlClasses.append(umlShape)
@@ -393,6 +396,8 @@ class UmlDocumentManager(Simplebook):
                     umlDocument.umlUseCases.append(umlShape)
                 case UmlActor() as umlShape:
                     umlDocument.umlActors.append(umlShape)
+                case UmlControlPoint() as umlShape:
+                    pass
                 # case OglSDMessage() as umlShape:  # Put here so it does not fall into OglLink
                 #     oglSDMessage: OglSDMessage = cast(OglSDMessage, umlShape)
                 #     modelId: int = oglSDMessage.pyutObject.id
@@ -403,6 +408,6 @@ class UmlDocumentManager(Simplebook):
                 #     modelId = oglSDInstance.pyutSDInstance.id
                 #     umlDocument.oglSDInstances[modelId] = oglSDInstance
                 case _:
-                    self.logger.error(f'Unknown ogl object type: {umlShape}, not saved')
+                    self.logger.warning(f'Unknown Uml object type: {umlShape}, not saved')
 
         return umlDocument
