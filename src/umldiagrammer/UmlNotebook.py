@@ -151,7 +151,7 @@ class UmlNotebook(Notebook):
             newName:  New project name (bare file name)
         """
         idx:          int = self.GetSelection()
-        projectTitle: str = self.GetPageText(idx)
+        projectTitle: str = self.GetPageText(idx).strip(MODIFIED_INDICATOR)  # just in case
         assert projectTitle == oldName, 'I guess my assumption was wrong'
         self._renameCurrentProject(newName=newName)
 
