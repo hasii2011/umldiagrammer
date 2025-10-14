@@ -98,6 +98,11 @@ APPLICATION_NAME:           str = 'UmlDiagrammer'
 
 
 class UmlDiagrammerAppFrame(SizedFrame):
+    """
+    Provides two methods for the main diagram class.  Either open the last opened project
+    or open an empty project
+
+    """
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
@@ -130,6 +135,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._toolBarCreator: ToolBarCreator = ToolBarCreator(self,
                                                               fileMenuHandler=uiMenuCreator.fileMenuHandler,
+                                                              editMenuHandler=uiMenuCreator.editMenuHandler,
                                                               newActionCallback=self._onNewAction
                                                               )
         self._tb: ToolBar = self._toolBarCreator.toolBar
@@ -196,6 +202,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
         reader:           Reader = Reader()
 
         umlProject: UmlProject = reader.readProjectFile(fileName=Path(lastOpenFileName))
+        #
+        # uh oh using a listener directly
+        #
+        self._loadProjectListener(umlProject=umlProject)
+
+    def loadEmptyProject(self):
+        umlProject: UmlProject = UmlProject.emptyProject()
         #
         # uh oh using a listener directly
         #

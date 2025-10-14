@@ -42,6 +42,3 @@ HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and 
 APP_MODE: str = 'APP_MODE'
 
 UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
-
-DEFAULT_PROJECT_TITLE: UmlDocumentTitle = UmlDocumentTitle('NewDocument')           # TODO make a preference
-DEFAULT_PROJECT_PATH:  Path             = Path('newProject.udt')

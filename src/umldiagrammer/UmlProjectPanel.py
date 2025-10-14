@@ -75,6 +75,12 @@ class UmlProjectPanel(SplitterWindow):
     @umlProjectModified.setter
     def umlProjectModified(self, modified: bool):
         self._umlProjectModified = modified
+        #
+        # Now tell each of the frames
+        #
+        if modified is False:
+            self._documentManager.markFramesSaved()
+
 
     @property
     def frameIdMap(self) -> FrameIdMap:

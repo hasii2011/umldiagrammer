@@ -6,6 +6,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlio.IOTypes import UmlLollipopInterfaces
 from wx import Window
 from wx import Simplebook
 
@@ -163,6 +164,11 @@ class UmlDocumentManager(Simplebook):
 
         return currentFrameId
 
+    def markFramesSaved(self):
+        for frameId, frame in self._frameIdMap.items():
+            umlFrame: UmlFrame = cast(UmlFrame, frame)
+            umlFrame.markFrameSaved()
+
     def _createPages(self):
 
         for umlDocumentTitle, umlDocument in self._umlDocuments.items():
@@ -201,7 +207,7 @@ class UmlDocumentManager(Simplebook):
             pageIndex: int = self.GetPageCount() - 1
 
             self._frameIdMap[diagramFrame.id]             = diagramFrame
-            self._frameIdToTitleMap[diagramFrame.id]      = umlDocument.documentTitle
+            self._frameIdToTitleMap[diagramFrame.id]      = umlDocumentTitle
             self._umlDocumentTileToPage[umlDocumentTitle] = pageIndex
             self._noteBookPageIdxToFrameId[pageIndex]     = diagramFrame.id
 
@@ -213,6 +219,7 @@ class UmlDocumentManager(Simplebook):
         self._layoutActors(diagramFrame, umlDocument.umlActors)
         self._layoutUseCases(diagramFrame, umlDocument.umlUseCases)
         self._layoutLinks(diagramFrame, umlDocument.umlLinks)
+        self._layoutLollipops(diagramFrame, umlDocument.umlLollipopInterfaces)
 
     def _layoutClasses(self, diagramFrame: ClassDiagramFrame, umlClasses: UmlClasses):
         for umlClass in umlClasses:
@@ -291,8 +298,8 @@ class UmlDocumentManager(Simplebook):
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
                 source      = umlLink.sourceShape
-                # destination = umlLink.destinationShape
-                source.addLink(umlLink, dest)  # type: ignore
+                destination = umlLink.destinationShape
+                source.addLink(umlLink, destination)  # type: ignore
 
                 diagramFrame.umlDiagram.AddShape(umlLink)
                 umlLink.Show(True)
@@ -301,16 +308,21 @@ class UmlDocumentManager(Simplebook):
                 umlAssociationEventHandler.umlPubSubEngine = self._umlPubSubEngine
                 umlAssociationEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlLink.SetEventHandler(umlAssociationEventHandler)
-            elif isinstance(umlLink, UmlLollipopInterface):
-                umlLollipopInterface: UmlLollipopInterface = cast(UmlLollipopInterface, umlLink)
-                self.logger.info(f'{umlLollipopInterface}')
 
-                diagramFrame.umlDiagram.AddShape(umlLollipopInterface)
-                umlLollipopInterface.Show(True)
-                lollipopEventHandler: UmlLollipopInterfaceEventHandler = UmlLollipopInterfaceEventHandler(lollipopInterface=umlLollipopInterface)
-                lollipopEventHandler.umlPubSubEngine = self._umlPubSubEngine
-                lollipopEventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
-                umlLollipopInterface.SetEventHandler(lollipopEventHandler)
+    def _layoutLollipops(self, diagramFrame: ClassDiagramFrame, umlLollipops: UmlLollipopInterfaces):
+
+        for umlLollipop in umlLollipops:
+            umlLollipopInterface: UmlLollipopInterface = cast(UmlLollipopInterface, umlLollipop)
+            umlLollipopInterface.umlFrame = diagramFrame
+
+            self.logger.info(f'{umlLollipopInterface}')
+
+            diagramFrame.umlDiagram.AddShape(umlLollipopInterface)
+            umlLollipopInterface.Show(True)
+            lollipopEventHandler: UmlLollipopInterfaceEventHandler = UmlLollipopInterfaceEventHandler(lollipopInterface=umlLollipopInterface)
+            lollipopEventHandler.umlPubSubEngine = self._umlPubSubEngine
+            lollipopEventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
+            umlLollipopInterface.SetEventHandler(lollipopEventHandler)
 
     def _layoutShape(self, umlShape: UmlShape, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
         """

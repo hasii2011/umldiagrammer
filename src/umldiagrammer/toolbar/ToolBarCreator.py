@@ -17,6 +17,7 @@ from wx import TB_VERTICAL
 from wx import ToolBar
 from wx import Size
 
+from umldiagrammer.menuHandlers.EditMenuHandler import EditMenuHandler
 from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
@@ -48,11 +49,12 @@ TOOL_BAR_IDs: List[int] = [
 
 
 class ToolBarCreator:
-    def __init__(self, appFrame: Frame, fileMenuHandler: FileMenuHandler, newActionCallback: Callable):
+    def __init__(self, appFrame: Frame, fileMenuHandler: FileMenuHandler, editMenuHandler: EditMenuHandler, newActionCallback: Callable):
 
         self._appFrame: Frame = appFrame
 
         self._fileMenuHandler:   FileMenuHandler = fileMenuHandler
+        self._editMenuHandler:   EditMenuHandler = editMenuHandler
         self._newActionCallback: Callable        = newActionCallback
 
         self.logger: Logger = getLogger(__name__)
@@ -108,8 +110,9 @@ class ToolBarCreator:
     def toolBarIds(self) -> List[int]:
         return TOOL_BAR_IDs
 
-    def _bogus(self):
-        pass
+    # noinspection PyUnusedLocal
+    def _bogus(self, event):
+        self.logger.warning(f'NOT YET IMPLEMENTED !!!')
 
     def _createMenuTools(self):
 
@@ -181,7 +184,7 @@ class ToolBarCreator:
             tooltip="Undo the last action",
             toolGroup=ToolGroup.Menu,
             # actionCallback=self._editMenuHandler.onUndo,
-            actionCallback=self._bogus,
+            actionCallback=self._editMenuHandler.onEditMenu,
             wxID=ID_UNDO
         )
 
@@ -192,7 +195,7 @@ class ToolBarCreator:
             tooltip="Redo the action",
             toolGroup=ToolGroup.Menu,
             # actionCallback=self._editMenuHandler.onRedo,
-            actionCallback=self._bogus,
+            actionCallback=self._editMenuHandler.onEditMenu,
             wxID=ID_REDO
         )
 

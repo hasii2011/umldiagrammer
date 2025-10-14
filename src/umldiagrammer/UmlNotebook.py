@@ -55,7 +55,9 @@ class UmlNotebook(Notebook):
 
     @property
     def currentProject(self) -> ProjectInformation:
+
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+
         return ProjectInformation(
             umlProject=projectPanel.umlProject,
             modified=projectPanel.umlProjectModified
@@ -125,3 +127,6 @@ class UmlNotebook(Notebook):
 
         self.logger.info(f'{modifiedTitleStr}')
         self.SetPageText(idx, modifiedTitleStr)
+
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        projectPanel.umlProjectModified = False

@@ -37,12 +37,12 @@ class EditMenuHandler(BaseMenuHandler):
 
         self.logger:          Logger  = getLogger(__name__)
         self._activeFrameId: FrameId = NO_FRAME_ID
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_UNDO)
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_REDO)
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_CUT)
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_COPY)
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_PASTE)
-        sizedFrame.Bind(EVT_MENU, self._onEditMenu, id=ID_SELECTALL)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_UNDO)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_REDO)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_CUT)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_COPY)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_PASTE)
+        sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_SELECTALL)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                         uniqueId=EDIT_MENU_HANDLER_ID,
@@ -53,7 +53,7 @@ class EditMenuHandler(BaseMenuHandler):
         self.logger.debug(f'{activeFrameId=}')
         self._activeFrameId = activeFrameId
 
-    def _onEditMenu(self, event: CommandEvent):
+    def onEditMenu(self, event: CommandEvent):
 
         import wx       # So pattern matching works
 

@@ -8,12 +8,15 @@ from logging import getLogger
 
 from pathlib import Path
 
+from wx import OK
 from wx import EVT_MENU
 from wx import EVT_MENU_RANGE
 from wx import FD_CHANGE_DIR
 from wx import FD_FILE_MUST_EXIST
 from wx import FD_OPEN
-from wx import FileHistory
+from wx import FD_OVERWRITE_PROMPT
+from wx import FD_SAVE
+from wx import ICON_ERROR
 from wx import ID_FILE1
 from wx import ID_FILE9
 from wx import ID_OK
@@ -25,7 +28,10 @@ from wx import ID_SAVEAS
 from wx import FileSelector
 from wx import CommandEvent
 from wx import Menu
+from wx import MessageDialog
 from wx import Notebook
+from wx import FileDialog
+from wx import FileHistory
 
 from wx.lib.sized_controls import SizedFrame
 
@@ -34,19 +40,14 @@ from umlio.Writer import Writer
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
-from umlio.IOTypes import UmlDocument
-from umlio.IOTypes import UmlDocumentType
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_PATH
-from umldiagrammer.DiagrammerTypes import DEFAULT_PROJECT_TITLE
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import ProjectInformation
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
-
-from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
@@ -120,13 +121,7 @@ class FileMenuHandler(BaseMenuHandler):
         """
         Create an empty project
         """
-
-        umlProject:  UmlProject  = UmlProject(DEFAULT_PROJECT_PATH)
-        umlDocument: UmlDocument = UmlDocument(
-            documentType=UmlDocumentType.CLASS_DOCUMENT,
-            documentTitle=DEFAULT_PROJECT_TITLE
-        )
-        umlProject.umlDocuments[DEFAULT_PROJECT_TITLE] = umlDocument
+        umlProject:  UmlProject  = UmlProject.emptyProject()
         self._loadProject(umlProject=umlProject)
 
     def newClassDiagram(self, event: CommandEvent):
@@ -140,7 +135,7 @@ class FileMenuHandler(BaseMenuHandler):
 
     # noinspection PyUnusedLocal
     def fileSave(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._currentUMLProjectCallback)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveCallback)
 
     # noinspection PyUnusedLocal
     def openXmlFile(self, event: CommandEvent):
@@ -152,8 +147,9 @@ class FileMenuHandler(BaseMenuHandler):
             self.logger.debug(f'{umlProject=}')
             self._loadProject(umlProject)
 
+    # noinspection PyUnusedLocal
     def _onFileSaveAs(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveAsCallback)
 
     def _loadProject(self, umlProject: UmlProject):
 
@@ -184,7 +180,7 @@ class FileMenuHandler(BaseMenuHandler):
         umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
         self._loadProject(umlProject)
 
-    def _currentUMLProjectCallback(self, projectInformation: ProjectInformation):
+    def _fileSaveCallback(self, projectInformation: ProjectInformation):
 
         if projectInformation.modified is True:
             umlProject: UmlProject = projectInformation.umlProject
@@ -208,3 +204,51 @@ class FileMenuHandler(BaseMenuHandler):
             self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,
                                               uniqueId=APPLICATION_FRAME_ID,
                                               message='No save needed, project not modified')
+
+    def _fileSaveAsCallback(self, projectInformation: ProjectInformation):
+
+        if len(projectInformation.umlProject.umlDocuments) == 0:
+            booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
+            booBoo.ShowModal()
+        else:
+            with FileDialog(None, defaultDir=self._preferences.diagramsDirectory,
+                            wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
+                            style=FD_SAVE | FD_OVERWRITE_PROMPT) as fDialog:
+                # Return False if canceled
+                if fDialog.ShowModal() != ID_OK:
+                    fDialog.Destroy()
+                else:
+                    # See if a specified project is already open
+                    specifiedFileName: str = fDialog.GetPath()
+                    if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
+                        eMsg: str = f'Error ! This project {specifiedFileName} is currently open.  Please choose another name!'
+                        with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
+                            dlg.ShowModal()
+                            dlg.Destroy()
+                    else:
+                        umlProject: UmlProject = projectInformation.umlProject
+                        oldName:    Path = projectInformation.umlProject.fileName
+                        newName:    Path = Path(specifiedFileName)
+                        umlProject.fileName = newName
+
+                        writer: Writer = Writer()
+                        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+                        self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                                          uniqueId=NOTEBOOK_ID,
+                                                          projectPath=umlProject.fileName
+                                                          )
+                        self.logger.info(f'Project {oldName} saved as {newName}')
+
+    def _isProjectAlreadyOpen(self, fileName: str) -> bool:
+        """
+        TODO:
+        Args:
+            fileName:
+
+        Returns:
+
+        """
+
+        self.logger.info(f'{fileName=}')
+
+        return False

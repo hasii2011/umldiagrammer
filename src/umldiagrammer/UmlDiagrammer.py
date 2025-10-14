@@ -77,6 +77,8 @@ class UmlDiagrammer(App):
 
         if self._preferences.loadLastOpenedProject is True:
             self._wxFrame.loadLastOpenedProject()
+        else:
+            self._wxFrame.loadEmptyProject()
 
         return True
 
