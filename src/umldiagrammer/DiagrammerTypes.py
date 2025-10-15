@@ -8,6 +8,10 @@ from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
+from umlshapes.links.UmlAggregation import UmlAggregation
+
+from umlshapes.links.UmlAssociation import UmlAssociation
+from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlInheritance import UmlInheritance
 from umlshapes.links.UmlInterface import UmlInterface
 
@@ -38,7 +42,9 @@ EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')
 NOTEBOOK_ID:          UniqueId = UniqueId('SURRENDER MONKEYS')
 
 UmlShapeGenre = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
-UmlLinkGenre  = UmlInheritance | UmlInterface
+UmlLinkGenre  = UmlInheritance | UmlInterface | UmlAssociation | UmlComposition | UmlAggregation
+
+UmlAssociationGenre = UmlAssociation | UmlComposition | UmlAggregation
 
 APP_MODE: str = 'APP_MODE'
 
