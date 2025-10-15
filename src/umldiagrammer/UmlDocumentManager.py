@@ -69,7 +69,7 @@ from umlio.IOTypes import UmlLollipopInterfaces
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
-from umldiagrammer.DiagrammerTypes import UmlShape
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
@@ -326,7 +326,7 @@ class UmlDocumentManager(Simplebook):
             lollipopEventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
             umlLollipopInterface.SetEventHandler(lollipopEventHandler)
 
-    def _layoutShape(self, umlShape: UmlShape, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
+    def _layoutShape(self, umlShape: UmlShapeGenre, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
         """
 
         Args:

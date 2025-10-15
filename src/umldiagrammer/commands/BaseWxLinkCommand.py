@@ -23,8 +23,8 @@ from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umldiagrammer.DiagrammerTypes import UmlLinkType
-from umldiagrammer.DiagrammerTypes import UmlShape
+from umldiagrammer.DiagrammerTypes import UmlLinkGenre
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 
@@ -58,8 +58,8 @@ class BaseWxLinkCommand(Command):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self._umlFrame:        UmlFrame         = umlFrame
 
-        self._sourceUmlShape:      UmlShape = cast(UmlShape, None)
-        self._destinationUmlShape: UmlShape = cast(UmlShape, None)
+        self._sourceUmlShape:      UmlShapeGenre = cast(UmlShapeGenre, None)
+        self._destinationUmlShape: UmlShapeGenre = cast(UmlShapeGenre, None)
 
         self._linkType: PyutLinkType = linkType
 
@@ -142,7 +142,7 @@ class BaseWxLinkCommand(Command):
 
         self._linkLogger.info(f'Created: {self._link}')
 
-    def _createLink(self) -> UmlLinkType:
+    def _createLink(self) -> UmlLinkGenre:
         """
 
         Returns:  A specific UmlLink instance depending on the link type

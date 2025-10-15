@@ -2,8 +2,8 @@
 from logging import Logger
 from logging import getLogger
 
-from abc import abstractmethod
 from abc import ABCMeta
+from abc import abstractmethod
 
 from umlshapes.UmlDiagram import UmlDiagram
 from umlshapes.frames.UmlFrame import UmlFrame
@@ -12,11 +12,14 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
+
 from umlshapes.types.UmlPosition import UmlPosition
 
-from umldiagrammer.UmlDocumentManager import UmlShape
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
+
 from umldiagrammer.commands.BaseWxCommand import BaseWxCommand
 from umldiagrammer.commands.CommandTypes import DoableObjectType
+
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 
@@ -83,7 +86,7 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
         """
         pass
 
-    def _addUmlShapeToFrame(self, umlFrame: UmlFrame, umlShape: UmlShape, umlPosition: UmlPosition):
+    def _addUmlShapeToFrame(self, umlFrame: UmlFrame, umlShape: UmlShapeGenre, umlPosition: UmlPosition):
         """
         This is common code needed to create Note, Text, Actor, and UseCase shapes.
 

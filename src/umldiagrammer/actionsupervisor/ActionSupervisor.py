@@ -33,7 +33,7 @@ from umlshapes.types.UmlPosition import UmlPosition
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
-from umldiagrammer.DiagrammerTypes import UmlShape
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
 from umldiagrammer.commands.CommandCreateUmlClass import CommandCreateUmlClass
@@ -74,7 +74,7 @@ MESSAGES: Dict[UIAction, str] = {
     UIAction.DESTINATION_NOTE_LINK:        f'{ON} class',
 }
 
-NONE_UML_OBJECT: UmlShape = cast(UmlShape, None)
+NONE_UML_OBJECT: UmlShapeGenre = cast(UmlShapeGenre, None)
 
 UIActions = NewType('UIActions', List[UIAction])
 
@@ -169,8 +169,8 @@ class ActionSupervisor(metaclass=SingletonV3):
         self._currentAction:           UIAction = UIAction.SELECTOR
         self._currentActionPersistent: bool     = False
 
-        self._source:      UmlShape = NONE_UML_OBJECT
-        self._destination: UmlShape = NONE_UML_OBJECT
+        self._source:      UmlShapeGenre = NONE_UML_OBJECT
+        self._destination: UmlShapeGenre = NONE_UML_OBJECT
 
     @property
     def currentAction(self) -> UIAction:
@@ -294,7 +294,7 @@ class ActionSupervisor(metaclass=SingletonV3):
         self._appPubSubEngine.sendMessage(MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID, toolId=toolId)
         # self._eventEngine.sendEvent(EventType.SelectTool, toolId=toolId)
 
-    def _attemptSourceAction(self, umlShape: UmlShape):
+    def _attemptSourceAction(self, umlShape: UmlShapeGenre):
         """
 
         Args:
@@ -315,7 +315,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
             self._cancelAction(msg='Invalid Source')
 
-    def _attemptDestinationAction(self, umlShape: UmlShape):
+    def _attemptDestinationAction(self, umlShape: UmlShapeGenre):
         """
         We either create link or show a warning message
         Args:
@@ -344,7 +344,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
             self._cancelAction(msg='Invalid Destination')
 
-    def _validateSourceAction(self, umlShape: UmlShape) -> ValidationResult:
+    def _validateSourceAction(self, umlShape: UmlShapeGenre) -> ValidationResult:
 
         result: ValidationResult = ValidationResult()
 
@@ -354,13 +354,13 @@ class ActionSupervisor(metaclass=SingletonV3):
         elif self._currentAction == UIAction.NEW_ASSOCIATION_LINK and isinstance(umlShape, UmlActor):
             pass
         elif self._currentAction in UML_RELATIONSHIP_ACTIONS:
-            if not isinstance(umlShape, UmlShape):
+            if not isinstance(umlShape, UmlShapeGenre):
                 result.isValid      = False
                 result.errorMessage = 'UML relationships must start at a class'
 
         return result
 
-    def _validateDestinationAction(self, umlShape: UmlShape) -> ValidationResult:
+    def _validateDestinationAction(self, umlShape: UmlShapeGenre) -> ValidationResult:
         """
         For links that do not belong in a class diagram we do nothing and just
         return and error

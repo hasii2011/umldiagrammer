@@ -37,9 +37,9 @@ APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')
 NOTEBOOK_ID:          UniqueId = UniqueId('SURRENDER MONKEYS')
 
-HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area
+UmlShapeGenre = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
+UmlLinkGenre  = UmlInheritance | UmlInterface
 
 APP_MODE: str = 'APP_MODE'
 
-UmlShape = UmlActor | UmlNote | UmlText | UmlUseCase | UmlClass
-UmlLinkType = UmlInheritance | UmlInterface
+HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area

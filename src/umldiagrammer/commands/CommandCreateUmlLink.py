@@ -10,7 +10,7 @@ from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umldiagrammer.DiagrammerTypes import UmlShape
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.commands.BaseWxLinkCommand import BaseWxLinkCommand
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -22,8 +22,8 @@ class CommandCreateUmlLink(BaseWxLinkCommand):
                  umlFrame: UmlFrame,
                  appPubSubEngine: IAppPubSubEngine,
                  umlPubSubEngine: IUmlPubSubEngine,
-                 source:       UmlShape,
-                 destination:  UmlShape,
+                 source:       UmlShapeGenre,
+                 destination:  UmlShapeGenre,
                  linkType: PyutLinkType = PyutLinkType.INHERITANCE
                  ):
         """
