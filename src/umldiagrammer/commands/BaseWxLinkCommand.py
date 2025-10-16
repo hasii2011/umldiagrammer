@@ -6,11 +6,15 @@ from typing import Callable
 from logging import Logger
 from logging import getLogger
 
-from wx import Command
+from wx import OK
 from wx import Point
+from wx import ICON_ERROR
 
-from pyutmodelv2.PyutClass import PyutClass
+from wx import Command
+from wx import MessageDialog
+
 from pyutmodelv2.PyutLink import PyutLink
+from pyutmodelv2.PyutClass import PyutClass
 
 from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
@@ -30,9 +34,9 @@ from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociat
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
-from umldiagrammer.DiagrammerTypes import UmlAssociationGenre
 from umldiagrammer.DiagrammerTypes import UmlLinkGenre
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
+from umldiagrammer.DiagrammerTypes import UmlAssociationGenre
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -80,7 +84,13 @@ class BaseWxLinkCommand(Command):
         self._spline:   bool     = False
         # self._controlPoints: ControlPoints = ControlPoints([])       # for undo of delete or create link from plugin manager
 
+        #
+        # Dispatch table, aka dictionary
+        #
         self._linkCreationDispatcher: Dict[PyutLinkType, Callable] = {
+            PyutLinkType.INHERITANCE: self._createInheritanceLink,
+            PyutLinkType.INTERFACE:   self._createInterfaceLink,
+            PyutLinkType.ASSOCIATION: self._createAssociationLink
         }
 
     def GetName(self) -> str:
@@ -116,37 +126,13 @@ class BaseWxLinkCommand(Command):
         """
         Assumes that self._link was created prior to invoking this method
         Dual purpose depending on context
-        From CommandCreateOglLink.Do and from CommandDeleteOglLink.Undo
+        From CommandCreateUmlLink.Do and from CommandDeleteOglLink.Undo
         """
         umlFrame: UmlFrame = self._umlFrame
 
-        # umlFrame.diagram.AddShape(self._link, withModelUpdate=False)
-
-        # if isinstance(self._link, UmlInheritance) or isinstance(self._link, UmlInterface):
         umlFrame.umlDiagram.AddShape(self._link)
         self._link.Show(True)
 
-        # elif isinstance(self._link, UmlAssociation):
-        #     umlAssociation: UmlAssociation = cast(UmlAssociation, self._link)
-        #     self._linkLogger.info(f'{umlAssociation.associationName} -- NOT IMPLEMENTED')
-
-        # umlFrame.diagram.AddShape(shape=oglAssociation.centerLabel)
-        # umlFrame.diagram.AddShape(shape=oglAssociation.sourceCardinality)
-        # umlFrame.diagram.AddShape(shape=oglAssociation.destinationCardinality)
-
-        # get the view start and end position and assign it to the
-        # model position, then the view position is updated from
-        # the model: Legacy comment.  Not sure what that means: Humberto
-        # sourcePoint:      AnchorPoint = self._link.sourceAnchor
-        # destinationPoint: AnchorPoint = self._link.destinationAnchor
-        #
-        # srcPosX, srcPosY = sourcePoint.GetPosition()
-        # dstPosX, dstPosY = destinationPoint.GetPosition()
-
-        # self._link.sourceAnchor.model.SetPosition(srcPosX, srcPosY)
-        # self._link.destinationAnchor.model.SetPosition(dstPosX, dstPosY)
-        # self._link.UpdateFromModel()
-        #
         umlFrame.Refresh()
 
         self._linkLogger.info(f'Created: {self._link}')
@@ -157,21 +143,14 @@ class BaseWxLinkCommand(Command):
         Returns:  A specific UmlLink instance depending on the link type
         """
         linkType: PyutLinkType = self._linkType
+        try:
+            return self._linkCreationDispatcher[linkType]()
+        except KeyError as ke:
+            eMsg: str = f'Maybe it is unimplemented {ke}'
+            with MessageDialog(None, eMsg, 'Unknown Link Type', OK | ICON_ERROR) as dlg:
+                dlg.ShowModal()
 
-        if linkType == PyutLinkType.INHERITANCE:
-            return self._createInheritanceLink()
-        elif linkType == PyutLinkType.INTERFACE:
-            return self._createInterfaceLink()
-        elif linkType == PyutLinkType.ASSOCIATION or linkType == PyutLinkType.COMPOSITION or PyutLinkType.AGGREGATION:
-            return self._createAssociationLink()
-        else:
-            assert False, 'Unknown link type'
-        # elif linkType == PyutLinkType.SD_MESSAGE:
-
-        # TODO: UmlActo to an SD Instance
-        # elif isinstance(self._srcUmlShape, UmlActor) and isinstance(self._dstUmShape, OglSDInstance):
-        # else:
-        #     umlLink = self._createAssociationLink()
+        assert False, 'Unimplemented link type'
 
     def _createAssociationLink(self) -> UmlAssociation:
         """
@@ -189,7 +168,6 @@ class BaseWxLinkCommand(Command):
         # If we have a value, we are undoing a delete action
         if self._pyutLink is None:
             pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=sourceClass.pyutClass, destination=destinationClass.pyutClass)
-            # TODO: This will not be needed when umlshapes supports this as a preference
             pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
         else:
             pyutLink = self._pyutLink

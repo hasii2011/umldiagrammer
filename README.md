@@ -7,28 +7,6 @@
 
 # Introduction
 
-```
-
-# Overview
-
-The basic command structure is:
-
-```bash
-
-```
-
-
-A simple example:
-
-```bash
-
-```
-
-# Installation
-
-```bash
-pip install umldiagrammer
-```
 
 ___
 

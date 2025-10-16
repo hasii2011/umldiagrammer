@@ -57,8 +57,8 @@ class CommandCreateUmlLink(BaseWxLinkCommand):
             umlFrame:           The frame which we will create a UML Link
             appPubSubEngine:    Application publish/subscribe engine
             umlPubSubEngine:    The UML Shapes publish/subscribe engine
-            source:                The source of the link
-            destination:                The destination of the link
+            source:             The source of the link
+            destination:        The destination of the link
             linkType:           The type of link
         """
         super().__init__(partialName='Create', linkType=linkType,
