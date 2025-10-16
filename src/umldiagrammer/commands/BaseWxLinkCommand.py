@@ -14,20 +14,26 @@ from pyutmodelv2.PyutLink import PyutLink
 
 from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
-from umlshapes.links.UmlInterface import UmlInterface
-from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
-from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
-
 from umlshapes.frames.UmlFrame import UmlFrame
+
+from umlshapes.links.UmlLink import UmlLink
+from umlshapes.links.UmlInterface import UmlInterface
+from umlshapes.links.UmlAggregation import UmlAggregation
+from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlInheritance import UmlInheritance
-from umlshapes.links.UmlLink import UmlLink
+
 from umlshapes.shapes.UmlClass import UmlClass
+
+from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
+from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umldiagrammer.DiagrammerTypes import UmlAssociationGenre
 from umldiagrammer.DiagrammerTypes import UmlLinkGenre
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
+
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 
@@ -156,44 +162,27 @@ class BaseWxLinkCommand(Command):
             return self._createInheritanceLink()
         elif linkType == PyutLinkType.INTERFACE:
             return self._createInterfaceLink()
-        elif linkType == PyutLinkType.ASSOCIATION:
-            srcClass: UmlClass = cast(UmlClass, self._sourceUmlShape)
-            dstClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
-            return self._createAssociationLink(sourceClass=srcClass, destinationClass=dstClass)
+        elif linkType == PyutLinkType.ASSOCIATION or linkType == PyutLinkType.COMPOSITION or PyutLinkType.AGGREGATION:
+            return self._createAssociationLink()
         else:
             assert False, 'Unknown link type'
         # elif linkType == PyutLinkType.SD_MESSAGE:
-        #     srcSdInstance: OglSDInstance = cast(OglSDInstance, self._srcUmlShape)
-        #     dstSdInstance: OglSDInstance = cast(OglSDInstance, self._dstUmShape)
-        #     oglLink = self._createSDMessage(src=srcSdInstance, dest=dstSdInstance, srcPos=srcPos, destPos=dstPos)
 
         # TODO: UmlActo to an SD Instance
         # elif isinstance(self._srcUmlShape, UmlActor) and isinstance(self._dstUmShape, OglSDInstance):
-        #     # Special case for sequence diagram
-        #     oglActor:   UmlActor      = cast(UmlActor, self._srcUmlShape)
-        #     sdInstance: OglSDInstance = cast(OglSDInstance, self._dstUmShape)
-        #     pyutLink:   PyutLink      = PyutLink(name="", linkType=linkType, source=oglActor.pyutObject, destination=sdInstance.pyutSDInstance)
-        #
-        #     oglLinkFactory = getOglLinkFactory()
-        #
-        #     oglLink = oglLinkFactory.getOglLink(srcShape=oglActor, pyutLink=pyutLink, destShape=sdInstance, linkType=linkType)
-
         # else:
         #     umlLink = self._createAssociationLink()
 
-        # umlLink.spline = self._spline
-
-        # return umlInheritance
-
-    def _createAssociationLink(self, sourceClass: UmlClass, destinationClass: UmlClass) -> UmlAssociation:
+    def _createAssociationLink(self) -> UmlAssociation:
         """
-        UmlAssociation, UmlComposition, UmlAggregation
+        UmlAssociation, UmlAggregation, UmlComposition
         Args:
-            sourceClass:
-            destinationClass:
 
         Returns:
         """
+        sourceClass:      UmlClass = cast(UmlClass, self._sourceUmlShape)
+        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+
         linkType: PyutLinkType = self._linkType
 
         # If none, we are creating from scratch
@@ -205,7 +194,8 @@ class BaseWxLinkCommand(Command):
         else:
             pyutLink = self._pyutLink
 
-        umlAssociation: UmlAssociation = UmlAssociation(pyutLink=pyutLink)
+        umlAssociation: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+
         umlAssociation.umlPubSubEngine = self._umlPubSubEngine
         umlAssociation.umlFrame = self._umlFrame
         umlAssociation.MakeLineControlPoints(n=2)       # Make this configurable
@@ -290,53 +280,16 @@ class BaseWxLinkCommand(Command):
         umlInterface.SetEventHandler(eventHandler)
 
         return umlInterface
-    # def _createSDMessage(self, src: OglSDInstance, dest: OglSDInstance, srcPos: Point, destPos: Point) -> OglSDMessage:
-    #
-    #     srcRelativeCoordinates:  Tuple[int, int] = src.ConvertCoordToRelative(0, srcPos[1])
-    #     destRelativeCoordinates: Tuple[int, int] = dest.ConvertCoordToRelative(0, destPos[1])
-    #
-    #     srcY  = srcRelativeCoordinates[1]
-    #     destY = destRelativeCoordinates[1]
-    #
-    #     if isinstance(src, OglActor):
-    #         pyutSDMessage: PyutSDMessage = PyutSDMessage(BaseWxLinkCommand.NO_NAME_MESSAGE, src.pyutObject, srcY, dest.pyutSDInstance, destY)
-    #     else:
-    #         pyutSDMessage = PyutSDMessage(BaseWxLinkCommand.NO_NAME_MESSAGE, src.pyutSDInstance, srcY, dest.pyutSDInstance, destY)
-    #
-    #     oglLinkFactory = getOglLinkFactory()
-    #     oglSdMessage: OglSDMessage = oglLinkFactory.getOglLink(srcShape=src, pyutLink=pyutSDMessage, destShape=dest, linkType=PyutLinkType.SD_MESSAGE)
-    #
-    #     return oglSdMessage
 
-    # def _placeAnchorsInCorrectPosition(self, oglLink: OglLink):
-    #
-    #     srcAnchor: AnchorPoint = oglLink.sourceAnchor
-    #     dstAnchor: AnchorPoint = oglLink.destinationAnchor
-    #
-    #     srcX, srcY = self._srcPoint.Get()
-    #     dstX, dstY = self._dstPoint.Get()
-    #
-    #     srcAnchor.SetPosition(x=srcX, y=srcY)
-    #     dstAnchor.SetPosition(x=dstX, y=dstY)
-    #
-    #     srcModel: ShapeModel = srcAnchor.model
-    #     dstModel: ShapeModel = dstAnchor.model
-    #
-    #     srcModel.SetPosition(x=srcX, y=srcY)
-    #     dstModel.SetPosition(x=dstY, y=dstY)
-
-    def _createNeededControlPoints(self, umlLink: UmlLink):
-        pass
-        # parent:   OglClass = oglLink.sourceAnchor.parent
-        # selfLink: bool     = parent is oglLink.destinationAnchor.parent
-        #
-        # for cp in self._controlPoints:
-        #     controlPoint: ControlPoint = cast(ControlPoint, cp)
-        #     oglLink.AddControl(control=controlPoint, after=None)
-        #     if selfLink:
-        #         x, y = controlPoint.GetPosition()
-        #         controlPoint.parent = parent
-        #         controlPoint.SetPosition(x, y)
+    def _getAppropriateAssociation(self, pyutLink: PyutLink) -> UmlAssociationGenre:
+        if self._linkType == PyutLinkType.ASSOCIATION:
+            return UmlAssociation(pyutLink=pyutLink)
+        elif self._linkType == PyutLinkType.AGGREGATION:
+            return UmlAggregation(pyutLink=pyutLink)
+        elif self._linkType == PyutLinkType.COMPOSITION:
+            return UmlComposition(pyutLink=pyutLink)
+        else:
+            assert False, 'Unknown association'
 
     def _toCommandName(self, linkType: PyutLinkType) -> str:
         # Because I do not like the generated name
