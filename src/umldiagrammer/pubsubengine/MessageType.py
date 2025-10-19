@@ -17,5 +17,6 @@ class MessageType(Enum):
     GET_CURRENT_UML_PROJECT        = 'Get Current UML Project'
     CURRENT_PROJECT_SAVED          = 'Current Project Saved'
     PROJECT_RENAMED                = 'Project Renamed'
+    LOLLIPOP_CREATION_REQUEST      = 'Lollipop Creation Request'
 
     NO_EVENT = 'NoEvent'

@@ -69,7 +69,6 @@ from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
-from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.FileHistoryConfiguration import FileHistoryConfiguration
 
@@ -77,6 +76,8 @@ from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
+from umldiagrammer.data.LollipopCreationData import LollipopCreationData
+from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
@@ -138,6 +139,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._umlPubSubEngine: IUmlPubSubEngine  = UmlPubSubEngine()
 
         uiMenuCreator: UIMenuCreator = self._createApplicationMenuBar()
+
+        self._editMenu: Menu = uiMenuCreator.editMenu
 
         # incestuous stuff going on here !!!
         self._fileHistory: FileHistory = self._setupFileHistory(fileMenu=uiMenuCreator.fileMenu)
@@ -258,7 +261,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
                                                         appPubSubEngine=self._appPubSubEngine,
                                                         umlPubSubEngine=self._umlPubSubEngine,
-                                                        umlProject=umlProject
+                                                        umlProject=umlProject,
+                                                        editMenu=self._editMenu
                                                         )
         self._umlNotebook.addProject(projectPanel=projectPanel)
 
@@ -350,18 +354,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._doToolSelect(toolId=toolId)
 
     def _getCurrentUmlProjectListener(self, callback: Callable):
-        projectInfo: ProjectInformation = self._umlNotebook.currentProject
+        projectInfo: ProjectDossier = self._umlNotebook.currentProject
         callback(projectInfo)
-
-    def _doToolSelect(self, toolId: int):
-
-        toolBar:    ToolBar   = self._toolBarCreator.toolBar
-        toolBarIds: List[int] = self._toolBarCreator.toolBarIds
-
-        for deselectedToolId in toolBarIds:
-            toolBar.ToggleTool(deselectedToolId, False)
-
-        toolBar.ToggleTool(toolId, True)
 
     def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
         """
@@ -380,15 +374,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
-    def _setApplicationPosition(self):
-        """
-        Observe preferences how to set the application position
-        """
-        if self._preferences.centerAppOnStartup is True:
-            self.Center(BOTH)  # Center on the screen
-        else:
-            appPosition: Position = self._preferences.startupPosition
-            self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+    def _lollipopCreationRequestListener(self, lollipopCreationData: LollipopCreationData):
+        self._actionSupervisor.createLollipopInterface(lollipopCreationData=lollipopCreationData)
 
     def _subscribeToMessagesWeHandle(self):
 
@@ -400,6 +387,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
     def _getFrameStyle(self) -> int:
         """
@@ -446,3 +434,23 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'{fileHistoryConfiguration.GetPath()=}')
 
         return fileHistory
+
+    def _setApplicationPosition(self):
+        """
+        Observe preferences how to set the application position
+        """
+        if self._preferences.centerAppOnStartup is True:
+            self.Center(BOTH)  # Center on the screen
+        else:
+            appPosition: Position = self._preferences.startupPosition
+            self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+
+    def _doToolSelect(self, toolId: int):
+
+        toolBar:    ToolBar   = self._toolBarCreator.toolBar
+        toolBarIds: List[int] = self._toolBarCreator.toolBarIds
+
+        for deselectedToolId in toolBarIds:
+            toolBar.ToggleTool(deselectedToolId, False)
+
+        toolBar.ToggleTool(toolId, True)

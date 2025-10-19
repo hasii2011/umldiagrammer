@@ -6,18 +6,21 @@ from typing import NewType
 from logging import Logger
 from logging import getLogger
 
+from wx import Menu
 from wx import Window
 from wx import Simplebook
+
+from pyutmodelv2.PyutInterface import PyutInterfaces
 
 from umlshapes.UmlDiagram import UmlDiagram
 
 from umlshapes.types.Common import UmlShapeList
+from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.DiagramFrame import DiagramFrame
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-from umlshapes.frames.ClassDiagramFrame import CreateLollipopCallback
 from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
 
@@ -53,6 +56,7 @@ from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLo
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlio.IOTypes import UmlActors
 from umlio.IOTypes import UmlClasses
@@ -66,24 +70,31 @@ from umlio.IOTypes import UmlUseCases
 from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlLollipopInterfaces
 
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
 from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
+from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+
+from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+from umldiagrammer.pubsubengine.MessageType import MessageType
 
 NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
 
 
 class UmlDocumentManager(Simplebook):
-    def __init__(self, parent: Window, umlDocuments: UmlDocuments, umlPubSubEngine: IUmlPubSubEngine):
+    def __init__(self, parent: Window, umlDocuments: UmlDocuments, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, editMenu: Menu):
         """
         Assumes that the provided UML documents all belong to the same project
         Args:
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
+            appPubSubEngine:    The application pub/sub engine
             umlPubSubEngine:    The Uml pub sub engine, In case something happens on the diagram frame
+            editMenu:
         """
 
         self.logger:          Logger                = getLogger(__name__)
@@ -93,7 +104,9 @@ class UmlDocumentManager(Simplebook):
         super().__init__(parent=parent)
 
         self._umlDocuments:    UmlDocuments     = umlDocuments
+        self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
+        self._editMenu:        Menu             = editMenu
 
         self._frameIdToTitleMap:     FrameIdToTitleMap      = FrameIdToTitleMap({})
         self._frameIdMap:            FrameIdMap             = FrameIdMap({})
@@ -180,9 +193,9 @@ class UmlDocumentManager(Simplebook):
             if documentType == UmlDocumentType.CLASS_DOCUMENT:
                 diagramFrame = ClassDiagramFrame(
                     parent=self,
-                    umlPubSubEngine=self._umlPubSubEngine,
-                    createLollipopCallback=cast(CreateLollipopCallback, None)       # TODO:  Where is this
+                    umlPubSubEngine=self._umlPubSubEngine
                 )
+                self._umlPubSubEngine.subscribe(UmlMessageType.CREATE_LOLLIPOP, frameId=diagramFrame.id, listener=self._createLollipopInterfaceListener)
             elif documentType == UmlDocumentType.USE_CASE_DOCUMENT:
                 diagramFrame = UseCaseDiagramFrame(
                     parent=self,
@@ -196,6 +209,7 @@ class UmlDocumentManager(Simplebook):
             else:
                 assert False, f'Unknown UML document type: {documentType=}'
 
+            diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
             umlDiagram: UmlDiagram = diagramFrame.umlDiagram
             if self._umlPreferences.snapToGrid is True:
                 umlDiagram.SetSnapToGrid(snap=True)
@@ -411,3 +425,18 @@ class UmlDocumentManager(Simplebook):
                     self.logger.warning(f'Unknown Uml object type: {umlShape}, not saved')
 
         return umlDocument
+
+    def _createLollipopInterfaceListener(self,
+                                         requestingFrame: ClassDiagramFrame,
+                                         requestingUmlClass: UmlClass,
+                                         pyutInterfaces: PyutInterfaces,
+                                         perimeterPoint: UmlPosition
+                                         ):
+
+        lollipopCreationData: LollipopCreationData = LollipopCreationData(requestingFrame=requestingFrame,
+                                                                          requestingUmlClass=requestingUmlClass,
+                                                                          pyutInterfaces=pyutInterfaces,
+                                                                          perimeterPoint=perimeterPoint
+                                                                          )
+
+        self._appPubSubEngine.sendMessage(MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, lollipopCreationData=lollipopCreationData)

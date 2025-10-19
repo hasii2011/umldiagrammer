@@ -9,10 +9,6 @@ from logging import getLogger
 
 from dataclasses import dataclass
 
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
-from umlshapes.shapes.UmlClass import UmlClass
-from umlshapes.shapes.UmlText import UmlText
-from umlshapes.shapes.UmlUseCase import UmlUseCase
 from wx import ICON_ERROR
 from wx import ICON_WARNING
 from wx import OK
@@ -22,8 +18,13 @@ from wx import MessageDialog
 
 from codeallybasic.SingletonV3 import SingletonV3
 
+from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
+
 from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlNote import UmlNote
+from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.shapes.UmlText import UmlText
+from umlshapes.shapes.UmlUseCase import UmlUseCase
 
 from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.frames.DiagramFrame import FrameId
@@ -35,9 +36,11 @@ from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
+from umldiagrammer.commands.CommandCreateLollipopInterface import CommandCreateLollipopInterface
 
 from umldiagrammer.commands.CommandCreateUmlClass import CommandCreateUmlClass
 from umldiagrammer.commands.CommandCreateUmlLink import CommandCreateUmlLink
+from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
 from umldiagrammer.pubsubengine.MessageType import MessageType
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -159,6 +162,10 @@ class ValidationResult:
 
 
 class ActionSupervisor(metaclass=SingletonV3):
+    """
+    This class handles the user interactions with the frames.  Thus shapes are created
+    here (via Commands)
+    """
     def __init__(self, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
@@ -227,6 +234,25 @@ class ActionSupervisor(metaclass=SingletonV3):
             self._resetToActionSelector()
             submitStatus: bool = umlFrame.commandProcessor.Submit(command=cmd, storeIt=True)
             self.logger.debug(f'Create command submission status: {submitStatus}')
+
+    def createLollipopInterface(self, lollipopCreationData: LollipopCreationData):
+        """
+        Done here because this is where we do this
+
+        Args:
+            lollipopCreationData:
+
+        """
+        umlFrame: UmlFrame = lollipopCreationData.requestingFrame
+        command: CommandCreateLollipopInterface = CommandCreateLollipopInterface(
+            appPubSubEngine=self._appPubSubEngine,
+            umlPubSubEngine=self._umlPubSubEngine,
+            creationData=lollipopCreationData
+        )
+
+        self._resetToActionSelector()
+        submitStatus: bool = umlFrame.commandProcessor.Submit(command=command, storeIt=True)
+        self.logger.debug(f'Create command submission status: {submitStatus}')
 
     def _frameClickListener(self, frame: UmlFrame, umlPosition: UmlPosition):
         self.logger.info(f'{frame.id=} {umlPosition=}')

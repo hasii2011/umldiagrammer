@@ -2,6 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
+from wx import Menu
 from wx import Size
 from wx import Window
 from wx import SplitterWindow
@@ -26,7 +27,11 @@ from umldiagrammer.pubsubengine.MessageType import MessageType
 
 
 class UmlProjectPanel(SplitterWindow):
-    def __init__(self, parent: Window, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, umlProject: UmlProject):
+    """
+    Handles the interactions between the tree nodes (document selection) on the left and the
+    diagrammer frames on the right
+    """
+    def __init__(self, parent: Window, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, umlProject: UmlProject, editMenu: Menu):
         """
 
         Args:
@@ -34,15 +39,22 @@ class UmlProjectPanel(SplitterWindow):
             appPubSubEngine:    The event engine that the applications uses to communicate within its UI components
             umlPubSubEngine:    The pub sub engine that UML Shapes uses to communicate within itself and the wrapper application
             umlProject:
+            editMenu:
         """
 
         self.logger: Logger = getLogger(__name__)
         super().__init__(parent=parent)
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
+        self._editMenu:        Menu             = editMenu
 
         self._projectTree:     UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
-        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self, umlPubSubEngine=umlPubSubEngine, umlDocuments=umlProject.umlDocuments)
+        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self,
+                                                                       appPubSubEngine=appPubSubEngine,
+                                                                       umlPubSubEngine=umlPubSubEngine,
+                                                                       umlDocuments=umlProject.umlDocuments,
+                                                                       editMenu=editMenu
+                                                                       )
 
         self.SetMinimumPaneSize(200)            # TODO: This should be a preference
 

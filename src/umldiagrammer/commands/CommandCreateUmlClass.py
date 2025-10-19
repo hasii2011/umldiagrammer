@@ -35,7 +35,8 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
             umlPosition:
             umlPubSubEngine:
         """
-        super().__init__(canUndo=True, name='Create Class', umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        name: str = f'Create Class- {CommandCreateUmlClass.clsCounter}'
+        super().__init__(canUndo=True, name=name, umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
         self._umlFrame: UmlFrame = umlFrame
 
@@ -45,7 +46,9 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
 
         self.logger.info(f'{self._umlFrame=}')
         # SD Instance will not appear here
-        pyutClass: PyutClass = cast(PyutClass, self._shape.pyutObject)  # type: ignore
+        assert isinstance(self._shape, UmlClass), 'It can only be this for this command'
+        umlClass:  UmlClass  = cast(UmlClass, self._shape)
+        pyutClass: PyutClass = umlClass.pyutClass
         self._removeUmlShapeFromFrame(umlFrame=self._umlFrame, umlShape=self._shape, pyutClass=pyutClass)
 
         return True

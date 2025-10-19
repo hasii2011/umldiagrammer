@@ -22,10 +22,10 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
-from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
+from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
@@ -64,11 +64,11 @@ class UmlNotebook(Notebook):
                                         )
 
     @property
-    def currentProject(self) -> ProjectInformation:
+    def currentProject(self) -> ProjectDossier:
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
 
-        return ProjectInformation(
+        return ProjectDossier(
             umlProject=projectPanel.umlProject,
             modified=projectPanel.umlProjectModified
         )

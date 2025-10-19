@@ -45,8 +45,8 @@ from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
-from umldiagrammer.DiagrammerTypes import ProjectInformation
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
+from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 
@@ -181,7 +181,7 @@ class FileMenuHandler(BaseMenuHandler):
         umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
         self._loadProject(umlProject)
 
-    def _fileSaveCallback(self, projectInformation: ProjectInformation):
+    def _fileSaveCallback(self, projectInformation: ProjectDossier):
 
         umlProject: UmlProject = projectInformation.umlProject
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
@@ -209,7 +209,7 @@ class FileMenuHandler(BaseMenuHandler):
                                                   uniqueId=APPLICATION_FRAME_ID,
                                                   message='No save needed, project not modified')
 
-    def _fileSaveAsCallback(self, projectInformation: ProjectInformation):
+    def _fileSaveAsCallback(self, projectInformation: ProjectDossier):
         """
 
         Args:
