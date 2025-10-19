@@ -76,7 +76,8 @@ class UmlNotebook(Notebook):
     def addProject(self, projectPanel: UmlProjectPanel):
         """
         Use this method to add a notebook page;  Do not use .AddPage directly
-
+        Do not need to send the ACTIVE_DOCUMENT_CHANGED message since the UI
+        fires a BookCtrlEvent, which we handle and fire the message there
         Args:
             projectPanel:
         """
@@ -86,13 +87,15 @@ class UmlNotebook(Notebook):
         self.AddPage(page=projectPanel, text=projectPanel.umlProject.fileName.stem, select=True)
 
         self.logger.info(f'{projectPanel.currentUmlFrameId=}')
-        self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
-                                          uniqueId=EDIT_MENU_HANDLER_ID,
-                                          activeFrameId=projectPanel.currentUmlFrameId
-                                          )
 
     # noinspection PyUnusedLocal
     def _onNewProjectDisplayed(self, event: BookCtrlEvent):
+        """
+        This fires when we add new projects.  Thus, we wind up sending the ACTIVE_DOCUMENT_CHANGED
+
+        Args:
+            event:
+        """
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         frameId:      FrameId         = projectPanel.currentUmlFrameId
 

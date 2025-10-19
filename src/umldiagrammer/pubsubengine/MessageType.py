@@ -18,5 +18,6 @@ class MessageType(Enum):
     CURRENT_PROJECT_SAVED          = 'Current Project Saved'
     PROJECT_RENAMED                = 'Project Renamed'
     LOLLIPOP_CREATION_REQUEST      = 'Lollipop Creation Request'
+    UPDATE_EDIT_MENU               = 'Update Edit Menu'
 
     NO_EVENT = 'NoEvent'

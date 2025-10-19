@@ -80,6 +80,7 @@ from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
@@ -89,6 +90,7 @@ class UmlDocumentManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, editMenu: Menu):
         """
         Assumes that the provided UML documents all belong to the same project
+
         Args:
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
@@ -170,7 +172,22 @@ class UmlDocumentManager(Simplebook):
         return self._frameIdMap
 
     def switchToDocument(self, umlDocument: UmlDocument):
-        self.SetSelection(self._umlDocumentTileToPage[umlDocument.documentTitle])
+        """
+        Handles selection within SimpleBook;
+
+        Args:
+            umlDocument:
+
+        Returns:
+
+        """
+
+        pageNumber: int = self._umlDocumentTileToPage[umlDocument.documentTitle]
+        self.SetSelection(pageNumber)
+
+    @property
+    def currentUmlFrame(self) -> UmlFrame:
+        return cast(UmlFrame, self.GetCurrentPage())
 
     @property
     def currentUmlFrameId(self) -> FrameId:
@@ -183,6 +200,38 @@ class UmlDocumentManager(Simplebook):
         for frameId, frame in self._frameIdMap.items():
             umlFrame: UmlFrame = cast(UmlFrame, frame)
             umlFrame.markFrameSaved()
+
+    def _createLollipopInterfaceListener(self,
+                                         requestingFrame:    ClassDiagramFrame,
+                                         requestingUmlClass: UmlClass,
+                                         pyutInterfaces:     PyutInterfaces,
+                                         perimeterPoint:     UmlPosition
+                                         ):
+        """
+        Got the message from the underlying frame.  Pass it on to the application
+        so it can put the creation on the command stack
+
+        Args:
+            requestingFrame:
+            requestingUmlClass:
+            pyutInterfaces:
+            perimeterPoint:
+
+        """
+        lollipopCreationData: LollipopCreationData = LollipopCreationData(requestingFrame=requestingFrame,
+                                                                          requestingUmlClass=requestingUmlClass,
+                                                                          pyutInterfaces=pyutInterfaces,
+                                                                          perimeterPoint=perimeterPoint
+                                                                          )
+
+        self._appPubSubEngine.sendMessage(MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, lollipopCreationData=lollipopCreationData)
+
+    def _updateEditMenuListener(self):
+        """
+        The 'selected' project has changed;
+
+        """
+        self._updateEditMenu()
 
     def _createPages(self):
 
@@ -210,6 +259,8 @@ class UmlDocumentManager(Simplebook):
                 assert False, f'Unknown UML document type: {documentType=}'
 
             diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
+            self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
+
             umlDiagram: UmlDiagram = diagramFrame.umlDiagram
             if self._umlPreferences.snapToGrid is True:
                 umlDiagram.SetSnapToGrid(snap=True)
@@ -426,17 +477,6 @@ class UmlDocumentManager(Simplebook):
 
         return umlDocument
 
-    def _createLollipopInterfaceListener(self,
-                                         requestingFrame: ClassDiagramFrame,
-                                         requestingUmlClass: UmlClass,
-                                         pyutInterfaces: PyutInterfaces,
-                                         perimeterPoint: UmlPosition
-                                         ):
-
-        lollipopCreationData: LollipopCreationData = LollipopCreationData(requestingFrame=requestingFrame,
-                                                                          requestingUmlClass=requestingUmlClass,
-                                                                          pyutInterfaces=pyutInterfaces,
-                                                                          perimeterPoint=perimeterPoint
-                                                                          )
-
-        self._appPubSubEngine.sendMessage(MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, lollipopCreationData=lollipopCreationData)
+    def _updateEditMenu(self):
+        umlFrame: UmlFrame = self.currentUmlFrame
+        umlFrame.commandProcessor.SetMenuStrings()

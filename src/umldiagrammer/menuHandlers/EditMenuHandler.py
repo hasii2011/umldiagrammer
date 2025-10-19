@@ -13,12 +13,15 @@ from wx.lib.sized_controls import SizedFrame
 
 from umlshapes.frames.DiagramFrame import FrameId
 
-from umldiagrammer.pubsubengine.MessageType import MessageType
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+
+from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
+from umldiagrammer.pubsubengine.MessageType import MessageType
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
+
 from umldiagrammer.menuHandlers.BaseMenuHandler import BaseMenuHandler
 
 NO_FRAME_ID = cast(FrameId, None)
@@ -52,6 +55,8 @@ class EditMenuHandler(BaseMenuHandler):
     def _activeDocumentChangedListener(self, activeFrameId: FrameId):
         self.logger.debug(f'{activeFrameId=}')
         self._activeFrameId = activeFrameId
+
+        self._appPubSubEngine.sendMessage(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, activeFrameId))
 
     def onEditMenu(self, event: CommandEvent):
 
