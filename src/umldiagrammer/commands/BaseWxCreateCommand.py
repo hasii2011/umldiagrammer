@@ -39,9 +39,9 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
 
         super().__init__(canUndo=canUndo, name=name, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
-        self._baseWxCreateLogger: Logger = getLogger(__name__)
-        self._umlFrame:        UmlFrame        = umlFrame
-        self._umlPosition:     UmlPosition     = umlPosition
+        self._baseWxCreateLogger: Logger     = getLogger(__name__)
+        self._umlFrame:           UmlFrame   = umlFrame
+        self._umlPosition:       UmlPosition = umlPosition
 
         self._shape: DoableObjectType = self._createPrototypeInstance()
 

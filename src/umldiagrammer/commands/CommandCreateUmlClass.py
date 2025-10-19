@@ -42,6 +42,11 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
 
         self.logger: Logger = getLogger(__name__)
 
+    def GetName(self) -> str:
+        umlClass:  UmlClass  = cast(UmlClass, self._shape)
+        pyutClass: PyutClass = umlClass.pyutClass
+        return pyutClass.name
+
     def Undo(self) -> bool:
 
         self.logger.info(f'{self._umlFrame=}')
