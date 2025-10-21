@@ -254,7 +254,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         if self._umlNotebook is None:
             # Lazy UI creation
-            # self._createTheApplicationNotebook()
+
             sizedPanel: SizedPanel = self.GetContentsPane()
             self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
 
@@ -274,6 +274,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                             listener=self._updateApplicationStatusListener)
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
+
+        self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
