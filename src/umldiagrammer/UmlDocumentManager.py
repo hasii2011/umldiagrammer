@@ -85,6 +85,8 @@ from umldiagrammer.pubsubengine.MessageType import MessageType
 
 NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
 
+# TODO:  This might belong in umlshapes
+DiagramFrameType = ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame
 
 class UmlDocumentManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, editMenu: Menu):
@@ -185,6 +187,17 @@ class UmlDocumentManager(Simplebook):
         pageNumber: int = self._umlDocumentTileToPage[umlDocument.documentTitle]
         self.SetSelection(pageNumber)
 
+    def createNewDocument(self,  umlDocument: UmlDocument):
+        """
+
+        Args:
+            umlDocument:
+        """
+
+        diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
+
+        self.AddPage(diagramFrame, umlDocument.documentTitle)
+
     @property
     def currentUmlFrame(self) -> UmlFrame:
         return cast(UmlFrame, self.GetCurrentPage())
@@ -237,36 +250,8 @@ class UmlDocumentManager(Simplebook):
 
         for umlDocumentTitle, umlDocument in self._umlDocuments.items():
 
-            documentType: UmlDocumentType = umlDocument.documentType
-
-            if documentType == UmlDocumentType.CLASS_DOCUMENT:
-                diagramFrame = ClassDiagramFrame(
-                    parent=self,
-                    umlPubSubEngine=self._umlPubSubEngine
-                )
-                self._umlPubSubEngine.subscribe(UmlMessageType.CREATE_LOLLIPOP, frameId=diagramFrame.id, listener=self._createLollipopInterfaceListener)
-            elif documentType == UmlDocumentType.USE_CASE_DOCUMENT:
-                diagramFrame = UseCaseDiagramFrame(
-                    parent=self,
-                    umlPubSubEngine=self._umlPubSubEngine,
-                )
-            elif documentType == UmlDocumentType.SEQUENCE_DOCUMENT:
-                diagramFrame = SequenceDiagramFrame(
-                    parent=self,
-                    umlPubSubEngine=self._umlPubSubEngine
-                )
-            else:
-                assert False, f'Unknown UML document type: {documentType=}'
-
-            diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
-            self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
-
-            umlDiagram: UmlDiagram = diagramFrame.umlDiagram
-            if self._umlPreferences.snapToGrid is True:
-                umlDiagram.SetSnapToGrid(snap=True)
-                umlDiagram.SetGridSpacing(self._umlPreferences.backgroundGridInterval)
-            else:
-                umlDiagram.SetSnapToGrid(snap=False)
+            documentType: UmlDocumentType  = umlDocument.documentType
+            diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=documentType)
 
             self.AddPage(diagramFrame, umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
@@ -287,6 +272,46 @@ class UmlDocumentManager(Simplebook):
         self._layoutUseCases(diagramFrame, umlDocument.umlUseCases)
         self._layoutLinks(diagramFrame, umlDocument.umlLinks)
         self._layoutLollipops(diagramFrame, umlDocument.umlLollipopInterfaces)
+
+    def _createDiagramFrame(self, documentType: UmlDocumentType) -> DiagramFrameType:
+        """
+
+        Args:
+            documentType:
+
+        Returns:  A nascent diagram frame of the appropriate type
+        """
+
+        if documentType == UmlDocumentType.CLASS_DOCUMENT:
+            diagramFrame = ClassDiagramFrame(
+                parent=self,
+                umlPubSubEngine=self._umlPubSubEngine
+            )
+            self._umlPubSubEngine.subscribe(UmlMessageType.CREATE_LOLLIPOP, frameId=diagramFrame.id, listener=self._createLollipopInterfaceListener)
+        elif documentType == UmlDocumentType.USE_CASE_DOCUMENT:
+            diagramFrame = UseCaseDiagramFrame(
+                parent=self,
+                umlPubSubEngine=self._umlPubSubEngine,
+            )
+        elif documentType == UmlDocumentType.SEQUENCE_DOCUMENT:
+            diagramFrame = SequenceDiagramFrame(
+                parent=self,
+                umlPubSubEngine=self._umlPubSubEngine
+            )
+        else:
+            assert False, f'Unknown UML document type: {documentType=}'
+
+        diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
+        self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
+
+        umlDiagram: UmlDiagram = diagramFrame.umlDiagram
+        if self._umlPreferences.snapToGrid is True:
+            umlDiagram.SetSnapToGrid(snap=True)
+            umlDiagram.SetGridSpacing(self._umlPreferences.backgroundGridInterval)
+        else:
+            umlDiagram.SetSnapToGrid(snap=False)
+
+        return diagramFrame
 
     def _layoutClasses(self, diagramFrame: ClassDiagramFrame, umlClasses: UmlClasses):
         for umlClass in umlClasses:

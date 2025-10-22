@@ -86,6 +86,25 @@ class UmlProjectTree(TreeCtrl):
         """
         return self._uniqueIds
 
+    def createTreeItem(self, umlDocument: UmlDocument, selectItem: bool = False) -> TreeItemId:
+
+        documentNode:    TreeItemId = self.AppendItem(self.root, umlDocument.documentTitle)
+        treeNodeTopicId: UniqueId   = UniqueId(UmlUtils.getID())  # TODO: We should not use UML Shape
+
+        treeData: TreeNodeData = TreeNodeData(
+            umlDocument=umlDocument,
+            treeNodeID=documentNode,
+            uniqueNodeId=treeNodeTopicId
+        )
+
+        self._uniqueIds.append(treeNodeTopicId)
+        self.SetItemData(item=documentNode, data=treeData)
+
+        if selectItem is True:
+            self.SelectItem(documentNode)
+
+        return documentNode
+
     def _onProjectTreeRightClick(self, treeEvent: TreeEvent):
 
         itemId:       TreeItemId = treeEvent.GetItem()
@@ -98,18 +117,8 @@ class UmlProjectTree(TreeCtrl):
 
     def _createDocumentNodes(self):
 
-        for documentName, umlDocument in self._umlProject.umlDocuments.items():
-            documentNode:    TreeItemId = self.AppendItem(self.root, documentName)
-            treeNodeTopicId: UniqueId   = UniqueId(UmlUtils.getID())
-
-            treeData: TreeNodeData = TreeNodeData(
-                umlDocument=umlDocument,
-                treeNodeID=documentNode,
-                uniqueNodeId=treeNodeTopicId
-            )
-
-            self._uniqueIds.append(treeNodeTopicId)
-            self.SetItemData(item=documentNode, data=treeData)
+        for umlDocument in self._umlProject.umlDocuments.values():
+            self.createTreeItem(umlDocument=umlDocument)
 
     def _onDocumentSelectionChanged(self, treeEvent: TreeEvent):
 
@@ -162,7 +171,7 @@ class UmlProjectTree(TreeCtrl):
         with TextEntryDialog(parent, "Edit Diagram Title", "Diagram Title", oldDocumentTitle, OK | CANCEL | CENTRE) as dlg:
             if dlg.ShowModal() == ID_OK:
                 newDocumentTitle: UmlDocumentTitle = UmlDocumentTitle(dlg.GetValue())
-                # self.umlPubSibEngine.sendMessage(eventType=MessageType.DOCUMENT_MODIFIED)
+                # self._appPubSubEngine.sendMessage(eventType=MessageType.DOCUMENT_MODIFIED)
                 self.logger.info(f'Diagram named changed from `{oldDocumentTitle}` to `{newDocumentTitle.title}`')
 
                 # Change the model and then the UI

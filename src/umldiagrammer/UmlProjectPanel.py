@@ -2,6 +2,8 @@
 from logging import Logger
 from logging import getLogger
 
+from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlDocumentType
 from wx import Menu
 from wx import Size
 from wx import Window
@@ -104,6 +106,24 @@ class UmlProjectPanel(SplitterWindow):
     @property
     def currentUmlFrameId(self) -> FrameId:
         return self._documentManager.currentUmlFrameId
+
+    def createNewDocument(self, documentType: UmlDocumentType):
+        """
+
+        Args:
+            documentType:
+        """
+        if documentType == UmlDocumentType.CLASS_DOCUMENT:
+            umlDocument: UmlDocument = UmlDocument.classDocument()
+        elif documentType == UmlDocumentType.USE_CASE_DOCUMENT:
+            umlDocument = UmlDocument.useCaseDocument()
+        elif documentType == UmlDocumentType.SEQUENCE_DOCUMENT:
+            umlDocument = UmlDocument.sequenceDocument()
+        else:
+            assert False, 'Unknown UML document type'
+
+        self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
+        self._documentManager.createNewDocument(umlDocument=umlDocument)
 
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')

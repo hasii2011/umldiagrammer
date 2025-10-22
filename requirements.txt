@@ -10,7 +10,7 @@ chardet==5.2.0
 
 py2app==0.28.8
 
-mypy == 1.18.2
+mypy==1.18.2
 html-testRunner~=1.2.1
 
 # So Circle CI works
@@ -25,4 +25,4 @@ codeallyadvanced==2.2.0
 pyutmodelv2==2.2.6
 
 umlshapes==0.9.310
-umlio==0.4.5
+umlio==0.4.7

@@ -67,7 +67,7 @@ setup(
         'codeallyadvanced>=2.2.0',
         'pyutmodelv2>=2.2.6',
         'umlshapes>=0.9.310',
-        'umlio>=0.4.5',
+        'umlio>=0.4.7',
         'wxPython==4.2.3',
     ]
 )

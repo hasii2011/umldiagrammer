@@ -124,13 +124,12 @@ class UmlDiagrammer(App):
         print('')
         print(f'Display Size: {metrics.displaySize}')
         print(f'x-DPI: {size.GetWidth()} y-DPI: {size.GetHeight()}')
-        # print(f'{metrics.toolBarIconSize=}')
+        print(f'Toolbar Icon Size: {metrics.toolBarIconSize}')
 
-        # noinspection PyUnreachableCode
         if __debug__:
-            self.logger.debug("Assertions are turned on")
+            self.logger.info("Assertions are turned on")
         else:
-            self.logger.debug("Assertions are turned off")
+            self.logger.info("Assertions are turned off")
 
 
 if __name__ == '__main__':

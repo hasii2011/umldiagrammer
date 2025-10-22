@@ -10,7 +10,7 @@ from wx import Size
 
 from codeallybasic.SingletonV3 import SingletonV3
 
-# from umldiagrammer.preferences.UmlDiagrammerPreferences import UmlDiagrammerPreferences
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
 
 class SystemMetrics(metaclass=SingletonV3):
@@ -29,6 +29,6 @@ class SystemMetrics(metaclass=SingletonV3):
     def screenResolution(self) -> Size:
         return ScreenDC().GetPPI()
 
-    # @property
-    # def toolBarIconSize(self) -> str:
-    #     return PyutPreferences().toolBarIconSize.value
+    @property
+    def toolBarIconSize(self) -> str:
+        return DiagrammerPreferences().toolBarIconSize.value

@@ -13,7 +13,6 @@ from wx import ITEM_CHECK
 from wx import ITEM_NORMAL
 from wx import BitmapBundle
 from wx import Frame
-from wx import TB_VERTICAL
 from wx import ToolBar
 from wx import Size
 
@@ -153,7 +152,7 @@ class ToolBarCreator:
             caption='New Class Diagram',
             tooltip='Create an empty class diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.newClassDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM
         )
 
@@ -163,7 +162,7 @@ class ToolBarCreator:
             caption='New Use Case Diagram',
             tooltip='Create a use case diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.newUseCaseDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM
         )
 
@@ -173,7 +172,7 @@ class ToolBarCreator:
             caption='New Class Diagram',
             tooltip='Create an sequence diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._bogus,
+            actionCallback=self._fileMenuHandler.newSequenceDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM
         )
 

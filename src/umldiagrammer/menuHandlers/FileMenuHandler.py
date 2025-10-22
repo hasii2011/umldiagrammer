@@ -8,6 +8,7 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.IOTypes import UmlDocumentType
 from wx import OK
 from wx import EVT_MENU
 from wx import EVT_MENU_RANGE
@@ -125,14 +126,17 @@ class FileMenuHandler(BaseMenuHandler):
         umlProject:  UmlProject  = UmlProject.emptyProject()
         self._loadProject(umlProject=umlProject)
 
+    # noinspection PyUnusedLocal
     def newClassDiagram(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.CLASS_DOCUMENT)
 
+    # noinspection PyUnusedLocal
     def newUseCaseDiagram(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.USE_CASE_DOCUMENT)
 
+    # noinspection PyUnusedLocal
     def newSequenceDiagram(self, event: CommandEvent):
-        pass
+        self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.SEQUENCE_DOCUMENT)
 
     # noinspection PyUnusedLocal
     def fileSave(self, event: CommandEvent):
@@ -153,7 +157,6 @@ class FileMenuHandler(BaseMenuHandler):
         self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveAsCallback)
 
     def _loadProject(self, umlProject: UmlProject):
-
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
     # noinspection PyUnusedLocal

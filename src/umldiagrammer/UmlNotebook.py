@@ -6,6 +6,7 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.IOTypes import UmlDocumentType
 from wx import NB_LEFT
 from wx import EVT_NOTEBOOK_PAGE_CHANGED
 
@@ -61,6 +62,10 @@ class UmlNotebook(Notebook):
         self._appPubSubEngine.subscribe(messageType=MessageType.PROJECT_RENAMED,
                                         uniqueId=NOTEBOOK_ID,
                                         listener=self._projectRenamedListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.CREATE_NEW_DIAGRAM,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._createNewDiagramListener
                                         )
 
     @property
@@ -157,6 +162,11 @@ class UmlNotebook(Notebook):
         projectTitle: str = self.GetPageText(idx).strip(MODIFIED_INDICATOR)  # just in case
         assert projectTitle == oldName, 'I guess my assumption was wrong'
         self._renameCurrentProject(newName=newName)
+
+    def _createNewDiagramListener(self, documentType: UmlDocumentType):
+
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        projectPanel.createNewDocument(documentType=documentType)
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:

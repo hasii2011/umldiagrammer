@@ -79,11 +79,11 @@ class UIMenuCreator:
 
         self.mnuFileNew = Menu()
 
-        self.mnuFileNew.Append(UIIdentifiers.ID_FILE_MENU_NEW_PROJECT,          '&New project\tCtrl-N', 'New project')
-        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    'New c&lass diagram\tCtrl-L',    'New class diagram')
+        self.mnuFileNew.Append(UIIdentifiers.ID_FILE_MENU_NEW_PROJECT,          '&New Project\tCtrl-N', 'New Project')
+        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    'New C&lass Diagram\tCtrl-L',    'New Class Diagram')
         # noinspection SpellCheckingInspection
-        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, 'New s&equence diagram\tCtrl-E', 'New sequence diagram')
-        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  "New &use-case diagram\tCtrl-U", 'New use-case diagram')
+        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, 'New S&equence Diagram\tCtrl-E', 'New Sequence Diagram')
+        self.mnuFileNew.Append(UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  "New &Use Case Diagram\tCtrl-U", 'New Use Case Diagram')
 
         fileMenu.AppendSubMenu(self.mnuFileNew, "&New")
 

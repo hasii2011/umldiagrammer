@@ -20,4 +20,6 @@ class MessageType(Enum):
     LOLLIPOP_CREATION_REQUEST      = 'Lollipop Creation Request'
     UPDATE_EDIT_MENU               = 'Update Edit Menu'
 
+    CREATE_NEW_DIAGRAM = 'CreateNewDiagram'
+
     NO_EVENT = 'NoEvent'
