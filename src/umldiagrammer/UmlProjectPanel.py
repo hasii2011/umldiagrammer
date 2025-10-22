@@ -3,6 +3,7 @@ from logging import Logger
 from logging import getLogger
 
 from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlDocumentType
 from wx import Menu
 from wx import Size
@@ -24,6 +25,7 @@ from umldiagrammer.UmlProjectTree import TreeNodeData
 from umldiagrammer.UmlProjectTree import UmlProjectTree
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueIds
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
@@ -67,6 +69,9 @@ class UmlProjectPanel(SplitterWindow):
             self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                             uniqueId=uniqueId,
                                             listener=self._diagramSelectionChangedListener)
+            self._appPubSubEngine.subscribe(MessageType.DOCUMENT_NAME_CHANGED,
+                                            uniqueId=uniqueId,
+                                            listener=self._documentNameChangedListener)
 
         windowSize: Size = parent.GetSize()
 
@@ -122,8 +127,18 @@ class UmlProjectPanel(SplitterWindow):
         else:
             assert False, 'Unknown UML document type'
 
-        self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
+        treeNodeTopicId: UniqueId = self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
         self._documentManager.createNewDocument(umlDocument=umlDocument)
+
+        self._documentManager.switchToDocument(umlDocument)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
+                                          uniqueId=EDIT_MENU_HANDLER_ID,
+                                          activeFrameId=self.currentUmlFrameId
+                                          )
+
+        self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
+                                        uniqueId=treeNodeTopicId,
+                                        listener=self._diagramSelectionChangedListener)
 
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
@@ -132,6 +147,10 @@ class UmlProjectPanel(SplitterWindow):
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
                                           )
+
+    def _documentNameChangedListener(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
+        self.logger.info(f'{oldDocumentTitle=} {newDocumentTitle=}')
+        self._documentManager.renameDocument(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem

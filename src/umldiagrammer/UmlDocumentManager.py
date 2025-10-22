@@ -173,6 +173,17 @@ class UmlDocumentManager(Simplebook):
     def frameIdMap(self) -> FrameIdMap:
         return self._frameIdMap
 
+    @property
+    def currentUmlFrame(self) -> UmlFrame:
+        return cast(UmlFrame, self.GetCurrentPage())
+
+    @property
+    def currentUmlFrameId(self) -> FrameId:
+        currentSelection: int     = self.GetSelection()
+        currentFrameId:   FrameId = self._noteBookPageIdxToFrameId[currentSelection]
+
+        return currentFrameId
+
     def switchToDocument(self, umlDocument: UmlDocument):
         """
         Handles selection within SimpleBook;
@@ -187,6 +198,26 @@ class UmlDocumentManager(Simplebook):
         pageNumber: int = self._umlDocumentTileToPage[umlDocument.documentTitle]
         self.SetSelection(pageNumber)
 
+    def renameDocument(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
+        def getKey(dct, value):
+            keyList = [key for key in dct if (dct[key] == value)]
+            return keyList[0]
+
+        # update _umlDocumentTileToPage
+        pageIdx: int = self._umlDocumentTileToPage[oldDocumentTitle]
+        del self._umlDocumentTileToPage[oldDocumentTitle]
+
+        self._umlDocumentTileToPage[newDocumentTitle] = pageIdx
+        self.logger.info(f'{self._umlDocumentTileToPage=}')
+
+        # update _frameIdToTitleMap
+        frameId = getKey(self._frameIdToTitleMap, oldDocumentTitle)
+        self.logger.info(f'{frameId=}')
+        del self._frameIdToTitleMap[frameId]
+        self._frameIdToTitleMap[frameId] = newDocumentTitle
+
+        self.logger.info(f'{self._frameIdToTitleMap=}')
+
     def createNewDocument(self,  umlDocument: UmlDocument):
         """
 
@@ -197,17 +228,7 @@ class UmlDocumentManager(Simplebook):
         diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
 
         self.AddPage(diagramFrame, umlDocument.documentTitle)
-
-    @property
-    def currentUmlFrame(self) -> UmlFrame:
-        return cast(UmlFrame, self.GetCurrentPage())
-
-    @property
-    def currentUmlFrameId(self) -> FrameId:
-        currentSelection: int     = self.GetSelection()
-        currentFrameId:   FrameId = self._noteBookPageIdxToFrameId[currentSelection]
-
-        return currentFrameId
+        self._updateMaintenanceStructures(diagramFrame=diagramFrame, umlDocumentTitle=umlDocument.documentTitle)
 
     def markFramesSaved(self):
         for frameId, frame in self._frameIdMap.items():
@@ -242,9 +263,9 @@ class UmlDocumentManager(Simplebook):
     def _updateEditMenuListener(self):
         """
         The 'selected' project has changed;
-
         """
-        self._updateEditMenu()
+        umlFrame: UmlFrame = self.currentUmlFrame
+        umlFrame.commandProcessor.SetMenuStrings()
 
     def _createPages(self):
 
@@ -254,24 +275,8 @@ class UmlDocumentManager(Simplebook):
             diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=documentType)
 
             self.AddPage(diagramFrame, umlDocumentTitle)
+            self._updateMaintenanceStructures(diagramFrame=diagramFrame, umlDocumentTitle=umlDocumentTitle)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
-
-            pageIndex: int = self.GetPageCount() - 1
-
-            self._frameIdMap[diagramFrame.id]             = diagramFrame
-            self._frameIdToTitleMap[diagramFrame.id]      = umlDocumentTitle
-            self._umlDocumentTileToPage[umlDocumentTitle] = pageIndex
-            self._noteBookPageIdxToFrameId[pageIndex]     = diagramFrame.id
-
-    def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
-
-        self._layoutClasses(diagramFrame, umlDocument.umlClasses)
-        self._layoutNotes(diagramFrame, umlDocument.umlNotes)
-        self._layoutTexts(diagramFrame, umlDocument.umlTexts)
-        self._layoutActors(diagramFrame, umlDocument.umlActors)
-        self._layoutUseCases(diagramFrame, umlDocument.umlUseCases)
-        self._layoutLinks(diagramFrame, umlDocument.umlLinks)
-        self._layoutLollipops(diagramFrame, umlDocument.umlLollipopInterfaces)
 
     def _createDiagramFrame(self, documentType: UmlDocumentType) -> DiagramFrameType:
         """
@@ -302,7 +307,7 @@ class UmlDocumentManager(Simplebook):
             assert False, f'Unknown UML document type: {documentType=}'
 
         diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
-        self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
+        self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU,      uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
 
         umlDiagram: UmlDiagram = diagramFrame.umlDiagram
         if self._umlPreferences.snapToGrid is True:
@@ -312,6 +317,30 @@ class UmlDocumentManager(Simplebook):
             umlDiagram.SetSnapToGrid(snap=False)
 
         return diagramFrame
+
+    def _updateMaintenanceStructures(self, diagramFrame, umlDocumentTitle):
+        """
+        Call this method AFTER adding a new diagram to the SimpleBook
+        Args:
+            diagramFrame:
+            umlDocumentTitle:
+        """
+        pageIndex: int = self.GetPageCount() - 1
+
+        self._frameIdMap[diagramFrame.id] = diagramFrame
+        self._frameIdToTitleMap[diagramFrame.id] = umlDocumentTitle
+        self._umlDocumentTileToPage[umlDocumentTitle] = pageIndex
+        self._noteBookPageIdxToFrameId[pageIndex] = diagramFrame.id
+
+    def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
+
+        self._layoutClasses(diagramFrame, umlDocument.umlClasses)
+        self._layoutNotes(diagramFrame, umlDocument.umlNotes)
+        self._layoutTexts(diagramFrame, umlDocument.umlTexts)
+        self._layoutActors(diagramFrame, umlDocument.umlActors)
+        self._layoutUseCases(diagramFrame, umlDocument.umlUseCases)
+        self._layoutLinks(diagramFrame, umlDocument.umlLinks)
+        self._layoutLollipops(diagramFrame, umlDocument.umlLollipopInterfaces)
 
     def _layoutClasses(self, diagramFrame: ClassDiagramFrame, umlClasses: UmlClasses):
         for umlClass in umlClasses:
@@ -501,7 +530,3 @@ class UmlDocumentManager(Simplebook):
                     self.logger.warning(f'Unknown Uml object type: {umlShape}, not saved')
 
         return umlDocument
-
-    def _updateEditMenu(self):
-        umlFrame: UmlFrame = self.currentUmlFrame
-        umlFrame.commandProcessor.SetMenuStrings()

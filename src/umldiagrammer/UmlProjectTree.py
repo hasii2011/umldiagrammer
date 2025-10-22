@@ -86,8 +86,16 @@ class UmlProjectTree(TreeCtrl):
         """
         return self._uniqueIds
 
-    def createTreeItem(self, umlDocument: UmlDocument, selectItem: bool = False) -> TreeItemId:
+    def createTreeItem(self, umlDocument: UmlDocument, selectItem: bool = False) -> UniqueId:
+        """
 
+        Args:
+            umlDocument:
+            selectItem:
+
+        Returns:  The unique node id to use as a topic
+
+        """
         documentNode:    TreeItemId = self.AppendItem(self.root, umlDocument.documentTitle)
         treeNodeTopicId: UniqueId   = UniqueId(UmlUtils.getID())  # TODO: We should not use UML Shape
 
@@ -103,7 +111,7 @@ class UmlProjectTree(TreeCtrl):
         if selectItem is True:
             self.SelectItem(documentNode)
 
-        return documentNode
+        return treeNodeTopicId
 
     def _onProjectTreeRightClick(self, treeEvent: TreeEvent):
 
@@ -178,6 +186,11 @@ class UmlProjectTree(TreeCtrl):
                 rightClickedTreeNodeData.umlDocument.documentTitle = newDocumentTitle
                 self.SetItemText(self._rightClickedTreeNodeData.treeNodeID, newDocumentTitle)
 
+        self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,
+                                          uniqueId=rightClickedTreeNodeData.uniqueNodeId,
+                                          oldDocumentTitle=oldDocumentTitle,
+                                          newDocumentTitle=newDocumentTitle
+                                          )
         self._rightClickedTreeNodeData = NO_TREE_NODE_DATA
 
     # noinspection PyUnusedLocal
