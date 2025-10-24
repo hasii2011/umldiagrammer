@@ -18,7 +18,7 @@ from umlio.IOTypes import UmlProject
 
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
-from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
+from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 
 from umldiagrammer.UmlDocumentManager import UmlDocumentManager
 from umldiagrammer.UmlProjectTree import TreeNodeData
@@ -73,8 +73,7 @@ class UmlProjectPanel(SplitterWindow):
                                             uniqueId=uniqueId,
                                             listener=self._documentNameChangedListener)
 
-        windowSize: Size = parent.GetSize()
-
+        windowSize:  Size = parent.GetSize()
         sashPosition: int = round(windowSize.width * 0.3)     # TODO:  This should be a preference
         self.logger.info(f'{sashPosition=}')
         self.SetSashPosition(position=sashPosition, redraw=True)
@@ -103,10 +102,6 @@ class UmlProjectPanel(SplitterWindow):
     @property
     def frameIdMap(self) -> FrameIdMap:
         return self._documentManager.frameIdMap
-
-    @property
-    def frameIdToTitleMap(self) -> FrameIdToTitleMap:
-        return self._documentManager.frameIdToTitleMap
 
     @property
     def currentUmlFrameId(self) -> FrameId:
@@ -149,8 +144,13 @@ class UmlProjectPanel(SplitterWindow):
                                           )
 
     def _documentNameChangedListener(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
+
         self.logger.info(f'{oldDocumentTitle=} {newDocumentTitle=}')
         self._documentManager.renameDocument(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
+
+        self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,
+                                          uniqueId=NOTEBOOK_ID,
+                                          projectName=self._umlProject.fileName.stem)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem

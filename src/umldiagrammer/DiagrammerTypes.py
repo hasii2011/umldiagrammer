@@ -25,8 +25,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 
 
 FrameIdMap             = NewType('FrameIdMap',             Dict[FrameId, ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame])
-FrameIdToTitleMap      = NewType('FrameIdToTitleMap',      Dict[FrameId, UmlDocumentTitle])
-UmlDocumentTitleToPage = NewType('UmlDocumentTitleToPage', Dict[UmlDocumentTitle, int])
 
 APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')

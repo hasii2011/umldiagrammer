@@ -72,8 +72,6 @@ from umlio.IOTypes import UmlLollipopInterfaces
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
-from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
-from umldiagrammer.DiagrammerTypes import UmlDocumentTitleToPage
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
@@ -97,7 +95,7 @@ class UmlDocumentManager(Simplebook):
             parent:             Parent window
             umlDocuments:       UmlDocuments the diagram manager will switch between
             appPubSubEngine:    The application pub/sub engine
-            umlPubSubEngine:    The Uml pub sub engine, In case something happens on the diagram frame
+            umlPubSubEngine:    The Uml pub/sub engine, In case something happens on the diagram frame
             editMenu:
         """
 
@@ -112,11 +110,7 @@ class UmlDocumentManager(Simplebook):
         self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
         self._editMenu:        Menu             = editMenu
 
-        self._frameIdToTitleMap:     FrameIdToTitleMap      = FrameIdToTitleMap({})
-        self._frameIdMap:            FrameIdMap             = FrameIdMap({})
-        self._umlDocumentTileToPage: UmlDocumentTitleToPage = UmlDocumentTitleToPage({})
-
-        self._noteBookPageIdxToFrameId: NoteBookPageIdxToFrameId = NoteBookPageIdxToFrameId({})
+        self._frameIdMap: FrameIdMap = FrameIdMap({})
 
         # doing any effect should be an application preference
         # self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
@@ -141,20 +135,22 @@ class UmlDocumentManager(Simplebook):
         for pageIdx in range(0, pageCount):
 
             umlDocument: UmlDocument = UmlDocument()
-            page: Window = self.GetPage(pageIdx)
+            page:         Window = self.GetPage(pageIdx)
+            currentTitle: str    = self.GetPageText(pageIdx)
+
             if isinstance(page, ClassDiagramFrame):
                 classDiagramFrame: ClassDiagramFrame = page
                 umlDocument.documentType = UmlDocumentType.CLASS_DOCUMENT
-                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=classDiagramFrame)
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, documentTitle=currentTitle, diagramFrame=classDiagramFrame)
             elif isinstance(page, UseCaseDiagramFrame):
                 useCaseDiagramFrame: UseCaseDiagramFrame = page
                 umlDocument.documentType = UmlDocumentType.USE_CASE_DOCUMENT
-                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=useCaseDiagramFrame)
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, documentTitle=currentTitle, diagramFrame=useCaseDiagramFrame)
                 self.logger.warning('Not yet implemented')
             elif isinstance(page, SequenceDiagramFrame):
                 umlDocument.documentType = UmlDocumentType.SEQUENCE_DOCUMENT
                 sequenceDiagramFrame: SequenceDiagramFrame = page
-                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, diagramFrame=sequenceDiagramFrame)
+                umlDocument = self._toBasicUmlDocument(umlDocument=umlDocument, documentTitle=currentTitle, diagramFrame=sequenceDiagramFrame)
                 self.logger.warning('Not yet implemented')
             else:
                 assert False, 'No such frame type'
@@ -166,10 +162,6 @@ class UmlDocumentManager(Simplebook):
         return self._umlDocuments
 
     @property
-    def frameIdToTitleMap(self) -> FrameIdToTitleMap:
-        return self._frameIdToTitleMap
-
-    @property
     def frameIdMap(self) -> FrameIdMap:
         return self._frameIdMap
 
@@ -179,10 +171,10 @@ class UmlDocumentManager(Simplebook):
 
     @property
     def currentUmlFrameId(self) -> FrameId:
-        currentSelection: int     = self.GetSelection()
-        currentFrameId:   FrameId = self._noteBookPageIdxToFrameId[currentSelection]
 
-        return currentFrameId
+        umlFrame: UmlFrame = cast(UmlFrame, self.GetCurrentPage())
+
+        return umlFrame.id
 
     def switchToDocument(self, umlDocument: UmlDocument):
         """
@@ -190,33 +182,44 @@ class UmlDocumentManager(Simplebook):
 
         Args:
             umlDocument:
-
-        Returns:
-
         """
-
-        pageNumber: int = self._umlDocumentTileToPage[umlDocument.documentTitle]
-        self.SetSelection(pageNumber)
+        pageCount:     int = self.GetPageCount()
+        documentTitle: str = umlDocument.documentTitle
+        for idx in range(pageCount):
+            currentTitle: str = self.GetPageText(idx)
+            if documentTitle == currentTitle:
+                self.SetSelection(idx)
+                break
+        # pageNumber: int = self._umlDocumentTitleToPage[umlDocument.documentTitle]
+        # self.SetSelection(pageNumber)
 
     def renameDocument(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
-        def getKey(dct, value):
-            keyList = [key for key in dct if (dct[key] == value)]
-            return keyList[0]
+        # def getKey(dct, value):
+        #     keyList = [key for key in dct if (dct[key] == value)]
+        #     return keyList[0]
 
-        # update _umlDocumentTileToPage
-        pageIdx: int = self._umlDocumentTileToPage[oldDocumentTitle]
-        del self._umlDocumentTileToPage[oldDocumentTitle]
+        # This is probably not necessary
+        changedDocument: UmlDocument = self._umlDocuments[oldDocumentTitle]
+        del self._umlDocuments[oldDocumentTitle]
+        changedDocument.documentTitle = newDocumentTitle
+        self._umlDocuments[newDocumentTitle] = changedDocument
 
-        self._umlDocumentTileToPage[newDocumentTitle] = pageIdx
-        self.logger.info(f'{self._umlDocumentTileToPage=}')
+        pageCount:     int = self.GetPageCount()
+        for idx in range(pageCount):
+            currentTitle: str = self.GetPageText(idx)
+            if currentTitle == oldDocumentTitle:
+                self.SetPageText(idx, newDocumentTitle)
+                break
 
         # update _frameIdToTitleMap
-        frameId = getKey(self._frameIdToTitleMap, oldDocumentTitle)
-        self.logger.info(f'{frameId=}')
-        del self._frameIdToTitleMap[frameId]
-        self._frameIdToTitleMap[frameId] = newDocumentTitle
+        # frameId = getKey(self._frameIdToTitleMap, oldDocumentTitle)
+        # self.logger.info(f'{frameId=}')
+        # del self._frameIdToTitleMap[frameId]
+        # self._frameIdToTitleMap[frameId] = newDocumentTitle
 
-        self.logger.info(f'{self._frameIdToTitleMap=}')
+        self.logger.info(f'Updated: {self._umlDocuments=}')
+
+        # self.logger.info(f'{self._frameIdToTitleMap=}')
 
     def createNewDocument(self,  umlDocument: UmlDocument):
         """
@@ -228,7 +231,7 @@ class UmlDocumentManager(Simplebook):
         diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
 
         self.AddPage(diagramFrame, umlDocument.documentTitle)
-        self._updateMaintenanceStructures(diagramFrame=diagramFrame, umlDocumentTitle=umlDocument.documentTitle)
+        self._updateMaintenanceStructures(diagramFrame=diagramFrame)
 
     def markFramesSaved(self):
         for frameId, frame in self._frameIdMap.items():
@@ -275,7 +278,7 @@ class UmlDocumentManager(Simplebook):
             diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=documentType)
 
             self.AddPage(diagramFrame, umlDocumentTitle)
-            self._updateMaintenanceStructures(diagramFrame=diagramFrame, umlDocumentTitle=umlDocumentTitle)
+            self._updateMaintenanceStructures(diagramFrame=diagramFrame)
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
     def _createDiagramFrame(self, documentType: UmlDocumentType) -> DiagramFrameType:
@@ -318,19 +321,13 @@ class UmlDocumentManager(Simplebook):
 
         return diagramFrame
 
-    def _updateMaintenanceStructures(self, diagramFrame, umlDocumentTitle):
+    def _updateMaintenanceStructures(self, diagramFrame):
         """
         Call this method AFTER adding a new diagram to the SimpleBook
         Args:
             diagramFrame:
-            umlDocumentTitle:
         """
-        pageIndex: int = self.GetPageCount() - 1
-
         self._frameIdMap[diagramFrame.id] = diagramFrame
-        self._frameIdToTitleMap[diagramFrame.id] = umlDocumentTitle
-        self._umlDocumentTileToPage[umlDocumentTitle] = pageIndex
-        self._noteBookPageIdxToFrameId[pageIndex] = diagramFrame.id
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
 
@@ -468,23 +465,25 @@ class UmlDocumentManager(Simplebook):
 
         diagramFrame.refresh()
 
-    def _toBasicUmlDocument(self, umlDocument: UmlDocument, diagramFrame: DiagramFrame) -> UmlDocument:
+    def _toBasicUmlDocument(self, umlDocument: UmlDocument, documentTitle: str, diagramFrame: DiagramFrame) -> UmlDocument:
         """
         Document type set by caller
         Args:
             umlDocument:    Partial UML Document
+            documentTitle:  The string from the tab (Not visible but maintained)
             diagramFrame:   The associated diagram frame
 
         Returns:  The updated UML Document (additional meta data)
         """
 
-        frameId: FrameId = diagramFrame.id
-        documentTitle: UmlDocumentTitle = self._frameIdToTitleMap[frameId]
+        # frameId: FrameId = diagramFrame.id
+        # documentTitle: UmlDocumentTitle = self._frameIdToTitleMap[frameId]
+
         scrollPosX, scrollPosY = diagramFrame.GetViewStart()
 
         xUnit, yUnit = diagramFrame.GetScrollPixelsPerUnit()
 
-        umlDocument.documentTitle   = documentTitle
+        umlDocument.documentTitle   = UmlDocumentTitle(documentTitle)
         umlDocument.scrollPositionX = scrollPosX
         umlDocument.scrollPositionY = scrollPosY
         umlDocument.pixelsPerUnitX  = xUnit

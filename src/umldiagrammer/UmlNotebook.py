@@ -67,6 +67,10 @@ class UmlNotebook(Notebook):
                                         uniqueId=NOTEBOOK_ID,
                                         listener=self._createNewDiagramListener
                                         )
+        self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_NAME_CHANGED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._documentNameChanged
+                                        )
 
     @property
     def currentProject(self) -> ProjectDossier:
@@ -119,16 +123,17 @@ class UmlNotebook(Notebook):
         Args:
             modifiedFrameId:
         """
-        if self._currentProjectPanel.umlProjectModified is False:
-            idx:              int = self.GetSelection()
-            projectTitle:     str = self.GetPageText(idx)
-            modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
-
-            pageIndex: int = self.GetSelection()
-            self.SetPageText(pageIndex, modifiedTitleStr)
-
-            projectPanel: UmlProjectPanel = self._currentProjectPanel
-            projectPanel.umlProjectModified = True
+        self._indicatedCurrentProjectModified()
+        # if self._currentProjectPanel.umlProjectModified is False:
+        #     idx:              int = self.GetSelection()
+        #     projectTitle:     str = self.GetPageText(idx)
+        #     modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
+        #
+        #     pageIndex: int = self.GetSelection()
+        #     self.SetPageText(pageIndex, modifiedTitleStr)
+        #
+        #     projectPanel: UmlProjectPanel = self._currentProjectPanel
+        #     projectPanel.umlProjectModified = True
 
     def _currentProjectSavedListener(self, projectPath: Path):
         """
@@ -168,6 +173,11 @@ class UmlNotebook(Notebook):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         projectPanel.createNewDocument(documentType=documentType)
 
+    def _documentNameChanged(self, projectName: str):
+        currentProjectName: str =  self.currentProject.umlProject.fileName.stem
+        assert currentProjectName == projectName, 'My assumption is wrong'
+        self._indicatedCurrentProjectModified()
+
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
@@ -185,3 +195,16 @@ class UmlNotebook(Notebook):
 
         idx: int = self.GetSelection()
         self.SetPageText(idx, newName)
+
+    def _indicatedCurrentProjectModified(self):
+
+        if self._currentProjectPanel.umlProjectModified is False:
+            idx:              int = self.GetSelection()
+            projectTitle:     str = self.GetPageText(idx)
+            modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
+
+            pageIndex: int = self.GetSelection()
+            self.SetPageText(pageIndex, modifiedTitleStr)
+
+            projectPanel: UmlProjectPanel = self._currentProjectPanel
+            projectPanel.umlProjectModified = True

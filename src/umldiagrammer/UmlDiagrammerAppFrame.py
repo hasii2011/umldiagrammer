@@ -25,7 +25,6 @@ from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
 
-
 from wx import Point
 from wx import ScreenDC
 from wx import Size
@@ -58,6 +57,7 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
+from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
 from umlio.Reader import Reader
 
@@ -65,7 +65,7 @@ from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
-from umldiagrammer.DiagrammerTypes import FrameIdToTitleMap
+from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
@@ -266,7 +266,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                         )
         self._umlNotebook.addProject(projectPanel=projectPanel)
 
-        frameIdMap: FrameIdToTitleMap = projectPanel.frameIdToTitleMap
+        frameIdMap: FrameIdMap = projectPanel.frameIdMap
 
         for frameId in frameIdMap.keys():
             self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
@@ -275,7 +275,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 
-        self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
+        if umlProject.fileName != DEFAULT_PROJECT_PATH:
+            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
