@@ -190,14 +190,8 @@ class UmlDocumentManager(Simplebook):
             if documentTitle == currentTitle:
                 self.SetSelection(idx)
                 break
-        # pageNumber: int = self._umlDocumentTitleToPage[umlDocument.documentTitle]
-        # self.SetSelection(pageNumber)
 
     def renameDocument(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
-        # def getKey(dct, value):
-        #     keyList = [key for key in dct if (dct[key] == value)]
-        #     return keyList[0]
-
         # This is probably not necessary
         changedDocument: UmlDocument = self._umlDocuments[oldDocumentTitle]
         del self._umlDocuments[oldDocumentTitle]
@@ -211,15 +205,7 @@ class UmlDocumentManager(Simplebook):
                 self.SetPageText(idx, newDocumentTitle)
                 break
 
-        # update _frameIdToTitleMap
-        # frameId = getKey(self._frameIdToTitleMap, oldDocumentTitle)
-        # self.logger.info(f'{frameId=}')
-        # del self._frameIdToTitleMap[frameId]
-        # self._frameIdToTitleMap[frameId] = newDocumentTitle
-
         self.logger.info(f'Updated: {self._umlDocuments=}')
-
-        # self.logger.info(f'{self._frameIdToTitleMap=}')
 
     def createNewDocument(self,  umlDocument: UmlDocument):
         """
@@ -475,10 +461,6 @@ class UmlDocumentManager(Simplebook):
 
         Returns:  The updated UML Document (additional meta data)
         """
-
-        # frameId: FrameId = diagramFrame.id
-        # documentTitle: UmlDocumentTitle = self._frameIdToTitleMap[frameId]
-
         scrollPosX, scrollPosY = diagramFrame.GetViewStart()
 
         xUnit, yUnit = diagramFrame.GetScrollPixelsPerUnit()

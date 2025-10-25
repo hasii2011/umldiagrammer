@@ -8,15 +8,12 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.IOTypes import UmlDocumentType
 from wx import OK
 from wx import EVT_MENU
 from wx import EVT_MENU_RANGE
 from wx import FD_CHANGE_DIR
 from wx import FD_FILE_MUST_EXIST
 from wx import FD_OPEN
-from wx import FD_OVERWRITE_PROMPT
-from wx import FD_SAVE
 from wx import ICON_ERROR
 from wx import ID_FILE1
 from wx import ID_FILE9
@@ -31,14 +28,14 @@ from wx import CommandEvent
 from wx import Menu
 from wx import MessageDialog
 from wx import Notebook
-from wx import FileDialog
 from wx import FileHistory
 
 from wx.lib.sized_controls import SizedFrame
 
 from umlio.Reader import Reader
-from umlio.Writer import Writer
+
 from umlio.IOTypes import UmlProject
+from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
@@ -47,6 +44,9 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
+
+from umldiagrammer.UmlProjectIO import UmlProjectIO
+
 from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
@@ -99,6 +99,7 @@ class FileMenuHandler(BaseMenuHandler):
         sizedFrame.Bind(EVT_MENU, self.openXmlFile,    id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
         sizedFrame.Bind(EVT_MENU, self.fileSave,       id=ID_SAVE)
         sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,  id=ID_SAVEAS)
+        sizedFrame.Bind(EVT_MENU, self._closeProject,  id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
         sizedFrame.Bind(EVT_MENU, self._onPreferences, id=ID_PREFERENCES)
 
         sizedFrame.Bind(EVT_MENU_RANGE, self._onOpenRecent, id=ID_FILE1, id2=ID_FILE9)
@@ -156,6 +157,10 @@ class FileMenuHandler(BaseMenuHandler):
     def _onFileSaveAs(self, event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveAsCallback)
 
+    # noinspection PyUnusedLocal
+    def _closeProject(self, event: CommandEvent):
+        self._appPubSubEngine.sendMessage(messageType=MessageType.CLOSE_PROJECT, uniqueId=NOTEBOOK_ID)
+
     def _loadProject(self, umlProject: UmlProject):
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
@@ -180,29 +185,25 @@ class FileMenuHandler(BaseMenuHandler):
 
         self.logger.info(f'{event=} - filename: {fileName}')
         reader: Reader = Reader()
-
-        umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
-        self._loadProject(umlProject)
+        try:
+            umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
+            self._loadProject(umlProject)
+        except FileNotFoundError:
+            booBoo: MessageDialog = MessageDialog(parent=None, message='That project no longer exists', caption='Error', style=OK | ICON_ERROR)
+            booBoo.ShowModal()
 
     def _fileSaveCallback(self, projectInformation: ProjectDossier):
 
-        umlProject: UmlProject = projectInformation.umlProject
+        umlProject:   UmlProject   = projectInformation.umlProject
+        umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
-            self._doFileSaveAs(umlProject=umlProject)
+
+            umlProjectIO.doFileSaveAs(umlProject=projectInformation.umlProject)
         else:
             if projectInformation.modified is True:
-                fileName:   Path       = umlProject.fileName
+                umlProjectIO.saveProject(umlProject=umlProject)
 
-                self.logger.info(f'{fileName=}')
-                if fileName.suffix != PROJECT_SUFFIX:
-                    if self._preferences.saveOnlyWritesCompressed is True:
-                        newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
-                        umlProject.fileName = newFilename
-                    else:
-                        assert False, 'Write as XML not yet supported'
-
-                writer: Writer = Writer()
-                writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
                 self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
                                                   uniqueId=NOTEBOOK_ID,
                                                   projectPath=umlProject.fileName
@@ -223,63 +224,5 @@ class FileMenuHandler(BaseMenuHandler):
             booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
             booBoo.ShowModal()
         else:
-            self._doFileSaveAs(projectInformation.umlProject)
-
-    def _doFileSaveAs(self, umlProject: UmlProject):
-        """
-        Actually do the file save as
-        Args:
-            umlProject:
-        """
-        with (FileDialog(None,
-                         defaultDir=self._preferences.diagramsDirectory,
-                         wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
-                         style=FD_SAVE | FD_OVERWRITE_PROMPT)
-              as fDialog):
-            if fDialog.ShowModal() == ID_OK:
-                specifiedFileName: str = fDialog.GetPath()
-                if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
-                    eMsg: str = f'Error ! This project `{Path(specifiedFileName).stem}` is currently open.  Please choose another name!'
-                    with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
-                        dlg.ShowModal()
-                else:
-                    self._writeSaveAsProject(umlProject, specifiedFileName)
-
-    def _writeSaveAsProject(self, umlProject: UmlProject, specifiedFileName: str):
-        """
-
-        Args:
-            umlProject:
-            specifiedFileName:
-        """
-
-        oldName: Path = umlProject.fileName
-        newName: Path = Path(specifiedFileName)
-        umlProject.fileName = newName
-
-        self._appPubSubEngine.sendMessage(messageType=MessageType.PROJECT_RENAMED,
-                                          uniqueId=NOTEBOOK_ID,
-                                          oldName=oldName.stem,
-                                          newName=newName.stem
-                                          )
-        writer: Writer = Writer()
-        writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
-        self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
-                                          uniqueId=NOTEBOOK_ID,
-                                          projectPath=umlProject.fileName
-                                          )
-        self.logger.info(f'Project {oldName} saved as {newName}')
-
-    def _isProjectAlreadyOpen(self, fileName: str) -> bool:
-        """
-        TODO:
-        Args:
-            fileName:
-
-        Returns:
-
-        """
-
-        self.logger.info(f'{fileName=}')
-
-        return False
+            umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+            umlProjectIO.doFileSaveAs(umlProject=projectInformation.umlProject)

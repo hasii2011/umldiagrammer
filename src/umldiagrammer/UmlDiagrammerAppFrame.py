@@ -76,6 +76,7 @@ from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
+
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 from umldiagrammer.data.ProjectDossier import ProjectDossier
 
@@ -120,7 +121,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
             appSize.height -= HACK_ADJUST_EXIT_HEIGHT
             # self.SetSize(appSize)
             super().__init__(parent=None, title='UML Diagrammer')
-            self.ShowFullScreen(True)
             self.ShowFullScreen(show=True)
             self.CentreOnScreen()
         else:
@@ -248,43 +248,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return uiMenuCreator
 
-    def _loadProjectListener(self, umlProject: UmlProject):
-
-        self.logger.info(f'Loading: {umlProject.fileName}')
-
-        if self._umlNotebook is None:
-            # Lazy UI creation
-
-            sizedPanel: SizedPanel = self.GetContentsPane()
-            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
-
-        projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
-                                                        appPubSubEngine=self._appPubSubEngine,
-                                                        umlPubSubEngine=self._umlPubSubEngine,
-                                                        umlProject=umlProject,
-                                                        editMenu=self._editMenu
-                                                        )
-        self._umlNotebook.addProject(projectPanel=projectPanel)
-
-        frameIdMap: FrameIdMap = projectPanel.frameIdMap
-
-        for frameId in frameIdMap.keys():
-            self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
-                                            frameId=frameId,
-                                            listener=self._updateApplicationStatusListener)
-
-            self._actionSupervisor.registerNewFrame(frameId=frameId)
-
-        if umlProject.fileName != DEFAULT_PROJECT_PATH:
-            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
-
-    def _updateApplicationStatusListener(self, message: str):
-        self.logger.info(f'{message=}')
-        self.SetStatusText(text=message)
-
-    def _overrideProgramExitPositionListener(self):
-        self._overrideProgramExitPosition = True
-
     # noinspection PyUnusedLocal
     def _onNewAction(self, event: CommandEvent):
         """
@@ -377,6 +340,43 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
+    def _loadProjectListener(self, umlProject: UmlProject):
+
+        self.logger.info(f'Loading: {umlProject.fileName}')
+
+        if self._umlNotebook is None:
+            # Lazy UI creation
+
+            sizedPanel: SizedPanel = self.GetContentsPane()
+            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+
+        projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
+                                                        appPubSubEngine=self._appPubSubEngine,
+                                                        umlPubSubEngine=self._umlPubSubEngine,
+                                                        umlProject=umlProject,
+                                                        editMenu=self._editMenu
+                                                        )
+        self._umlNotebook.addProject(projectPanel=projectPanel)
+
+        frameIdMap: FrameIdMap = projectPanel.frameIdMap
+
+        for frameId in frameIdMap.keys():
+            self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
+                                            frameId=frameId,
+                                            listener=self._updateApplicationStatusListener)
+
+            self._actionSupervisor.registerNewFrame(frameId=frameId)
+
+        if umlProject.fileName != DEFAULT_PROJECT_PATH:
+            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
+
+    def _updateApplicationStatusListener(self, message: str):
+        self.logger.info(f'{message=}')
+        self.SetStatusText(text=message)
+
+    def _overrideProgramExitPositionListener(self):
+        self._overrideProgramExitPosition = True
+
     def _lollipopCreationRequestListener(self, lollipopCreationData: LollipopCreationData):
         self._actionSupervisor.createLollipopInterface(lollipopCreationData=lollipopCreationData)
 
@@ -388,8 +388,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT,   uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS,                uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
     def _getFrameStyle(self) -> int:

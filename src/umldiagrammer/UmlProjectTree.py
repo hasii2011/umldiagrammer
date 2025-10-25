@@ -179,7 +179,7 @@ class UmlProjectTree(TreeCtrl):
         with TextEntryDialog(parent, "Edit Diagram Title", "Diagram Title", oldDocumentTitle, OK | CANCEL | CENTRE) as dlg:
             if dlg.ShowModal() == ID_OK:
                 newDocumentTitle: UmlDocumentTitle = UmlDocumentTitle(dlg.GetValue())
-                # self._appPubSubEngine.sendMessage(eventType=MessageType.DOCUMENT_MODIFIED)
+
                 self.logger.info(f'Diagram named changed from `{oldDocumentTitle}` to `{newDocumentTitle.title}`')
 
                 # Change the model and then the UI

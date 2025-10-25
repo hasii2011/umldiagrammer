@@ -6,6 +6,7 @@ class MessageType(Enum):
     UPDATE_APPLICATION_STATUS_MSG = 'Update Application Status Message'
     DOCUMENT_SELECTION_CHANGED    = 'Diagram Selection Changed'
     OPEN_PROJECT                  = 'Open Project'
+    CLOSE_PROJECT                 = 'Close Project'
     SELECT_TOOL                   = 'Select Tool'
 
     EDIT_CLASS                    = 'Edit Class'

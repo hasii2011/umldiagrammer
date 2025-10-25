@@ -6,12 +6,15 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.IOTypes import UmlDocumentType
 from wx import NB_LEFT
+from wx import ID_YES
+from wx import YES_NO
+from wx import ICON_QUESTION
 from wx import EVT_NOTEBOOK_PAGE_CHANGED
 
 from wx import Notebook
 from wx import BookCtrlEvent
+from wx import MessageDialog
 
 from wx import CallLater
 
@@ -22,8 +25,11 @@ from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
+from umlio.IOTypes import UmlDocumentType
+
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
+from umldiagrammer.UmlProjectIO import UmlProjectIO
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.data.ProjectDossier import ProjectDossier
@@ -69,8 +75,11 @@ class UmlNotebook(Notebook):
                                         )
         self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_NAME_CHANGED,
                                         uniqueId=NOTEBOOK_ID,
-                                        listener=self._documentNameChanged
+                                        listener=self._documentNameChangedListener
                                         )
+        self._appPubSubEngine.subscribe(messageType=MessageType.CLOSE_PROJECT,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._closeProjectListener)
 
     @property
     def currentProject(self) -> ProjectDossier:
@@ -124,16 +133,6 @@ class UmlNotebook(Notebook):
             modifiedFrameId:
         """
         self._indicatedCurrentProjectModified()
-        # if self._currentProjectPanel.umlProjectModified is False:
-        #     idx:              int = self.GetSelection()
-        #     projectTitle:     str = self.GetPageText(idx)
-        #     modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
-        #
-        #     pageIndex: int = self.GetSelection()
-        #     self.SetPageText(pageIndex, modifiedTitleStr)
-        #
-        #     projectPanel: UmlProjectPanel = self._currentProjectPanel
-        #     projectPanel.umlProjectModified = True
 
     def _currentProjectSavedListener(self, projectPath: Path):
         """
@@ -173,10 +172,24 @@ class UmlNotebook(Notebook):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         projectPanel.createNewDocument(documentType=documentType)
 
-    def _documentNameChanged(self, projectName: str):
-        currentProjectName: str =  self.currentProject.umlProject.fileName.stem
+    def _documentNameChangedListener(self, projectName: str):
+        currentProjectName: str = self.currentProject.umlProject.fileName.stem
         assert currentProjectName == projectName, 'My assumption is wrong'
         self._indicatedCurrentProjectModified()
+
+    def _closeProjectListener(self):
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        if projectPanel.umlProjectModified is True:
+
+            message: str = f'Project: {projectPanel.umlProject.fileName.stem} is modified.  Save it before closing?'
+            askDialog: MessageDialog = MessageDialog(parent=None, message=message, caption='Please confirm', style=YES_NO | ICON_QUESTION)
+            ans: int = askDialog.ShowModal()
+            if ans == ID_YES:
+                umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+                umlProjectIO.saveProject(umlProject=self.currentProject.umlProject)
+
+        pageIdx: int = self.GetSelection()
+        self.DeletePage(pageIdx)
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:
