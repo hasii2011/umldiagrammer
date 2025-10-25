@@ -4,26 +4,34 @@ from logging import getLogger
 
 from pathlib import Path
 
+from wx import FD_OVERWRITE_PROMPT
+from wx import FD_SAVE
+from wx import ICON_ERROR
+from wx import ID_OK
+from wx import OK
+
+from wx import FileDialog
+from wx import MessageDialog
+
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
 
+from umlio.Reader import Reader
 from umlio.Writer import Writer
-from wx import FD_OVERWRITE_PROMPT
-from wx import FD_SAVE
-from wx import FileDialog
-from wx import ICON_ERROR
-from wx import ID_OK
-from wx import MessageDialog
-from wx import OK
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
+
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 
 class UmlProjectIO:
+    """
+    I want to isolate the actual read/write calls through UML IO in this class
+    """
     def __init__(self, appPubSubEngine: IAppPubSubEngine):
         """
 
@@ -35,6 +43,19 @@ class UmlProjectIO:
 
         self.logger:       Logger                = getLogger(__name__)
         self._preferences: DiagrammerPreferences = DiagrammerPreferences()
+
+    def readProject(self, fileToOpen: str) -> UmlProject:
+        """
+
+        Args:
+            fileToOpen:
+
+        Returns:  The UML Project
+        """
+        reader:     Reader    = Reader()
+        umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileToOpen))
+
+        return umlProject
 
     def saveProject(self, umlProject: UmlProject):
 

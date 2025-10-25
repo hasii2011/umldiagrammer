@@ -7,8 +7,6 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from pathlib import Path
-
 from os import getenv as osGetEnv
 
 from wx import EVT_ACTIVATE
@@ -60,8 +58,6 @@ from umlio.IOTypes import UmlProject
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
-
-from umlio.Reader import Reader
 
 from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
@@ -218,10 +214,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def loadLastOpenedProject(self):
 
-        lastOpenFileName: str    = self._fileHistory.GetHistoryFile(0)
-        reader:           Reader = Reader()
+        lastOpenFileName: str          = self._fileHistory.GetHistoryFile(0)
+        umlProjectIO:     UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
 
-        umlProject: UmlProject = reader.readProjectFile(fileName=Path(lastOpenFileName))
+        umlProject:       UmlProject = umlProjectIO.readProject(fileToOpen=lastOpenFileName)
         #
         # uh oh using a listener directly
         #
