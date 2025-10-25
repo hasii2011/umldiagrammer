@@ -38,16 +38,11 @@ from umlio.IOTypes import UmlProject
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
-from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
-
-from umldiagrammer.UmlProjectIO import UmlProjectIO
-
-from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.dialogs.DlgPreferences import DlgPreferences
 
@@ -141,7 +136,7 @@ class FileMenuHandler(BaseMenuHandler):
 
     # noinspection PyUnusedLocal
     def fileSave(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveCallback)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
     # noinspection PyUnusedLocal
     def openXmlFile(self, event: CommandEvent):
@@ -155,7 +150,7 @@ class FileMenuHandler(BaseMenuHandler):
 
     # noinspection PyUnusedLocal
     def _onFileSaveAs(self, event: CommandEvent):
-        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_CURRENT_UML_PROJECT, uniqueId=APPLICATION_FRAME_ID, callback=self._fileSaveAsCallback)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_AS_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
     # noinspection PyUnusedLocal
     def _closeProject(self, event: CommandEvent):
@@ -191,38 +186,3 @@ class FileMenuHandler(BaseMenuHandler):
         except FileNotFoundError:
             booBoo: MessageDialog = MessageDialog(parent=None, message='That project no longer exists', caption='Error', style=OK | ICON_ERROR)
             booBoo.ShowModal()
-
-    def _fileSaveCallback(self, projectInformation: ProjectDossier):
-
-        umlProject:   UmlProject   = projectInformation.umlProject
-        umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-
-        if umlProject.fileName == DEFAULT_PROJECT_PATH:
-
-            umlProjectIO.doFileSaveAs(umlProject=projectInformation.umlProject)
-        else:
-            if projectInformation.modified is True:
-                umlProjectIO.saveProject(umlProject=umlProject)
-
-                self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
-                                                  uniqueId=NOTEBOOK_ID,
-                                                  projectPath=umlProject.fileName
-                                                  )
-            else:
-                self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,
-                                                  uniqueId=APPLICATION_FRAME_ID,
-                                                  message='No save needed, project not modified')
-
-    def _fileSaveAsCallback(self, projectInformation: ProjectDossier):
-        """
-
-        Args:
-            projectInformation:  Contains a reference to the actual UmlProject !!!
-        """
-
-        if len(projectInformation.umlProject.umlDocuments) == 0:
-            booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
-            booBoo.ShowModal()
-        else:
-            umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-            umlProjectIO.doFileSaveAs(umlProject=projectInformation.umlProject)

@@ -7,6 +7,8 @@ class MessageType(Enum):
     DOCUMENT_SELECTION_CHANGED    = 'Diagram Selection Changed'
     OPEN_PROJECT                  = 'Open Project'
     CLOSE_PROJECT                 = 'Close Project'
+    SAVE_PROJECT                  = 'Save Project'
+    SAVE_AS_PROJECT               = 'Save as Project'
     SELECT_TOOL                   = 'Select Tool'
 
     EDIT_CLASS                    = 'Edit Class'
@@ -15,7 +17,6 @@ class MessageType(Enum):
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'
 
     ACTIVE_DOCUMENT_CHANGED        = 'Active Document Changed'
-    GET_CURRENT_UML_PROJECT        = 'Get Current UML Project'
     CURRENT_PROJECT_SAVED          = 'Current Project Saved'
     PROJECT_RENAMED                = 'Project Renamed'
     LOLLIPOP_CREATION_REQUEST      = 'Lollipop Creation Request'

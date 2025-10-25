@@ -1,5 +1,4 @@
 
-from typing import Callable
 from typing import List
 from typing import NewType
 from typing import Optional
@@ -12,19 +11,22 @@ from pathlib import Path
 
 from os import getenv as osGetEnv
 
-from wx import ActivateEvent
 from wx import EVT_ACTIVATE
 from wx import EVT_WINDOW_DESTROY
+from wx import ICON_ERROR
 from wx import ID_OK
 from wx import BOTH
 from wx import ID_FILE1
-from wx import FileHistory
+from wx import OK
 from wx import STB_DEFAULT_STYLE
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
 
+from wx import FileHistory
+from wx import MessageDialog
+from wx import ActivateEvent
 from wx import Point
 from wx import ScreenDC
 from wx import Size
@@ -69,11 +71,13 @@ from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
+from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.FileHistoryConfiguration import FileHistoryConfiguration
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
+from umldiagrammer.UmlProjectIO import UmlProjectIO
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.actionsupervisor.ActionSupervisor import ActionSupervisor
 
@@ -319,10 +323,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self._doToolSelect(toolId=toolId)
 
-    def _getCurrentUmlProjectListener(self, callback: Callable):
-        projectInfo: ProjectDossier = self._umlNotebook.currentProject
-        callback(projectInfo)
-
     def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
         """
         This handles the case when a new UML Class is created
@@ -370,9 +370,43 @@ class UmlDiagrammerAppFrame(SizedFrame):
         if umlProject.fileName != DEFAULT_PROJECT_PATH:
             self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
 
+    def _saveProjectListener(self):
+        """
+        Saves the current project
+        """
+        projectDossier: ProjectDossier = self._umlNotebook.currentProject
+        umlProject:     UmlProject     = projectDossier.umlProject
+        umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+
+        if umlProject.fileName == DEFAULT_PROJECT_PATH:
+            umlProjectIO.doFileSaveAs(umlProject=projectDossier.umlProject)
+        else:
+            if projectDossier.modified is True:
+                umlProjectIO.saveProject(umlProject=umlProject)
+
+                self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                                  uniqueId=NOTEBOOK_ID,
+                                                  projectPath=umlProject.fileName
+                                                  )
+            else:
+                self.SetStatusText(text='No save needed, project not modified')
+
+    def _saveAsProjectListener(self):
+        """
+        Save As the current project
+        """
+        projectDossier: ProjectDossier = self._umlNotebook.currentProject
+
+        if len(projectDossier.umlProject.umlDocuments) == 0:
+            booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
+            booBoo.ShowModal()
+        else:
+            umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+            umlProjectIO.doFileSaveAs(umlProject=projectDossier.umlProject)
+            self._fileHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
+
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
-        self.SetStatusText(text=message)
 
     def _overrideProgramExitPositionListener(self):
         self._overrideProgramExitPosition = True
@@ -382,13 +416,14 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _subscribeToMessagesWeHandle(self):
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,  uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._saveProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_AS_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveAsProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,     uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.GET_CURRENT_UML_PROJECT,   uniqueId=APPLICATION_FRAME_ID, listener=self._getCurrentUmlProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS,                uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
