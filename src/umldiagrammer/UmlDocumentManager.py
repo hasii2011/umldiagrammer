@@ -213,7 +213,7 @@ class UmlDocumentManager(Simplebook):
         diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
 
         self.AddPage(diagramFrame, umlDocument.documentTitle)
-        self._updateMaintenanceStructures(diagramFrame=diagramFrame)
+        self._frameIdMap[diagramFrame.id] = diagramFrame
 
     def deleteDocument(self, documentName: str):
         """
@@ -275,7 +275,8 @@ class UmlDocumentManager(Simplebook):
             diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=documentType)
 
             self.AddPage(diagramFrame, umlDocumentTitle)
-            self._updateMaintenanceStructures(diagramFrame=diagramFrame)
+            self._frameIdMap[diagramFrame.id] = diagramFrame
+
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
     def _createDiagramFrame(self, documentType: UmlDocumentType) -> DiagramFrameType:
@@ -317,14 +318,6 @@ class UmlDocumentManager(Simplebook):
             umlDiagram.SetSnapToGrid(snap=False)
 
         return diagramFrame
-
-    def _updateMaintenanceStructures(self, diagramFrame):
-        """
-        Call this method AFTER adding a new diagram to the SimpleBook
-        Args:
-            diagramFrame:
-        """
-        self._frameIdMap[diagramFrame.id] = diagramFrame
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
 
