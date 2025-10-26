@@ -1,7 +1,5 @@
 
 from typing import cast
-from typing import Dict
-from typing import NewType
 
 from logging import Logger
 from logging import getLogger
@@ -80,8 +78,6 @@ from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreference
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 from umldiagrammer.pubsubengine.MessageType import MessageType
-
-NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
 
 # TODO:  This might belong in umlshapes
 DiagramFrameType = ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame
