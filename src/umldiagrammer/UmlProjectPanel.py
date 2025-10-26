@@ -73,6 +73,10 @@ class UmlProjectPanel(SplitterWindow):
                                             uniqueId=uniqueId,
                                             listener=self._documentNameChangedListener)
 
+            self._appPubSubEngine.subscribe(MessageType.DELETE_DIAGRAM,
+                                            uniqueId=uniqueId,
+                                            listener=self._deleteDiagramListener)
+
         windowSize:  Size = parent.GetSize()
         sashPosition: int = round(windowSize.width * 0.3)     # TODO:  This should be a preference
         self.logger.info(f'{sashPosition=}')
@@ -151,6 +155,9 @@ class UmlProjectPanel(SplitterWindow):
         self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,
                                           uniqueId=NOTEBOOK_ID,
                                           projectName=self._umlProject.fileName.stem)
+
+    def _deleteDiagramListener(self, diagramName: str):
+        self._documentManager.deleteDocument(documentName=diagramName)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem

@@ -23,6 +23,7 @@ class MessageType(Enum):
     UPDATE_EDIT_MENU               = 'Update Edit Menu'
 
     CREATE_NEW_DIAGRAM    = 'Create New Diagram'
+    DELETE_DIAGRAM        = 'Delete Diagram'
     #
     # This message is used by the project tree to communicate with the project panel
     # Additionally, used by the project panel to communicate to the UML Note book

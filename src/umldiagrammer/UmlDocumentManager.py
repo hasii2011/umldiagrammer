@@ -219,6 +219,21 @@ class UmlDocumentManager(Simplebook):
         self.AddPage(diagramFrame, umlDocument.documentTitle)
         self._updateMaintenanceStructures(diagramFrame=diagramFrame)
 
+    def deleteDocument(self, documentName: str):
+        """
+        No need to update any other internal data structures
+
+        Args:
+            documentName:
+
+        """
+
+        for pageIdx in range(self.GetPageCount()):
+            currentName: str = self.GetPageText(pageIdx)
+            if currentName == documentName:
+                self.DeletePage(pageIdx)
+                break
+
     def markFramesSaved(self):
         for frameId, frame in self._frameIdMap.items():
             umlFrame: UmlFrame = cast(UmlFrame, frame)

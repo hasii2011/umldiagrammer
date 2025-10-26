@@ -158,13 +158,12 @@ class UmlProjectTree(TreeCtrl):
             popupMenu.Append(deleteDiagramMenuID,   'Delete Diagram',    'Delete it',           ITEM_NORMAL)
 
             popupMenu.Bind(EVT_MENU, self._onEditDiagramName, id=editDiagramNameMenuID)
-            # popupMenu.Bind(EVT_MENU, self._onDeleteDiagram, id=deleteDiagramMenuID)
+            popupMenu.Bind(EVT_MENU, self._onDeleteDiagram, id=deleteDiagramMenuID)
             #
             popupMenu.Bind(EVT_MENU_CLOSE, self._onPopupMenuClose)
 
             self._documentPopupMenu = popupMenu
 
-        # self.logger.debug(f'Current diagram: `{self._projectManager.currentDocument}`')
         self.GetParent().PopupMenu(self._documentPopupMenu)
 
     # noinspection PyUnusedLocal
@@ -191,6 +190,22 @@ class UmlProjectTree(TreeCtrl):
                                           oldDocumentTitle=oldDocumentTitle,
                                           newDocumentTitle=newDocumentTitle
                                           )
+        self._rightClickedTreeNodeData = NO_TREE_NODE_DATA
+
+    # noinspection PyUnusedLocal
+    def _onDeleteDiagram(self, event: CommandEvent):
+
+        assert self._rightClickedTreeNodeData is not None, 'Developer error'
+
+        diagramName: str = self.GetItemText(self._rightClickedTreeNodeData.treeNodeID)
+
+        self.Delete(self._rightClickedTreeNodeData.treeNodeID)
+
+        self._appPubSubEngine.sendMessage(messageType=MessageType.DELETE_DIAGRAM,
+                                          uniqueId=self._rightClickedTreeNodeData.uniqueNodeId,
+                                          diagramName=diagramName,
+                                          )
+
         self._rightClickedTreeNodeData = NO_TREE_NODE_DATA
 
     # noinspection PyUnusedLocal
