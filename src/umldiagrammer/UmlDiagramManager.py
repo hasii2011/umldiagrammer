@@ -82,7 +82,7 @@ from umldiagrammer.pubsubengine.MessageType import MessageType
 # TODO:  This might belong in umlshapes
 DiagramFrameType = ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame
 
-class UmlDocumentManager(Simplebook):
+class UmlDiagramManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, editMenu: Menu):
         """
         Assumes that the provided UML documents all belong to the same project

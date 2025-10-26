@@ -20,7 +20,7 @@ from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 
-from umldiagrammer.UmlDocumentManager import UmlDocumentManager
+from umldiagrammer.UmlDiagramManager import UmlDiagramManager
 from umldiagrammer.UmlProjectTree import TreeNodeData
 from umldiagrammer.UmlProjectTree import UmlProjectTree
 
@@ -53,12 +53,12 @@ class UmlProjectPanel(SplitterWindow):
         self._editMenu:        Menu             = editMenu
 
         self._projectTree:     UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
-        self._documentManager: UmlDocumentManager = UmlDocumentManager(parent=self,
-                                                                       appPubSubEngine=appPubSubEngine,
-                                                                       umlPubSubEngine=umlPubSubEngine,
-                                                                       umlDocuments=umlProject.umlDocuments,
-                                                                       editMenu=editMenu
-                                                                       )
+        self._documentManager: UmlDiagramManager = UmlDiagramManager(parent=self,
+                                                                     appPubSubEngine=appPubSubEngine,
+                                                                     umlPubSubEngine=umlPubSubEngine,
+                                                                     umlDocuments=umlProject.umlDocuments,
+                                                                     editMenu=editMenu
+                                                                     )
 
         self.SetMinimumPaneSize(200)            # TODO: This should be a preference
 
