@@ -172,7 +172,7 @@ class UmlDiagramManager(Simplebook):
 
         return umlFrame.id
 
-    def switchToDocument(self, umlDocument: UmlDocument):
+    def switchToDocumentDiagram(self, umlDocument: UmlDocument):
         """
         Handles selection within SimpleBook;
 
@@ -187,7 +187,7 @@ class UmlDiagramManager(Simplebook):
                 self.SetSelection(idx)
                 break
 
-    def renameDocument(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
+    def renameDiagram(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
         # This is probably not necessary
         changedDocument: UmlDocument = self._umlDocuments[oldDocumentTitle]
         del self._umlDocuments[oldDocumentTitle]
@@ -203,7 +203,7 @@ class UmlDiagramManager(Simplebook):
 
         self.logger.info(f'Updated: {self._umlDocuments=}')
 
-    def createNewDocument(self,  umlDocument: UmlDocument):
+    def createNewDiagram(self, umlDocument: UmlDocument):
         """
 
         Args:
@@ -215,7 +215,7 @@ class UmlDiagramManager(Simplebook):
         self.AddPage(diagramFrame, umlDocument.documentTitle)
         self._frameIdMap[diagramFrame.id] = diagramFrame
 
-    def deleteDocument(self, documentName: str):
+    def deleteDiagram(self, documentName: str):
         """
         No need to update any other internal data structures
 

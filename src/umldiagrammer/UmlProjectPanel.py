@@ -127,9 +127,9 @@ class UmlProjectPanel(SplitterWindow):
             assert False, 'Unknown UML document type'
 
         treeNodeTopicId: UniqueId = self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
-        self._documentManager.createNewDocument(umlDocument=umlDocument)
+        self._documentManager.createNewDiagram(umlDocument=umlDocument)
 
-        self._documentManager.switchToDocument(umlDocument)
+        self._documentManager.switchToDocumentDiagram(umlDocument)
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
@@ -141,7 +141,7 @@ class UmlProjectPanel(SplitterWindow):
 
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
-        self._documentManager.switchToDocument(treeData.umlDocument)
+        self._documentManager.switchToDocumentDiagram(treeData.umlDocument)
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
@@ -150,14 +150,14 @@ class UmlProjectPanel(SplitterWindow):
     def _documentNameChangedListener(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
 
         self.logger.info(f'{oldDocumentTitle=} {newDocumentTitle=}')
-        self._documentManager.renameDocument(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
+        self._documentManager.renameDiagram(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,
                                           uniqueId=NOTEBOOK_ID,
                                           projectName=self._umlProject.fileName.stem)
 
     def _deleteDiagramListener(self, diagramName: str):
-        self._documentManager.deleteDocument(documentName=diagramName)
+        self._documentManager.deleteDiagram(documentName=diagramName)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem
