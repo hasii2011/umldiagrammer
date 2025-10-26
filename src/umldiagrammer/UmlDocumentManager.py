@@ -112,7 +112,7 @@ class UmlDocumentManager(Simplebook):
         # self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
         # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
 
-        self._createPages()
+        self._createDiagramPages()
         self.SetSelection(0)
 
     @property
@@ -267,7 +267,7 @@ class UmlDocumentManager(Simplebook):
         umlFrame: UmlFrame = self.currentUmlFrame
         umlFrame.commandProcessor.SetMenuStrings()
 
-    def _createPages(self):
+    def _createDiagramPages(self):
 
         for umlDocumentTitle, umlDocument in self._umlDocuments.items():
 
