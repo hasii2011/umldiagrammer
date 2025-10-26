@@ -1,7 +1,5 @@
 
 from typing import cast
-from typing import Dict
-from typing import NewType
 
 from logging import Logger
 from logging import getLogger
@@ -81,12 +79,10 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
-NoteBookPageIdxToFrameId = NewType('NoteBookPageIdxToFrameId', Dict[int, FrameId])
-
 # TODO:  This might belong in umlshapes
 DiagramFrameType = ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame
 
-class UmlDocumentManager(Simplebook):
+class UmlDiagramManager(Simplebook):
     def __init__(self, parent: Window, umlDocuments: UmlDocuments, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, editMenu: Menu):
         """
         Assumes that the provided UML documents all belong to the same project
@@ -116,7 +112,7 @@ class UmlDocumentManager(Simplebook):
         # self.SetEffect(effect=SHOW_EFFECT_SLIDE_TO_RIGHT)               # TODO:  Should be an application preference
         # self.SetEffectTimeout(timeout=200)                              # TODO:  Should be an application preference
 
-        self._createPages()
+        self._createDiagramPages()
         self.SetSelection(0)
 
     @property
@@ -176,7 +172,7 @@ class UmlDocumentManager(Simplebook):
 
         return umlFrame.id
 
-    def switchToDocument(self, umlDocument: UmlDocument):
+    def switchToDocumentDiagram(self, umlDocument: UmlDocument):
         """
         Handles selection within SimpleBook;
 
@@ -191,7 +187,7 @@ class UmlDocumentManager(Simplebook):
                 self.SetSelection(idx)
                 break
 
-    def renameDocument(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
+    def renameDiagram(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
         # This is probably not necessary
         changedDocument: UmlDocument = self._umlDocuments[oldDocumentTitle]
         del self._umlDocuments[oldDocumentTitle]
@@ -207,7 +203,7 @@ class UmlDocumentManager(Simplebook):
 
         self.logger.info(f'Updated: {self._umlDocuments=}')
 
-    def createNewDocument(self,  umlDocument: UmlDocument):
+    def createNewDiagram(self, umlDocument: UmlDocument):
         """
 
         Args:
@@ -217,9 +213,9 @@ class UmlDocumentManager(Simplebook):
         diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
 
         self.AddPage(diagramFrame, umlDocument.documentTitle)
-        self._updateMaintenanceStructures(diagramFrame=diagramFrame)
+        self._frameIdMap[diagramFrame.id] = diagramFrame
 
-    def deleteDocument(self, documentName: str):
+    def deleteDiagram(self, documentName: str):
         """
         No need to update any other internal data structures
 
@@ -271,7 +267,7 @@ class UmlDocumentManager(Simplebook):
         umlFrame: UmlFrame = self.currentUmlFrame
         umlFrame.commandProcessor.SetMenuStrings()
 
-    def _createPages(self):
+    def _createDiagramPages(self):
 
         for umlDocumentTitle, umlDocument in self._umlDocuments.items():
 
@@ -279,7 +275,8 @@ class UmlDocumentManager(Simplebook):
             diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=documentType)
 
             self.AddPage(diagramFrame, umlDocumentTitle)
-            self._updateMaintenanceStructures(diagramFrame=diagramFrame)
+            self._frameIdMap[diagramFrame.id] = diagramFrame
+
             self._layoutShapes(diagramFrame=diagramFrame, umlDocument=umlDocument)
 
     def _createDiagramFrame(self, documentType: UmlDocumentType) -> DiagramFrameType:
@@ -321,14 +318,6 @@ class UmlDocumentManager(Simplebook):
             umlDiagram.SetSnapToGrid(snap=False)
 
         return diagramFrame
-
-    def _updateMaintenanceStructures(self, diagramFrame):
-        """
-        Call this method AFTER adding a new diagram to the SimpleBook
-        Args:
-            diagramFrame:
-        """
-        self._frameIdMap[diagramFrame.id] = diagramFrame
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, umlDocument: UmlDocument):
 
