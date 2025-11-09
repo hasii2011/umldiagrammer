@@ -121,9 +121,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
             appSize: Size     = dc.GetSize()
 
             appSize.height -= HACK_ADJUST_EXIT_HEIGHT
-            # self.SetSize(appSize)
+
             super().__init__(parent=None, title='UML Diagrammer')
-            self.ShowFullScreen(show=True)
+            self.Maximize(True)
             self.CentreOnScreen()
         else:
             appSize = Size(self._preferences.startupSize.width, self._preferences.startupSize.height)
@@ -493,11 +493,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         Observe preferences how to set the application position
         """
-        if self._preferences.centerAppOnStartup is True:
-            self.Center(BOTH)  # Center on the screen
-        else:
-            appPosition: Position = self._preferences.startupPosition
-            self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+        if self._preferences.fullScreen is False:
+            if self._preferences.centerAppOnStartup is True:
+                self.Center(BOTH)  # Center on the screen
+            else:
+                appPosition: Position = self._preferences.startupPosition
+                self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
 
     def _doToolSelect(self, toolId: int):
 
