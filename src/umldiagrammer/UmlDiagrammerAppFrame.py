@@ -10,7 +10,9 @@ from logging import getLogger
 from os import getenv as osGetEnv
 
 from pyutmodelv2.PyutNote import PyutNote
+from pyutmodelv2.PyutText import PyutText
 from umlshapes.dialogs.DlgEditNote import DlgEditNote
+from umlshapes.dialogs.DlgEditText import DlgEditText
 from wx import EVT_ACTIVATE
 from wx import EVT_WINDOW_DESTROY
 from wx import ICON_ERROR
@@ -343,12 +345,26 @@ class UmlDiagrammerAppFrame(SizedFrame):
         This handles the case when a new UML Note is created
         TODO:  Does this really belong here
 
-
         Args:
             umlFrame:
             pyutNote:
         """
         with DlgEditNote(umlFrame, pyutNote=pyutNote) as dlg:
+            if dlg.ShowModal() == ID_OK:
+                umlFrame.Refresh()
+                umlFrame.frameModified = True
+
+    def _editTextListener(self, umlFrame: ClassDiagramFrame, pyutText: PyutText):
+        """
+        This handles the case when a new UML Text is created
+        TODO:  Does this really belong here
+
+        Args:
+            umlFrame:
+            pyutText:
+
+        """
+        with DlgEditText(umlFrame, pyutText=pyutText) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
@@ -440,6 +456,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_NOTE,  uniqueId=APPLICATION_FRAME_ID, listener=self._editNoteListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_TEXT,  uniqueId=APPLICATION_FRAME_ID, listener=self._editTextListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 

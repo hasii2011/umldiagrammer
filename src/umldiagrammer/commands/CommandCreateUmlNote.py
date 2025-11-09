@@ -31,23 +31,22 @@ class CommandCreateUmlNote(BaseWxCreateCommand):
 
     def _createPrototypeInstance(self) -> UmlNote:
         """
-        Creates an appropriate class for the new command
+        Creates an appropriate UML shape for the new command
 
-        Returns:    The newly created class
+        Returns:    The newly created note
         """
-        noteName: str = f'{self._umlPreferences.defaultClassName}{CommandCreateUmlNote.clsCounter}'
+        noteName: str = f'UmlNote{CommandCreateUmlNote.clsCounter}'
 
         pyutNote: PyutNote = PyutNote(content=self._umlPreferences.noteText)
         pyutNote.name = noteName        # Do we really need this
 
-        umlClass: UmlNote  = UmlNote(pyutNote)
+        umlNote: UmlNote  = UmlNote(pyutNote)
 
         CommandCreateUmlNote.clsCounter += 1
 
-        return umlClass
+        return umlNote
 
     def _placeShapeOnFrame(self):
-
         """
         Place self._shape on the UML frame
         """

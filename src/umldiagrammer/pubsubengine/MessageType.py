@@ -13,6 +13,7 @@ class MessageType(Enum):
 
     EDIT_CLASS = 'Edit Class'
     EDIT_NOTE  = 'Edit Note'
+    EDIT_TEXT  = 'Edit Text'
 
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'

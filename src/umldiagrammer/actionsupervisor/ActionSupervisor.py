@@ -36,11 +36,12 @@ from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
-from umldiagrammer.commands.CommandCreateLollipopInterface import CommandCreateLollipopInterface
 
 from umldiagrammer.commands.CommandCreateUmlClass import CommandCreateUmlClass
 from umldiagrammer.commands.CommandCreateUmlLink import CommandCreateUmlLink
 from umldiagrammer.commands.CommandCreateUmlNote import CommandCreateUmlNote
+from umldiagrammer.commands.CommandCreateUmlText import CommandCreateUmlText
+from umldiagrammer.commands.CommandCreateLollipopInterface import CommandCreateLollipopInterface
 
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
@@ -232,6 +233,9 @@ class ActionSupervisor(metaclass=SingletonV3):
             case UIAction.NEW_NOTE:
                 if self._isThisLegalClassDiagramAction(umlFrame=umlFrame) is True:
                     cmd = CommandCreateUmlNote(umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+            case UIAction.NEW_TEXT:
+                cmd = CommandCreateUmlText(umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+
         if cmd is not None:
             self._resetToActionSelector()
             submitStatus: bool = umlFrame.commandProcessor.Submit(command=cmd, storeIt=True)

@@ -4,7 +4,9 @@ from logging import getLogger
 
 from abc import ABCMeta
 from abc import abstractmethod
+from typing import cast
 
+from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
 from umlshapes.UmlDiagram import UmlDiagram
 from umlshapes.frames.UmlFrame import UmlFrame
 
@@ -12,9 +14,11 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
+from umlshapes.shapes.UmlText import UmlText
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
+from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
 
 from umlshapes.types.UmlPosition import UmlPosition
 
@@ -105,19 +109,22 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
         umlDiagram.AddShape(umlShape)
 
         umlShape.Show(show=True)
-        if isinstance(umlShape, UmlClass):
 
-            classEventHandler: UmlClassEventHandler = UmlClassEventHandler()
-            classEventHandler.SetShape(umlShape)
-            classEventHandler.umlPubSubEngine = self._umlPubSubEngine
-            classEventHandler.SetPreviousHandler(umlShape.GetEventHandler())
-            umlShape.SetEventHandler(classEventHandler)
+        eventHandler: UmlBaseEventHandler = cast(UmlBaseEventHandler, None)
+        if isinstance(umlShape, UmlClass):
+            eventHandler = UmlClassEventHandler()
         elif isinstance(umlShape, UmlNote):
-            noteEventhandler: UmlNoteEventHandler = UmlNoteEventHandler()
-            noteEventhandler.SetShape(umlShape)
-            noteEventhandler.umlPubSubEngine = self._umlPubSubEngine
-            noteEventhandler.SetPreviousHandler(umlShape.GetEventHandler())
-            umlShape.SetEventHandler(noteEventhandler)
+            eventHandler = UmlNoteEventHandler()
+        elif isinstance(umlShape, UmlText):
+            eventHandler = UmlTextEventHandler()
+        else:
+            pass
+
+        if eventHandler is not None:
+            eventHandler.SetShape(umlShape)
+            eventHandler.umlPubSubEngine = self._umlPubSubEngine
+            eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
+            umlShape.SetEventHandler(eventHandler)
 
         umlFrame.refresh()
 
