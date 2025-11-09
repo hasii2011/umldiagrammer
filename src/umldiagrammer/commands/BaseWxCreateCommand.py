@@ -11,7 +11,10 @@ from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.shapes.UmlNote import UmlNote
+
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
+from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
 
 from umlshapes.types.UmlPosition import UmlPosition
 
@@ -39,9 +42,9 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
 
         super().__init__(canUndo=canUndo, name=name, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
-        self._baseWxCreateLogger: Logger     = getLogger(__name__)
-        self._umlFrame:           UmlFrame   = umlFrame
-        self._umlPosition:       UmlPosition = umlPosition
+        self._baseWxCreateLogger: Logger      = getLogger(__name__)
+        self._umlFrame:           UmlFrame    = umlFrame
+        self._umlPosition:        UmlPosition = umlPosition
 
         self._shape: DoableObjectType = self._createPrototypeInstance()
 
@@ -94,7 +97,6 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
             umlFrame:
             umlShape:
             umlPosition:
-
         """
         self._baseWxCreateLogger.debug(f'{umlFrame=}')
 
@@ -105,11 +107,17 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
         umlShape.Show(show=True)
         if isinstance(umlShape, UmlClass):
 
-            eventHandler: UmlClassEventHandler = UmlClassEventHandler()
-            eventHandler.SetShape(umlShape)
-            eventHandler.umlPubSubEngine = self._umlPubSubEngine
-            eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
-            umlShape.SetEventHandler(eventHandler)
+            classEventHandler: UmlClassEventHandler = UmlClassEventHandler()
+            classEventHandler.SetShape(umlShape)
+            classEventHandler.umlPubSubEngine = self._umlPubSubEngine
+            classEventHandler.SetPreviousHandler(umlShape.GetEventHandler())
+            umlShape.SetEventHandler(classEventHandler)
+        elif isinstance(umlShape, UmlNote):
+            noteEventhandler: UmlNoteEventHandler = UmlNoteEventHandler()
+            noteEventhandler.SetShape(umlShape)
+            noteEventhandler.umlPubSubEngine = self._umlPubSubEngine
+            noteEventhandler.SetPreviousHandler(umlShape.GetEventHandler())
+            umlShape.SetEventHandler(noteEventhandler)
 
         umlFrame.refresh()
 

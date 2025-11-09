@@ -38,14 +38,7 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
         name: str = f'Create Class- {CommandCreateUmlClass.clsCounter}'
         super().__init__(canUndo=True, name=name, umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
-        self._umlFrame: UmlFrame = umlFrame
-
         self.logger: Logger = getLogger(__name__)
-
-    def GetName(self) -> str:
-        umlClass:  UmlClass  = cast(UmlClass, self._shape)
-        pyutClass: PyutClass = umlClass.pyutClass
-        return pyutClass.name
 
     def Undo(self) -> bool:
 
@@ -63,13 +56,6 @@ class CommandCreateUmlClass(BaseWxCreateCommand):
         Creates an appropriate class for the new command
 
         Returns:    The newly created class
-        """
-        """
-        Implement required abstract method
-
-        Create a new class
-
-        Returns: the newly created OglClass
         """
         className: str       = f'{self._umlPreferences.defaultClassName}{CommandCreateUmlClass.clsCounter}'
         pyutClass: PyutClass = PyutClass(name=className)

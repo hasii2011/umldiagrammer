@@ -11,7 +11,8 @@ class MessageType(Enum):
     SAVE_AS_PROJECT               = 'Save as Project'
     SELECT_TOOL                   = 'Select Tool'
 
-    EDIT_CLASS                    = 'Edit Class'
+    EDIT_CLASS = 'Edit Class'
+    EDIT_NOTE  = 'Edit Note'
 
     OVERRIDE_PROGRAM_EXIT_POSITION = 'Override Program Exit Position'
     OVERRIDE_PROGRAM_EXIT_SIZE     = 'Override Program Exit Size'

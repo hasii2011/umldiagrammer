@@ -9,6 +9,8 @@ from logging import getLogger
 
 from os import getenv as osGetEnv
 
+from pyutmodelv2.PyutNote import PyutNote
+from umlshapes.dialogs.DlgEditNote import DlgEditNote
 from wx import EVT_ACTIVATE
 from wx import EVT_WINDOW_DESTROY
 from wx import ICON_ERROR
@@ -336,6 +338,21 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
+    def _editNoteListener(self, umlFrame: ClassDiagramFrame, pyutNote: PyutNote):
+        """
+        This handles the case when a new UML Note is created
+        TODO:  Does this really belong here
+
+
+        Args:
+            umlFrame:
+            pyutNote:
+        """
+        with DlgEditNote(umlFrame, pyutNote=pyutNote) as dlg:
+            if dlg.ShowModal() == ID_OK:
+                umlFrame.Refresh()
+                umlFrame.frameModified = True
+
     def _loadProjectListener(self, umlProject: UmlProject):
 
         self.logger.info(f'Loading: {umlProject.fileName}')
@@ -403,6 +420,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.info(f'{message=}')
+        self.SetStatusText(message)
 
     def _overrideProgramExitPositionListener(self):
         self._overrideProgramExitPosition = True
@@ -420,7 +438,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS,                uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_NOTE,  uniqueId=APPLICATION_FRAME_ID, listener=self._editNoteListener)
+
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
     def _getFrameStyle(self) -> int:
