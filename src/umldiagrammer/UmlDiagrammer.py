@@ -76,12 +76,11 @@ class UmlDiagrammer(App):
         """
         self.logger.info(f'MacOpenFiles: {fileNames=}')
         #
-        # appFrame:    PyutApplicationFrame = self._frame
-        # self.logger.info(f'MacOpenFiles: {appFrame=}')
-        # #
-        # for fileName in fileNames:
-        #     appFrame.loadByFilename(f'{fileName}')
-        #     self.logger.info(f'Loaded: {fileNames=}')
+        appFrame: UmlDiagrammerAppFrame = self._wxFrame
+        self.logger.debug(f'MacOpenFiles: {appFrame=}')
+        #
+        for fileName in fileNames:
+            appFrame.loadByFilename(fileName)
 
     def _setupApplicationLogging(self):
 

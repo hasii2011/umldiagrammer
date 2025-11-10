@@ -216,19 +216,36 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return True
 
+    def loadByFilename(self, fileName: str):
+        """
+        Used by the App when MAC OS passes file names
+
+        Args:
+            fileName:
+        """
+        self._loadProjectByName(fileName=fileName)
+
     def loadLastOpenedProject(self):
 
         lastOpenFileName: str          = self._fileHistory.GetHistoryFile(0)
-        umlProjectIO:     UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+        self._loadProjectByName(fileName=lastOpenFileName)
 
-        umlProject:       UmlProject = umlProjectIO.readProject(fileToOpen=lastOpenFileName)
+    def loadEmptyProject(self):
+        umlProject: UmlProject = UmlProject.emptyProject()
         #
         # uh oh using a listener directly
         #
         self._loadProjectListener(umlProject=umlProject)
 
-    def loadEmptyProject(self):
-        umlProject: UmlProject = UmlProject.emptyProject()
+    def _loadProjectByName(self, fileName: str):
+        """
+        DRY
+        Args:
+            fileName:   File name to open
+        """
+
+        umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+        umlProject:   UmlProject = umlProjectIO.readProject(fileToOpen=fileName)
         #
         # uh oh using a listener directly
         #
