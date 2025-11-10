@@ -94,9 +94,10 @@ class BaseWxLinkCommand(Command):
         self._linkCreationDispatcher: Dict[PyutLinkType, Callable] = {
             PyutLinkType.INHERITANCE: self._createInheritanceLink,
             PyutLinkType.INTERFACE:   self._createInterfaceLink,
-            PyutLinkType.ASSOCIATION: self._createAssociationLink,
             PyutLinkType.NOTELINK:    self._createNoteLink,
-            PyutLinkType.AGGREGATION: self._createAggregationLink
+            PyutLinkType.ASSOCIATION: self._createAssociationLink,
+            PyutLinkType.AGGREGATION: self._createAggregationLink,
+            PyutLinkType.COMPOSITION: self._createCompositionLink,
         }
 
     def GetName(self) -> str:
@@ -168,21 +169,62 @@ class BaseWxLinkCommand(Command):
         sourceClass:      UmlClass = cast(UmlClass, self._sourceUmlShape)
         destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        linkType: PyutLinkType = self._linkType
-
-        # If none, we are creating from scratch
-        # If we have a value, we are undoing a delete action
-        if self._pyutLink is None:
-            pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=sourceClass.pyutClass, destination=destinationClass.pyutClass)
-            pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
-        else:
-            pyutLink = self._pyutLink
-
+        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=sourceClass, destination=destinationClass)
         umlAssociation: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+
+        umlAssociation = self._completeTheAssociationLink(umlAssociation=umlAssociation,
+                                                          sourceClass=sourceClass,
+                                                          destinationClass=destinationClass,
+                                                          pyutLink=pyutLink
+                                                          )
+
+        return umlAssociation
+
+    def _createAggregationLink(self) -> UmlAggregation:
+
+        aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)
+        aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)
+
+        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=aggregator, destination=aggregated)
+        umlAggregation: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+
+        umlAggregation = self._completeTheAssociationLink(umlAssociation=umlAggregation,
+                                                          sourceClass=aggregator,
+                                                          destinationClass=aggregated,
+                                                          pyutLink=pyutLink
+                                                          )
+        return umlAggregation   # type: ignore
+
+    def _createCompositionLink(self) -> UmlComposition:
+        composer: UmlClass = cast(UmlClass, self._sourceUmlShape)
+        composed: UmlClass = cast(UmlClass, self._destinationUmlShape)
+
+        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=composer, destination=composed)
+        umlComposition: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+
+        umlComposition = self._completeTheAssociationLink(umlAssociation=umlComposition,
+                                                          sourceClass=composer,
+                                                          destinationClass=composed,
+                                                          pyutLink=pyutLink
+                                                          )
+        return umlComposition   # type: ignore
+
+    def _completeTheAssociationLink(self, umlAssociation: UmlAssociationGenre, sourceClass: UmlClass, destinationClass: UmlClass, pyutLink: PyutLink) -> UmlAssociationGenre:
+        """
+
+        Args:
+            umlAssociation:
+            sourceClass:
+            destinationClass:
+            pyutLink:
+
+        Returns:
+
+        """
 
         umlAssociation.umlPubSubEngine = self._umlPubSubEngine
         umlAssociation.umlFrame = self._umlFrame
-        umlAssociation.MakeLineControlPoints(n=2)       # Make this configurable
+        umlAssociation.MakeLineControlPoints(n=2)  # Make this configurable
 
         sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
         # add it to the source PyutClass
@@ -190,7 +232,7 @@ class BaseWxLinkCommand(Command):
 
         # Update the model
         srcClassPyutClass: PyutClass = sourceClass.pyutClass
-        destPyutClass:     PyutClass = destinationClass.pyutClass
+        destPyutClass: PyutClass = destinationClass.pyutClass
         destPyutClass.addParent(srcClassPyutClass)
 
         eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
@@ -198,47 +240,9 @@ class BaseWxLinkCommand(Command):
         eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
         umlAssociation.SetEventHandler(eventHandler)
 
-        self._name = self._toCommandName(linkType)
+        self._name = self._toCommandName(pyutLink.linkType)
 
         return umlAssociation
-
-    def _createAggregationLink(self) -> UmlAggregation:
-        aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)
-        aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)
-
-        linkType: PyutLinkType = self._linkType
-
-        # If none, we are creating from scratch
-        # If we have a value, we are undoing a delete action
-        if self._pyutLink is None:
-            pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=aggregator.pyutClass, destination=aggregated.pyutClass)
-            pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
-        else:
-            pyutLink = self._pyutLink
-
-        umlAggregation: UmlAggregation = self._getAppropriateAssociation(pyutLink=pyutLink)
-
-        umlAggregation.umlPubSubEngine = self._umlPubSubEngine
-        umlAggregation.umlFrame = self._umlFrame
-        umlAggregation.MakeLineControlPoints(n=2)       # Make this configurable
-
-        aggregator.addLink(umlLink=umlAggregation, destinationClass=aggregated)
-        # add it to the source PyutClass
-        aggregator.pyutClass.addLink(pyutLink)
-
-        # Update the model
-        aggregatorPyutClass: PyutClass = aggregator.pyutClass
-        aggregatedPyutClass: PyutClass = aggregated.pyutClass
-        aggregatorPyutClass.addParent(aggregatedPyutClass)
-
-        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAggregation)
-        eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlAggregation.GetEventHandler())
-        umlAggregation.SetEventHandler(eventHandler)
-
-        self._name = self._toCommandName(linkType)
-
-        return umlAggregation
 
     def _createInheritanceLink(self) -> UmlInheritance:
         """
@@ -343,6 +347,28 @@ class BaseWxLinkCommand(Command):
             return UmlComposition(pyutLink=pyutLink)
         else:
             assert False, 'Unknown association'
+
+    def _getAppropriateModelLink(self, source: UmlClass, destination: UmlClass) -> PyutLink:
+        """
+
+        Args:
+            source:
+            destination:
+
+        Returns:  The correct model link instance
+        """
+
+        linkType: PyutLinkType = self._linkType
+
+        # If none, we are creating from scratch
+        # If we have a value, we are undoing a delete action
+        if self._pyutLink is None:
+            pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=source.pyutClass, destination=destination.pyutClass)
+            pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
+        else:
+            pyutLink = self._pyutLink
+
+        return pyutLink
 
     def _toCommandName(self, linkType: PyutLinkType) -> str:
         # Because I do not like the generated name
