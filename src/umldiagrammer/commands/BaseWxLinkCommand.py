@@ -96,6 +96,7 @@ class BaseWxLinkCommand(Command):
             PyutLinkType.INTERFACE:   self._createInterfaceLink,
             PyutLinkType.ASSOCIATION: self._createAssociationLink,
             PyutLinkType.NOTELINK:    self._createNoteLink,
+            PyutLinkType.AGGREGATION: self._createAggregationLink
         }
 
     def GetName(self) -> str:
@@ -191,8 +192,8 @@ class BaseWxLinkCommand(Command):
         srcClassPyutClass: PyutClass = sourceClass.pyutClass
         destPyutClass:     PyutClass = destinationClass.pyutClass
         destPyutClass.addParent(srcClassPyutClass)
-        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
 
+        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
         umlAssociation.SetEventHandler(eventHandler)
@@ -200,6 +201,44 @@ class BaseWxLinkCommand(Command):
         self._name = self._toCommandName(linkType)
 
         return umlAssociation
+
+    def _createAggregationLink(self) -> UmlAggregation:
+        aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)
+        aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)
+
+        linkType: PyutLinkType = self._linkType
+
+        # If none, we are creating from scratch
+        # If we have a value, we are undoing a delete action
+        if self._pyutLink is None:
+            pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=aggregator.pyutClass, destination=aggregated.pyutClass)
+            pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
+        else:
+            pyutLink = self._pyutLink
+
+        umlAggregation: UmlAggregation = self._getAppropriateAssociation(pyutLink=pyutLink)
+
+        umlAggregation.umlPubSubEngine = self._umlPubSubEngine
+        umlAggregation.umlFrame = self._umlFrame
+        umlAggregation.MakeLineControlPoints(n=2)       # Make this configurable
+
+        aggregator.addLink(umlLink=umlAggregation, destinationClass=aggregated)
+        # add it to the source PyutClass
+        aggregator.pyutClass.addLink(pyutLink)
+
+        # Update the model
+        aggregatorPyutClass: PyutClass = aggregator.pyutClass
+        aggregatedPyutClass: PyutClass = aggregated.pyutClass
+        aggregatorPyutClass.addParent(aggregatedPyutClass)
+
+        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAggregation)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+        eventHandler.SetPreviousHandler(umlAggregation.GetEventHandler())
+        umlAggregation.SetEventHandler(eventHandler)
+
+        self._name = self._toCommandName(linkType)
+
+        return umlAggregation
 
     def _createInheritanceLink(self) -> UmlInheritance:
         """
