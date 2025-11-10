@@ -178,7 +178,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._actionSupervisor: ActionSupervisor = ActionSupervisor(appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
         self.Show(True)
 
-        self.logger.info(f'{self._tb.GetToolSize()=}')
+        self.logger.debug(f'{self._tb.GetToolSize()=}')
         self.Bind(EVT_ACTIVATE, self._onActivate)
         self.Bind(EVT_CLOSE,    self.Close)
         self.Bind(EVT_WINDOW_DESTROY, self._onWindowDestroy)
@@ -267,7 +267,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         currentAction: UIAction = ActionMap[event.GetId()]
 
-        self.logger.info(f'Do an action {currentAction} --- TODO')
+        self.logger.debug(f'Do an action {currentAction} --- TODO')
         self._actionSupervisor.currentAction = currentAction
 
         self._doToolSelect(toolId=event.GetId())
@@ -300,11 +300,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         Args:
             event:
         """
-        self.logger.warning(f'_onActivate event: {event.GetActive()=}')
+        self.logger.debug(f'_onActivate event: {event.GetActive()=}')
         if self._tipsAlreadyDisplayed is True:
             pass
         else:
-            self.logger.warning(f'Displaying Tips is not yet implemented')
+            self.logger.debug(f'Displaying Tips is not yet implemented')
             #     # Display tips frame
             #     prefs: PyutPreferences = PyutPreferences()
             #     self.logger.debug(f'Show tips on startup: {self._prefs.showTipsOnStartup=}')
@@ -435,7 +435,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             self._fileHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
 
     def _updateApplicationStatusListener(self, message: str):
-        self.logger.info(f'{message=}')
+        self.logger.debug(f'{message=}')
         self.SetStatusText(message)
 
     def _overrideProgramExitPositionListener(self):
@@ -502,7 +502,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         fileHistory.UseMenu(fileMenu)
         fileHistory.Load(fileHistoryConfiguration)
 
-        self.logger.info(f'{fileHistoryConfiguration.GetPath()=}')
+        self.logger.debug(f'{fileHistoryConfiguration.GetPath()=}')
 
         return fileHistory
 

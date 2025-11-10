@@ -79,7 +79,7 @@ class UmlProjectPanel(SplitterWindow):
 
         windowSize:  Size = parent.GetSize()
         sashPosition: int = round(windowSize.width * 0.3)     # TODO:  This should be a preference
-        self.logger.info(f'{sashPosition=}')
+        self.logger.debug(f'{sashPosition=}')
         self.SetSashPosition(position=sashPosition, redraw=True)
 
         self._umlProject:         UmlProject = umlProject
@@ -149,7 +149,7 @@ class UmlProjectPanel(SplitterWindow):
 
     def _documentNameChangedListener(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
 
-        self.logger.info(f'{oldDocumentTitle=} {newDocumentTitle=}')
+        self.logger.debug(f'{oldDocumentTitle=} {newDocumentTitle=}')
         self._documentManager.renameDiagram(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,

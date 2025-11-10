@@ -261,11 +261,11 @@ class ActionSupervisor(metaclass=SingletonV3):
         self.logger.debug(f'Create command submission status: {submitStatus}')
 
     def _frameClickListener(self, frame: UmlFrame, umlPosition: UmlPosition):
-        self.logger.info(f'{frame.id=} {umlPosition=}')
+        self.logger.debug(f'{frame.id=} {umlPosition=}')
         self.doAction(umlFrame=frame, umlPosition=umlPosition)
 
     def _shapeSelectedListener(self, umlShape):
-        self.logger.info(f'{self._currentAction=} {umlShape}')
+        self.logger.debug(f'{self._currentAction=} {umlShape}')
 
         assert umlShape is not None, 'This should not happen since shape layer sent this message'
 
@@ -324,7 +324,6 @@ class ActionSupervisor(metaclass=SingletonV3):
             toolId:  The tool id
         """
         self._appPubSubEngine.sendMessage(MessageType.SELECT_TOOL, uniqueId=APPLICATION_FRAME_ID, toolId=toolId)
-        # self._eventEngine.sendEvent(EventType.SelectTool, toolId=toolId)
 
     def _attemptSourceAction(self, umlShape: UmlShapeGenre):
         """
@@ -421,7 +420,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
     def _cancelAction(self, msg: str):
 
-        self.logger.info(f'{msg}')
+        self.logger.debug(f'{msg}')
         self._currentAction = UIAction.SELECTOR
         self._selectActionSelectorTool()
         self._setStatusText(f'{msg}')

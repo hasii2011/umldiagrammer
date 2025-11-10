@@ -19,6 +19,8 @@ from umlshapes.lib.ogl import OGLInitialize
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
+from umldiagrammer import START_STOP_MARKER
+from umldiagrammer.DiagrammerTypes import MAIN_LOGGING_NAME
 from umldiagrammer.SystemMetrics import SystemMetrics
 from umldiagrammer.Versions import Versions
 from umldiagrammer.UmlDiagrammerAppFrame import UmlDiagrammerAppFrame
@@ -39,7 +41,7 @@ class UmlDiagrammer(App):
     def __init__(self):
 
         self._setupApplicationLogging()
-        self.logger: Logger = getLogger(__name__)
+        self.logger: Logger = getLogger(MAIN_LOGGING_NAME)
 
         self._umlPreferences:  UmlPreferences        = cast(UmlPreferences, None)
         self._preferences:     DiagrammerPreferences = DiagrammerPreferences()
@@ -135,6 +137,8 @@ class UmlDiagrammer(App):
 if __name__ == '__main__':
 
     umlDiagrammer: UmlDiagrammer = UmlDiagrammer()
+    umlDiagrammer.logger.info(START_STOP_MARKER)
+
     umlDiagrammer.displayVersionInformation()
     umlDiagrammer.displaySystemMetrics()
 

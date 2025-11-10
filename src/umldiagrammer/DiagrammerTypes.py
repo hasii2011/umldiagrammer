@@ -19,8 +19,6 @@ from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlText import UmlText
 from umlshapes.shapes.UmlUseCase import UmlUseCase
 
-from umlio.IOTypes import UmlDocumentTitle
-
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 
 
@@ -38,3 +36,8 @@ UmlAssociationGenre = UmlAssociation | UmlComposition | UmlAggregation
 APP_MODE: str = 'APP_MODE'
 
 HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and the title area
+
+# Used to log error messages or general logging messages by using the standard
+# Python logging mechanism
+# Needs to match the name in loggingConfiguration.json
+MAIN_LOGGING_NAME: str = "UmlDiagrammer"

@@ -164,9 +164,9 @@ class FileMenuHandler(BaseMenuHandler):
 
         with DlgPreferences(parent=self._sizedFrame, appPubSubEngine=self._appPubSubEngine) as dlg:
             if dlg.ShowModal() == ID_OK:
-                self.logger.info(f'Got answer')
+                self.logger.debug(f'Got answer')
             else:
-                self.logger.info(f'Cancelled')
+                self.logger.debug(f'Cancelled')
 
     def _onOpenRecent(self, event: CommandEvent):
         """
@@ -178,7 +178,7 @@ class FileMenuHandler(BaseMenuHandler):
         fileNum:  int = event.GetId() - ID_FILE1
         fileName: str = self._fileHistory.GetHistoryFile(fileNum)
 
-        self.logger.info(f'{event=} - filename: {fileName}')
+        self.logger.debug(f'{event=} - filename: {fileName}')
         reader: Reader = Reader()
         try:
             umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))

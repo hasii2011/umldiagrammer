@@ -104,7 +104,7 @@ class UmlNotebook(Notebook):
 
         self.AddPage(page=projectPanel, text=projectPanel.umlProject.fileName.stem, select=True)
 
-        self.logger.info(f'{projectPanel.currentUmlFrameId=}')
+        self.logger.debug(f'{projectPanel.currentUmlFrameId=}')
 
     # noinspection PyUnusedLocal
     def _onNewProjectDisplayed(self, event: BookCtrlEvent):
@@ -117,7 +117,7 @@ class UmlNotebook(Notebook):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         frameId:      FrameId         = projectPanel.currentUmlFrameId
 
-        self.logger.info(f'{frameId=}')
+        self.logger.debug(f'{frameId=}')
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                           uniqueId=EDIT_MENU_HANDLER_ID,
@@ -148,7 +148,7 @@ class UmlNotebook(Notebook):
 
         assert projectPath.stem == modifiedTitleStr, 'I guess my assumption was wrong'
 
-        self.logger.info(f'{modifiedTitleStr}')
+        self.logger.debug(f'{modifiedTitleStr}')
         self.SetPageText(idx, modifiedTitleStr)
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
@@ -188,8 +188,10 @@ class UmlNotebook(Notebook):
                 umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
                 umlProjectIO.saveProject(umlProject=self.currentProject.umlProject)
 
-        pageIdx: int = self.GetSelection()
+        projectName: str = str(self.currentProject.umlProject.fileName)
+        pageIdx:     int = self.GetSelection()
         self.DeletePage(pageIdx)
+        self.logger.info(f'Project closed: {projectName}')
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:

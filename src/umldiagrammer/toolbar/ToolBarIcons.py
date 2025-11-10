@@ -60,16 +60,16 @@ class ToolBarIcons:
 
         if diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SMALL:
             self._loadSmallIcons()
-            self.logger.info(f'Loaded the small icons')
+            self.logger.debug(f'Loaded the small icons')
         elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
             self._loadMediumIcons()
-            self.logger.info(f'Loaded the medium icons')
+            self.logger.debug(f'Loaded the medium icons')
         elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.LARGE:
             self._loadLargeIcons()
-            self.logger.info(f'Loaded the large icons')
+            self.logger.debug(f'Loaded the large icons')
         elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
             self._loadExtraLargeIcons()
-            self.logger.info(f'Loaded the extra large icons')
+            self.logger.debug(f'Loaded the extra large icons')
 
     def getIcon(self, iconName: IconName) -> BitmapBundle:
         return BitmapBundle(self._iconMap[iconName])

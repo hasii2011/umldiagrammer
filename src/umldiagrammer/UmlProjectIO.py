@@ -55,6 +55,8 @@ class UmlProjectIO:
         reader:     Reader    = Reader()
         umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileToOpen))
 
+        self.logger.info(f'Project Opened - {fileToOpen=}')
+
         return umlProject
 
     def saveProject(self, umlProject: UmlProject):
@@ -63,7 +65,6 @@ class UmlProjectIO:
         if fileName == DEFAULT_PROJECT_PATH:
             self.doFileSaveAs(umlProject=umlProject)
         else:
-            self.logger.info(f'{fileName=}')
             if fileName.suffix != PROJECT_SUFFIX:
                 if self._preferences.saveOnlyWritesCompressed is True:
                     newFilename: Path = Path(fileName.with_suffix(PROJECT_SUFFIX))
@@ -73,6 +74,7 @@ class UmlProjectIO:
 
             writer: Writer = Writer()
             writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
+            self.logger.info(f'Project Saved - {fileName=}')
 
     def doFileSaveAs(self, umlProject: UmlProject):
         """
@@ -128,6 +130,6 @@ class UmlProjectIO:
 
         """
 
-        self.logger.info(f'{fileName=}')
+        self.logger.debug(f'{fileName=}')
 
         return False
