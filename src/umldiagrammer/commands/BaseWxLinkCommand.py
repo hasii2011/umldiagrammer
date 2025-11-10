@@ -13,6 +13,7 @@ from wx import ICON_ERROR
 from wx import Command
 from wx import MessageDialog
 
+from pyutmodelv2.PyutNote import PyutNote
 from pyutmodelv2.PyutLink import PyutLink
 from pyutmodelv2.PyutClass import PyutClass
 
@@ -21,15 +22,18 @@ from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.links.UmlLink import UmlLink
+from umlshapes.links.UmlNoteLink import UmlNoteLink
 from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.UmlAggregation import UmlAggregation
 from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlInheritance import UmlInheritance
 
+from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlClass import UmlClass
 
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
+from umlshapes.links.eventhandlers.UmlNoteLinkEventHandler import UmlNoteLinkEventHandler
 from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
@@ -90,7 +94,8 @@ class BaseWxLinkCommand(Command):
         self._linkCreationDispatcher: Dict[PyutLinkType, Callable] = {
             PyutLinkType.INHERITANCE: self._createInheritanceLink,
             PyutLinkType.INTERFACE:   self._createInterfaceLink,
-            PyutLinkType.ASSOCIATION: self._createAssociationLink
+            PyutLinkType.ASSOCIATION: self._createAssociationLink,
+            PyutLinkType.NOTELINK:    self._createNoteLink,
         }
 
     def GetName(self) -> str:
@@ -258,6 +263,37 @@ class BaseWxLinkCommand(Command):
         umlInterface.SetEventHandler(eventHandler)
 
         return umlInterface
+
+    def _createNoteLink(self) -> UmlNoteLink:
+
+        sourceNote:       UmlNote  = cast(UmlNote, self._sourceUmlShape)
+        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+
+        sourceModelClass:      PyutNote  = cast(PyutNote,  sourceNote.pyutNote)
+        destinationModelClass: PyutClass = cast(PyutClass, destinationClass.pyutClass)
+
+        # If none, we are creating from scratch
+        # If we have a value, we are undoing a delete action
+        if self._pyutLink is None:
+            pyutLink: PyutLink  = PyutLink("", linkType=PyutLinkType.NOTELINK, source=sourceModelClass, destination=destinationModelClass)
+        else:
+            pyutLink = self._pyutLink
+
+        umlNoteLink: UmlNoteLink = UmlNoteLink(pyutLink=pyutLink)
+        umlNoteLink.sourceNote       = sourceNote
+        umlNoteLink.destinationClass = destinationClass
+        umlNoteLink.umlPubSubEngine  = self._umlPubSubEngine
+        umlNoteLink.umlFrame         = self._umlFrame
+        umlNoteLink.MakeLineControlPoints(2)
+
+        sourceNote.addLink(umlNoteLink=umlNoteLink, umlClass=destinationClass)
+
+        eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+        eventHandler.SetPreviousHandler(umlNoteLink.GetEventHandler())
+        umlNoteLink.SetEventHandler(eventHandler)
+
+        return umlNoteLink
 
     def _getAppropriateAssociation(self, pyutLink: PyutLink) -> UmlAssociationGenre:
         if self._linkType == PyutLinkType.ASSOCIATION:

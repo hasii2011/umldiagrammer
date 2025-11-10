@@ -225,7 +225,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
         match currentAction:
             case UIAction.SELECTOR:
-                pass
+                self._resetToActionSelector()
             case UIAction.NEW_CLASS:
                 if self._isThisLegalClassDiagramAction(umlFrame=umlFrame) is True:
                     self.logger.info(f'Create Class on frame: {umlFrame.id} at {umlPosition=}')
