@@ -66,7 +66,7 @@ class DlgPreferences(SizedDialog):
 
         style:   int  = DEFAULT_DIALOG_STYLE | RESIZE_BORDER
         dlgSize: Size = Size(460, 575)
-        super().__init__(parent, ID_ANY, "Pyut Preferences", size=dlgSize, style=style)
+        super().__init__(parent, ID_ANY, "Diagrammer Preferences", size=dlgSize, style=style)
 
         self.logger:  Logger          = getLogger(__name__)
 

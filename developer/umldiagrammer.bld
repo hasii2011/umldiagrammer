@@ -1,3 +1,3 @@
-rm -rf build dist Pyut.egg-info
-# python -O setup.py py2app --iconfile pyut/resources/img/Pyut.icns
-python setup.py py2app
+rm -rf build dist umldiagrammer.egg-info
+python -O setup.py py2app --iconfile src/umldiagrammer/resources/icons/umldiagrammer.icns
+# python setup.py py2app
