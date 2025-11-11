@@ -17,7 +17,7 @@ html-testRunner~=1.2.1
 
 buildlackey==2.0.0
 
-wxPython==4.2.3
+wxPython==4.2.4
 Pypubsub==4.0.3
 semantic-version==2.10.0
 codeallybasic==1.30.0

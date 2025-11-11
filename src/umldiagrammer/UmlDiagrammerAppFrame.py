@@ -449,7 +449,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _getFrameStyle(self) -> int:
         """
-        wxPython 4.2.0 update:  using FRAME_TOOL_WINDOW causes the title to be above the toolbar
+        wxPython 4.2.4 update:  using FRAME_TOOL_WINDOW causes the title to be above the toolbar
         in production mode use FRAME_TOOL_WINDOW
 
         Note:  Getting the environment variable from the plist dictionary (LSEnvironment) only works

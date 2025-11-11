@@ -68,6 +68,6 @@ setup(
         'pyutmodelv2>=2.2.6',
         'umlshapes>=0.9.310',
         'umlio>=0.4.8',
-        'wxPython==4.2.3',
+        'wxPython==4.2.4',
     ]
 )
