@@ -9,10 +9,6 @@ from logging import getLogger
 
 from os import getenv as osGetEnv
 
-from pyutmodelv2.PyutNote import PyutNote
-from pyutmodelv2.PyutText import PyutText
-from umlshapes.dialogs.DlgEditNote import DlgEditNote
-from umlshapes.dialogs.DlgEditText import DlgEditText
 from wx import EVT_ACTIVATE
 from wx import EVT_WINDOW_DESTROY
 from wx import ICON_ERROR
@@ -26,7 +22,6 @@ from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import FRAME_TOOL_WINDOW
 
-from wx import FileHistory
 from wx import MessageDialog
 from wx import ActivateEvent
 from wx import Point
@@ -49,9 +44,15 @@ from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
 from codeallybasic.SecureConversions import SecureConversions
 
+from pyutmodelv2.PyutNote import PyutNote
+from pyutmodelv2.PyutText import PyutText
+
+from umlshapes.dialogs.DlgEditNote import DlgEditNote
+from umlshapes.dialogs.DlgEditText import DlgEditText
+from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
+
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
@@ -66,6 +67,9 @@ from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
 
+from umldiagrammer.ProjectHistory import ProjectHistory
+from umldiagrammer.ProjectHistoryConfiguration import ProjectHistoryConfiguration
+
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
@@ -73,7 +77,6 @@ from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.UIAction import UIAction
-from umldiagrammer.FileHistoryConfiguration import FileHistoryConfiguration
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
@@ -99,9 +102,9 @@ XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFF
 
 ID_REFERENCE = NewType('ID_REFERENCE', int)
 
-FILE_HISTORY_BASE_FILENAME: str = 'umlDiagrammerRecentFiles.ini'
-VENDOR_NAME:                str = 'ElGatoMalo'
-APPLICATION_NAME:           str = 'UmlDiagrammer'
+PROJECT_HISTORY_BASE_FILENAME: str = 'umlDiagrammerRecentProjects.ini'
+VENDOR_NAME:                   str = 'ElGatoMalo'
+APPLICATION_NAME:              str = 'UmlDiagrammer'
 
 
 class UmlDiagrammerAppFrame(SizedFrame):
@@ -147,9 +150,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._editMenu: Menu = uiMenuCreator.editMenu
 
         # incestuous stuff going on here !!!
-        self._fileHistory: FileHistory = self._setupFileHistory(fileMenu=uiMenuCreator.fileMenu)
+        self._projectHistory: ProjectHistory = self._setupProjectHistory(fileMenu=uiMenuCreator.fileMenu)
 
-        uiMenuCreator.fileMenuHandler.fileHistory = self._fileHistory
+        uiMenuCreator.fileMenuHandler.fileHistory = self._projectHistory
 
         self.CreateStatusBar(style=STB_DEFAULT_STYLE)  # should always do this when there's a resize border
         self.SetAutoLayout(True)
@@ -227,7 +230,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def loadLastOpenedProject(self):
 
-        lastOpenFileName: str = self._fileHistory.GetHistoryFile(0)
+        lastOpenFileName: str = self._projectHistory.GetHistoryFile(0)
         self._loadProjectByName(fileName=lastOpenFileName)
 
     def loadEmptyProject(self):
@@ -296,11 +299,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         #
         # On OS X this gets stored in ~/Library/Preferences
         # Nothing I did to the FileHistoryConfiguration object seemed to change that
-        fileHistoryConfiguration: FileHistoryConfiguration = FileHistoryConfiguration(appName=APPLICATION_NAME,
-                                                                                      vendorName=VENDOR_NAME,
-                                                                                      localFilename=FILE_HISTORY_BASE_FILENAME)
+        projectHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,
+                                                                                               vendorName=VENDOR_NAME,
+                                                                                               localFilename=PROJECT_HISTORY_BASE_FILENAME)
 
-        self._fileHistory.Save(fileHistoryConfiguration)
+        self._projectHistory.Save(projectHistoryConfiguration)
 
     def _onActivate(self, event: ActivateEvent):
         """
@@ -416,7 +419,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         else:
             umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
             umlProjectIO.doFileSaveAs(umlProject=projectDossier.umlProject)
-            self._fileHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
+            self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.debug(f'{message=}')
@@ -467,28 +470,28 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return frameStyle
 
-    def _setupFileHistory(self, fileMenu: Menu) -> FileHistory:
+    def _setupProjectHistory(self, fileMenu: Menu) -> ProjectHistory:
         """
-        The file is at ~/Library/Preferences/pyutRecentFiles.ini
+        The file is at ~/Library/Preferences/umlDiagrammerRecentProjects.ini
         Args:
             fileMenu: The file menu object
 
         Returns:  A FileHistory object
         """
-        fileHistory: FileHistory = FileHistory(idBase=ID_FILE1)
+        projectHistory: ProjectHistory = ProjectHistory(idBase=ID_FILE1)
         fhStyle:     int | None  = FileHistoryPreference.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
-        fileHistory.SetMenuPathStyle(style=fhStyle)
+        projectHistory.SetMenuPathStyle(style=fhStyle)
 
-        fileHistoryConfiguration: FileHistoryConfiguration = FileHistoryConfiguration(appName=APPLICATION_NAME,
-                                                                                      vendorName=VENDOR_NAME,
-                                                                                      localFilename=FILE_HISTORY_BASE_FILENAME)
+        fileHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,
+                                                                                            vendorName=VENDOR_NAME,
+                                                                                            localFilename=PROJECT_HISTORY_BASE_FILENAME)
 
-        fileHistory.UseMenu(fileMenu)
-        fileHistory.Load(fileHistoryConfiguration)
+        projectHistory.UseMenu(fileMenu)
+        projectHistory.Load(fileHistoryConfiguration)
 
         self.logger.debug(f'{fileHistoryConfiguration.GetPath()=}')
 
-        return fileHistory
+        return projectHistory
 
     def _setApplicationPosition(self):
         """
@@ -547,4 +550,4 @@ class UmlDiagrammerAppFrame(SizedFrame):
             self._actionSupervisor.registerNewFrame(frameId=frameId)
 
         if umlProject.fileName != DEFAULT_PROJECT_PATH:
-            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
+            self._projectHistory.AddFileToHistory(filename=str(umlProject.fileName))
