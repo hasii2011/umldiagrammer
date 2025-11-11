@@ -30,7 +30,7 @@ from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
 from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
 from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
-from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
+from umldiagrammer.preferences.ProjectHistoryDisplayType import ProjectHistoryDisplayType
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
@@ -66,8 +66,8 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self.logger:  Logger = getLogger(__name__)
         self._change: bool   = False
 
-        self._fileHistoryPathPref: RadioBox          = cast(RadioBox, None)
-        self._directorySelector:   DirectorySelector = cast(DirectorySelector, None)
+        self._projectHistoryPathPref: RadioBox          = cast(RadioBox, None)
+        self._directorySelector:      DirectorySelector = cast(DirectorySelector, None)
 
         p: DiagrammerPreferences = self._preferences
         self._controlData = [
@@ -81,14 +81,14 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self._setControlValues()
 
-        self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged, self._fileHistoryPathPref)
+        self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged, self._projectHistoryPathPref)
 
     def _layoutWindow(self, sizedPanel: SizedPanel):
 
         self._layoutTrueFalsePreferences(sizedPanel)
         StartupPreferencesPanel(parent=sizedPanel, appPubSubEngine=self._appPubSubEngine)
         self._layoutDiagramsDirectory(sizedPanel)
-        self._layoutFileHistoryPreferenceControl(sizedPanel)
+        self._layoutProjectHistoryDisplayPreferenceControl(sizedPanel)
 
         # self._fixPanelSize(panel=self)
 
@@ -120,22 +120,22 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._directorySelector = DirectorySelector(parent=dsPanel, pathChangedCallback=self._pathChangedCallback)
         self._directorySelector.SetSizerProps(expand=True, proportion=1)
 
-    def _layoutFileHistoryPreferenceControl(self, parentPanel: SizedPanel):
+    def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedPanel):
 
         options: List[str] = [
-            FileHistoryPreference.SHOW_NEVER.value,
-            FileHistoryPreference.SHOW_ALWAYS.value,
-            FileHistoryPreference.SHOW_IF_DIFFERENT.value
+            ProjectHistoryDisplayType.SHOW_NEVER.value,
+            ProjectHistoryDisplayType.SHOW_ALWAYS.value,
+            ProjectHistoryDisplayType.SHOW_IF_DIFFERENT.value
         ]
 
         rb: RadioBox = RadioBox(parent=parentPanel,
                                 id=ID_ANY,
-                                label='File History Path Style',
+                                label='Project History Path Style',
                                 choices=options,
                                 majorDimension=1,
                                 style=RA_SPECIFY_ROWS)
 
-        self._fileHistoryPathPref = rb
+        self._projectHistoryPathPref = rb
 
     def _setControlValues(self):
         """
@@ -144,9 +144,9 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._directorySelector.directoryPath = self._preferences.diagramsDirectory
 
         chosen: str = self._preferences.fileHistoryDisplay.value
-        idx:    int = self._fileHistoryPathPref.FindString(chosen)
+        idx:    int = self._projectHistoryPathPref.FindString(chosen)
 
-        self._fileHistoryPathPref.SetSelection(idx)
+        self._projectHistoryPathPref.SetSelection(idx)
 
     def _onTrueFalsePreferenceChanged(self, event: CommandEvent):
 
@@ -177,7 +177,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         newValue: str = event.GetString()
         self.logger.info(f'File History Path Preferences changed.  {newValue=}')
-        newPreference: FileHistoryPreference = FileHistoryPreference(newValue)
+        newPreference: ProjectHistoryDisplayType = ProjectHistoryDisplayType(newValue)
         self._preferences.fileHistoryDisplay = newPreference
 
     def _pathChangedCallback(self, newPath: Path):

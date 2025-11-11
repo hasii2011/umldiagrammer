@@ -11,7 +11,7 @@ from codeallybasic.DynamicConfiguration import ValueDescription
 from codeallybasic.DynamicConfiguration import ValueDescriptions
 from codeallybasic.DynamicConfiguration import DynamicConfiguration
 
-from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
+from umldiagrammer.preferences.ProjectHistoryDisplayType import ProjectHistoryDisplayType
 
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
@@ -20,7 +20,7 @@ DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SMALL.value
 DEFAULT_STARTUP_SIZE:     str = Dimensions(1024, 768).__str__()
 DEFAULT_STARTUP_POSITION: str = Position(5, 5).__str__()
 
-DEFAULT_FILE_HISTORY_DISPLAY: str = FileHistoryPreference.SHOW_NEVER.value
+DEFAULT_FILE_HISTORY_DISPLAY: str = ProjectHistoryDisplayType.SHOW_NEVER.value
 DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.LEFT.value
 
 SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
@@ -30,7 +30,7 @@ SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
         KeyName('diagramsDirectory'):       ValueDescription(defaultValue=''),
 
         KeyName('toolBarIconSize'):         ValueDescription(defaultValue=DEFAULT_TB_ICON_SIZE,         deserializer=ToolBarIconSize.deSerialize, enumUseValue=True),
-        KeyName('fileHistoryDisplay'):      ValueDescription(defaultValue=DEFAULT_FILE_HISTORY_DISPLAY, deserializer=FileHistoryPreference,       enumUseValue=True),
+        KeyName('fileHistoryDisplay'):      ValueDescription(defaultValue=DEFAULT_FILE_HISTORY_DISPLAY, deserializer=ProjectHistoryDisplayType, enumUseValue=True),
 
         KeyName('saveOnlyWritesCompressed'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
     }

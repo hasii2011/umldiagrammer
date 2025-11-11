@@ -89,7 +89,7 @@ from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.menuHandlers.DiagrammerFileDropTarget import DiagrammerFileDropTarget
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
-from umldiagrammer.preferences.FileHistoryPreference import FileHistoryPreference
+from umldiagrammer.preferences.ProjectHistoryDisplayType import ProjectHistoryDisplayType
 
 from umldiagrammer.pubsubengine.AppPubSubEngine import AppPubSubEngine
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
@@ -479,7 +479,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         Returns:  A FileHistory object
         """
         projectHistory: ProjectHistory = ProjectHistory(idBase=ID_FILE1)
-        fhStyle:     int | None  = FileHistoryPreference.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
+        fhStyle:     int | None  = ProjectHistoryDisplayType.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
         projectHistory.SetMenuPathStyle(style=fhStyle)
 
         fileHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,
