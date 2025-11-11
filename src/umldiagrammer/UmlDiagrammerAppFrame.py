@@ -216,7 +216,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         return True
 
-    def loadByFilename(self, fileName: str):
+    def loadProjectByFilename(self, fileName: str):
         """
         Used by the App when MAC OS passes file names
 
@@ -227,15 +227,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def loadLastOpenedProject(self):
 
-        lastOpenFileName: str          = self._fileHistory.GetHistoryFile(0)
+        lastOpenFileName: str = self._fileHistory.GetHistoryFile(0)
         self._loadProjectByName(fileName=lastOpenFileName)
 
     def loadEmptyProject(self):
         umlProject: UmlProject = UmlProject.emptyProject()
-        #
-        # uh oh using a listener directly
-        #
-        self._loadProjectListener(umlProject=umlProject)
+        self._displayProject(umlProject=umlProject)
 
     def _loadProjectByName(self, fileName: str):
         """
@@ -243,13 +240,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         Args:
             fileName:   File name to open
         """
-
         umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-        umlProject:   UmlProject = umlProjectIO.readProject(fileToOpen=fileName)
-        #
-        # uh oh using a listener directly
-        #
-        self._loadProjectListener(umlProject=umlProject)
+        umlProject:   UmlProject   = umlProjectIO.readProject(fileToOpen=fileName)
+
+        self._displayProject(umlProject=umlProject)
 
     def _createApplicationMenuBar(self):
 
@@ -386,35 +380,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
-    def _loadProjectListener(self, umlProject: UmlProject):
-
-        self.logger.info(f'Loading: {umlProject.fileName}')
-
-        if self._umlNotebook is None:
-            # Lazy UI creation
-
-            sizedPanel: SizedPanel = self.GetContentsPane()
-            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
-
-        projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
-                                                        appPubSubEngine=self._appPubSubEngine,
-                                                        umlPubSubEngine=self._umlPubSubEngine,
-                                                        umlProject=umlProject,
-                                                        editMenu=self._editMenu
-                                                        )
-        self._umlNotebook.addProject(projectPanel=projectPanel)
-
-        frameIdMap: FrameIdMap = projectPanel.frameIdMap
-
-        for frameId in frameIdMap.keys():
-            self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
-                                            frameId=frameId,
-                                            listener=self._updateApplicationStatusListener)
-
-            self._actionSupervisor.registerNewFrame(frameId=frameId)
-
-        if umlProject.fileName != DEFAULT_PROJECT_PATH:
-            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))
+    def _openProjectListener(self, umlProject: UmlProject):
+        self._displayProject(umlProject=umlProject)
 
     def _saveProjectListener(self):
         """
@@ -463,7 +430,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _subscribeToMessagesWeHandle(self):
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._loadProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._openProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._saveProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_AS_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveAsProjectListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SELECT_TOOL,     uniqueId=APPLICATION_FRAME_ID, listener=self._selectToolListener)
@@ -543,3 +510,41 @@ class UmlDiagrammerAppFrame(SizedFrame):
             toolBar.ToggleTool(deselectedToolId, False)
 
         toolBar.ToggleTool(toolId, True)
+
+    def _displayProject(self, umlProject: UmlProject):
+        """
+        This methods takes the UML project and displays it in the UI.  As a
+        side affect (bad) adds the file name to the fileHistory
+
+        Args:
+            umlProject:  The project to display in the UI
+
+        """
+        self.logger.info(f'Displaying: {umlProject.fileName}')
+
+        if self._umlNotebook is None:
+            # Lazy UI creation
+
+            sizedPanel: SizedPanel = self.GetContentsPane()
+            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+
+        self._umlNotebook.closeDefaultProject()
+        projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
+                                                        appPubSubEngine=self._appPubSubEngine,
+                                                        umlPubSubEngine=self._umlPubSubEngine,
+                                                        umlProject=umlProject,
+                                                        editMenu=self._editMenu
+                                                        )
+        self._umlNotebook.addProject(projectPanel=projectPanel)
+
+        frameIdMap: FrameIdMap = projectPanel.frameIdMap
+
+        for frameId in frameIdMap.keys():
+            self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
+                                            frameId=frameId,
+                                            listener=self._updateApplicationStatusListener)
+
+            self._actionSupervisor.registerNewFrame(frameId=frameId)
+
+        if umlProject.fileName != DEFAULT_PROJECT_PATH:
+            self._fileHistory.AddFileToHistory(filename=str(umlProject.fileName))

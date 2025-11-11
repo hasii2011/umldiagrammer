@@ -80,7 +80,7 @@ class UmlDiagrammer(App):
         self.logger.debug(f'MacOpenFiles: {appFrame=}')
         #
         for fileName in fileNames:
-            appFrame.loadByFilename(fileName)
+            appFrame.loadProjectByFilename(fileName)
 
     def _setupApplicationLogging(self):
 

@@ -6,6 +6,7 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from wx import NB_LEFT
 from wx import ID_YES
 from wx import YES_NO
@@ -90,6 +91,25 @@ class UmlNotebook(Notebook):
             umlProject=projectPanel.umlProject,
             modified=projectPanel.umlProjectModified
         )
+
+    def closeDefaultProject(self) -> bool:
+        """
+        Will close it if it is open
+
+        Returns:  `True` if it was closed, else `False`
+        """
+        answer: bool = False
+
+        projectCount: int = self.GetPageCount()
+
+        for idx in range(projectCount):
+            projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetPage(idx))
+            if projectPanel.umlProject.fileName == DEFAULT_PROJECT_PATH:
+                answer = True
+                self._closeProject(projectPanel=projectPanel)
+                break
+
+        return answer
 
     def addProject(self, projectPanel: UmlProjectPanel):
         """
@@ -179,19 +199,7 @@ class UmlNotebook(Notebook):
 
     def _closeProjectListener(self):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
-        if projectPanel.umlProjectModified is True:
-
-            message: str = f'Project: {projectPanel.umlProject.fileName.stem} is modified.  Save it before closing?'
-            askDialog: MessageDialog = MessageDialog(parent=None, message=message, caption='Please confirm', style=YES_NO | ICON_QUESTION)
-            ans: int = askDialog.ShowModal()
-            if ans == ID_YES:
-                umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-                umlProjectIO.saveProject(umlProject=self.currentProject.umlProject)
-
-        projectName: str = str(self.currentProject.umlProject.fileName)
-        pageIdx:     int = self.GetSelection()
-        self.DeletePage(pageIdx)
-        self.logger.info(f'Project closed: {projectName}')
+        self._closeProject(projectPanel=projectPanel)
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:
@@ -223,3 +231,19 @@ class UmlNotebook(Notebook):
 
             projectPanel: UmlProjectPanel = self._currentProjectPanel
             projectPanel.umlProjectModified = True
+
+    def _closeProject(self, projectPanel: UmlProjectPanel):
+
+        if projectPanel.umlProjectModified is True:
+
+            message: str = f'Project: {projectPanel.umlProject.fileName.stem} is modified.  Save it before closing?'
+            askDialog: MessageDialog = MessageDialog(parent=None, message=message, caption='Please confirm', style=YES_NO | ICON_QUESTION)
+            ans: int = askDialog.ShowModal()
+            if ans == ID_YES:
+                umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+                umlProjectIO.saveProject(umlProject=self.currentProject.umlProject)
+
+        projectName: str = str(self.currentProject.umlProject.fileName)
+        pageIdx:     int = self.GetSelection()
+        self.DeletePage(pageIdx)
+        self.logger.info(f'Project closed: {projectName}')
