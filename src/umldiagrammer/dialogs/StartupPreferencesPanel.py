@@ -1,6 +1,7 @@
 
 from typing import cast
 
+from wx import BORDER_THEME
 from wx import EVT_CHECKBOX
 
 from wx import CheckBox
@@ -30,10 +31,8 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
-        super().__init__(parent)
+        super().__init__(parent, style=BORDER_THEME)
         self.SetSizerType('vertical')
-        # noinspection PyUnresolvedReferences
-        self.SetSizerProps(expand=True, proportion=2)
 
         self._cbCenterAppOnStartup:   CheckBox          = cast(CheckBox, None)
         self._appPositionControls:    PositionControl   = cast(PositionControl, None)
@@ -41,6 +40,9 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         self._appDimensionsContainer: DimensionsControl = cast(DimensionsControl, None)
 
         self._layoutControls(parent)
+
+        # noinspection PyUnresolvedReferences
+        self.SetSizerProps(expand=True, proportion=3)
 
     def _layoutControls(self, parent):
 
@@ -63,7 +65,7 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         appPositionControls: PositionControl = PositionControl(sizedPanel=sizedPanel, displayText='Startup Position',
                                                                minValue=0, maxValue=2048,
                                                                valueChangedCallback=self._appPositionChanged,
-                                                               setControlsSize=False)
+                                                               setControlsSize=True)
 
         appPositionControls.SetSizerProps(expand=True, proportion=1)
         return appPositionControls
@@ -73,7 +75,7 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         appSizeControls: DimensionsControl = DimensionsControl(sizedPanel=sizedPanel, displayText="Startup Width/Height",
                                                                minValue=480, maxValue=4096,
                                                                valueChangedCallback=self._appSizeChanged,
-                                                               setControlsSize=False)
+                                                               setControlsSize=True)
 
         appSizeControls.SetSizerProps(expand=True, proportion=1)
         return appSizeControls

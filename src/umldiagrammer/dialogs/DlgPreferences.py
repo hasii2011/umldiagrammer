@@ -20,19 +20,15 @@ from wx import Size
 from wx.lib.sized_controls import SizedDialog
 from wx.lib.sized_controls import SizedPanel
 
+from umlshapes.dialogs.preferences.DefaultValuesPanel import DefaultValuesPanel
+from umlshapes.dialogs.preferences.DiagramPreferencesPanel import DiagramPreferencesPanel
+
 from umldiagrammer.dialogs.GeneralPreferencesPanel import GeneralPreferencesPanel
-from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
-
-# from ogl.ui.DefaultValuesPreferencesPage import DefaultValuesPreferencesPage
-# from ogl.ui.DiagramPreferencesPage import DiagramPreferencesPage
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 #
-# from pyut.ui.dialogs.preferences.GeneralPrefencesPage import GeneralPreferencesPage
-#
-# from pyut.ui.dialogs.preferences.PositioningPreferencesPage import PositioningPreferencesPage
-#
-# from pyut.preferences.PyutPreferences import PyutPreferences
 #
 # from pyutplugins.common.ui.preferences.PluginPreferencesPage import PluginPreferencesPage
 #
@@ -40,9 +36,7 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 class DlgPreferences(SizedDialog):
     """
-    This class is Pyut's preference dialog.
-    This implementation is version 2 of this dialog from the legacy application.
-    This version of Pyut added many more preferences.
+    This class is the UML Diagrammer's preference dialog.
 
     Display the current preferences, the possible values, and save modified values.
 
@@ -52,9 +46,8 @@ class DlgPreferences(SizedDialog):
     To use it from a wxFrame:
     ```python
 
-        dlg = DlgProperties(parent=self, wxId=wx.ID_ANY)
-        dlg.ShowModal()
-        dlg.Destroy()
+        with DlgPreferences(parent=self._sizedFrame, appPubSubEngine=self._appPubSubEngine) as dlg:
+            dlg.ShowModal()
     ```
     """
     def __init__(self, parent, appPubSubEngine: IAppPubSubEngine):
@@ -76,7 +69,7 @@ class DlgPreferences(SizedDialog):
         sizedPanel.SetSizerProps(expand=True)
 
         self._createTheControls(sizedPanel=sizedPanel)
-        self.SetButtonSizer(self.CreateStdDialogButtonSizer(OK | CANCEL))
+        self.SetButtonSizer(self.CreateStdDialogButtonSizer(OK))
 
         self.Bind(EVT_BUTTON, self.__OnCmdOk, id=ID_OK)
         self.Bind(EVT_CLOSE,  self.__OnClose)
@@ -91,16 +84,16 @@ class DlgPreferences(SizedDialog):
         book: Notebook = Notebook(sizedPanel, style=style)
         book.SetSizerProps(expand=True, proportion=1)
 
-        generalPreferences:     GeneralPreferencesPanel       = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
+        generalPreferences:     GeneralPreferencesPanel  = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
+        valuePreferences:       DefaultValuesPanel       = DefaultValuesPanel(parent=book)
+        diagramPreferences:     DiagramPreferencesPanel  = DiagramPreferencesPanel(parent=book)
         # positioningPreferences: PositioningPreferencesPage   = PositioningPreferencesPage(book, eventEngine=self._eventEngine)
-        # diagramPreferences:     DiagramPreferencesPage       = DiagramPreferencesPage(book)
-        # valuePreferences:       DefaultValuesPreferencesPage = DefaultValuesPreferencesPage(book)
         # pluginPreferences:      PluginPreferencesPage        = PluginPreferencesPage(book)
         # #
-        book.AddPage(generalPreferences,     text=generalPreferences.name,     select=True)
+        book.AddPage(generalPreferences, text=generalPreferences.name, select=True)
+        book.AddPage(valuePreferences,   text=valuePreferences.name,   select=False)
+        book.AddPage(diagramPreferences, text=diagramPreferences.name, select=False)
         # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)
-        # book.AddPage(diagramPreferences,     text=diagramPreferences.name,     select=False)
-        # book.AddPage(valuePreferences,       text=valuePreferences.name,       select=False)
         # book.AddPage(pluginPreferences,      text=pluginPreferences.name,      select=False)
 
     def __OnClose(self, event):

@@ -45,7 +45,7 @@ install:
   - pip install untangle==1.2.1
   - URL=https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04
   - pip install -U -f $URL wxPython
-  - pip install codeallyadvanced==2.2.0
+  - pip install codeallyadvanced==2.3.0
   - pip install umlshapes==0.9.310
   - pip install umlio==0.4.8
 

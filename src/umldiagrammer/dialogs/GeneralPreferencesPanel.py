@@ -9,13 +9,14 @@ from dataclasses import dataclass
 
 from pathlib import Path
 
+from wx import BORDER_THEME
 from wx import EVT_CHECKBOX
 from wx import EVT_RADIOBOX
 from wx import ID_ANY
 
 from wx import CheckBox
 from wx import CommandEvent
-from wx import RA_SPECIFY_ROWS
+from wx import RA_SPECIFY_COLS
 from wx import RadioBox
 from wx import Window
 
@@ -73,7 +74,6 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._controlData = [
             # ControlData(label='&Full Screen on startup',   initialValue=p.fullScreen,             wxId=GeneralPreferencesPanel.MAXIMIZE_ID),
             ControlData(label='&Resize classes on edit',   initialValue=p.autoResizeShapesOnEdit, wxId=GeneralPreferencesPanel.AUTO_RESIZE_ID),
-            ControlData(label='&Large Toolbar Icons',      initialValue=self._isLargeIconSize(),  wxId=GeneralPreferencesPanel.TOOLBAR_ICON_SIZE_ID),
             ControlData(label='Load Last &Opened Project', initialValue=p.loadLastOpenedProject,  wxId=GeneralPreferencesPanel.LOAD_LAST_OPENED_PROJECT_ID),
         ]
 
@@ -83,18 +83,24 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged, self._projectHistoryPathPref)
 
+    @property
+    def name(self) -> str:
+        return 'General'
+
     def _layoutWindow(self, sizedPanel: SizedPanel):
 
         self._layoutTrueFalsePreferences(sizedPanel)
         StartupPreferencesPanel(parent=sizedPanel, appPubSubEngine=self._appPubSubEngine)
         self._layoutDiagramsDirectory(sizedPanel)
-        self._layoutProjectHistoryDisplayPreferenceControl(sizedPanel)
 
-        # self._fixPanelSize(panel=self)
+        rbPanel: SizedStaticBox = SizedStaticBox(sizedPanel, label='', style=BORDER_THEME)
+        rbPanel.SetSizerProps(expand=True, proportion=2)
+        rbPanel.SetSizerType('horizontal')
 
-    @property
-    def name(self) -> str:
-        return 'General'
+        self._layoutProjectHistoryDisplayPreferenceControl(rbPanel)
+        self._layoutToolBarIconSize(rbPanel)
+
+        self._fixPanelSize(panel=self)
 
     def _layoutTrueFalsePreferences(self, parentPanel: SizedPanel):
         """
@@ -103,8 +109,6 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
             parentPanel:
         """
         trueFalsePanel: SizedStaticBox = SizedStaticBox(parentPanel, label='')
-        trueFalsePanel.SetSizerType('Vertical')
-        trueFalsePanel.SetSizerProps(expand=True, proportion=1)
 
         for cd in self._controlData:
             control: ControlData = cast(ControlData, cd)
@@ -112,9 +116,12 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
             control.instanceVar.SetValue(control.initialValue)
             parentPanel.Bind(EVT_CHECKBOX, self._onTrueFalsePreferenceChanged, control.instanceVar)
 
+        trueFalsePanel.SetSizerType('Vertical')
+        trueFalsePanel.SetSizerProps(expand=True, proportion=1)
+
     def _layoutDiagramsDirectory(self, sizedPanel: SizedPanel):
 
-        dsPanel: SizedStaticBox = SizedStaticBox(sizedPanel, label='Diagrams Directory ')
+        dsPanel: SizedStaticBox = SizedStaticBox(sizedPanel, label='Diagrams Directory ', style=BORDER_THEME)
         dsPanel.SetSizerProps(expand=True, proportion=1)
 
         self._directorySelector = DirectorySelector(parent=dsPanel, pathChangedCallback=self._pathChangedCallback)
@@ -133,9 +140,31 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
                                 label='Project History Path Style',
                                 choices=options,
                                 majorDimension=1,
-                                style=RA_SPECIFY_ROWS)
+                                style=RA_SPECIFY_COLS | BORDER_THEME)
+
+        rb.SetSizerProps(expand=True, proportion=1)
 
         self._projectHistoryPathPref = rb
+
+    def _layoutToolBarIconSize(self, parentPanel: SizedPanel):
+
+        options: List[str] = [
+            ToolBarIconSize.SMALL.value,
+            ToolBarIconSize.MEDIUM.value,
+            ToolBarIconSize.LARGE.value,
+            ToolBarIconSize.EXTRA_LARGE.value,
+        ]
+
+        rb: RadioBox = RadioBox(parent=parentPanel,
+                                id=ID_ANY,
+                                label='Toolbar Icon Size',
+                                choices=options,
+                                majorDimension=1,
+                                style=RA_SPECIFY_COLS | BORDER_THEME)
+
+        rb.SetSizerProps(expand=True, proportion=1)
+
+        self._toolBarIconSizePref = rb
 
     def _setControlValues(self):
         """
@@ -182,9 +211,3 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
     def _pathChangedCallback(self, newPath: Path):
         self._preferences.diagramsDirectory = str(newPath)
-
-    def _isLargeIconSize(self) -> bool:
-        if self._preferences.toolBarIconSize == ToolBarIconSize.LARGE:
-            return True
-        else:
-            return False

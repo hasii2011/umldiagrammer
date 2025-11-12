@@ -64,7 +64,7 @@ setup(
         'Pypubsub==4.0.3',
         'semantic-version==2.10.0',
         'codeallybasic>=1.30.0',
-        'codeallyadvanced>=2.2.0',
+        'codeallyadvanced>=2.3.0',
         'pyutmodelv2>=2.2.6',
         'umlshapes>=0.9.310',
         'umlio>=0.4.8',

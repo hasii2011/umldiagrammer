@@ -1,6 +1,9 @@
 
-from abc import abstractmethod
+from abc import ABC
 from abc import ABCMeta
+from abc import abstractmethod
+
+from wx import BORDER_DEFAULT
 
 from wx import Window
 
@@ -17,13 +20,11 @@ class MyMetaBasePreferencesPage(ABCMeta, type(SizedPanel)):        # type: ignor
     pass
 
 
-class BasePreferencesPanel(SizedPanel, metaclass=MyMetaBasePreferencesPage):
+class BasePreferencesPanel(SizedPanel, ABC, metaclass=MyMetaBasePreferencesPage):
 
-    # __metaclass__ = MyMetaBasePreferencesPage
+    def __init__(self, parent: Window, style: int = BORDER_DEFAULT):
 
-    def __init__(self, parent: Window):
-
-        super().__init__(parent)
+        super().__init__(parent, style=style)
 
         self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 

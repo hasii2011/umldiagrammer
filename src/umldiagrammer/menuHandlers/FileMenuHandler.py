@@ -17,7 +17,6 @@ from wx import FD_OPEN
 from wx import ICON_ERROR
 from wx import ID_FILE1
 from wx import ID_FILE9
-from wx import ID_OK
 from wx import ID_OPEN
 from wx import ID_PREFERENCES
 from wx import ID_SAVE
@@ -163,10 +162,7 @@ class FileMenuHandler(BaseMenuHandler):
     def _onPreferences(self, event: CommandEvent):
 
         with DlgPreferences(parent=self._sizedFrame, appPubSubEngine=self._appPubSubEngine) as dlg:
-            if dlg.ShowModal() == ID_OK:
-                self.logger.debug(f'Got answer')
-            else:
-                self.logger.debug(f'Cancelled')
+            dlg.ShowModal()
 
     def _onOpenRecent(self, event: CommandEvent):
         """
