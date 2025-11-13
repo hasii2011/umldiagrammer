@@ -22,7 +22,7 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 from umldiagrammer import START_STOP_MARKER
 from umldiagrammer.DiagrammerTypes import MAIN_LOGGING_NAME
 from umldiagrammer.SystemMetrics import SystemMetrics
-from umldiagrammer.Versions import Versions
+from umldiagrammer.DependencyVersions import DependencyVersions
 from umldiagrammer.UmlDiagrammerAppFrame import UmlDiagrammerAppFrame
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
@@ -98,7 +98,7 @@ class UmlDiagrammer(App):
     def displayVersionInformation(self):
         import platform
 
-        version: Versions = Versions()
+        version: DependencyVersions = DependencyVersions()
         print("Versions: ")
         print(f'Platform: {version.platform}')
 

@@ -27,7 +27,7 @@ PackageVersion = NewType('PackageVersion', str)
 PackageVersionsMap = NewType('PackageVersionsMap', Dict[PackageName, PackageVersion])
 
 
-class Versions(metaclass=SingletonV3):
+class DependencyVersions(metaclass=SingletonV3):
 
     __appName__: str = 'Pyut'
 
@@ -44,7 +44,7 @@ class Versions(metaclass=SingletonV3):
 
     @property
     def applicationName(self) -> str:
-        return Versions.__appName__
+        return DependencyVersions.__appName__
 
     @property
     def applicationVersion(self) -> str:

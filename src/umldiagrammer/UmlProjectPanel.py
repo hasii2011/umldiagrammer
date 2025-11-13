@@ -52,17 +52,17 @@ class UmlProjectPanel(SplitterWindow):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self._editMenu:        Menu             = editMenu
 
-        self._projectTree:     UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
-        self._documentManager: UmlDiagramManager = UmlDiagramManager(parent=self,
-                                                                     appPubSubEngine=appPubSubEngine,
-                                                                     umlPubSubEngine=umlPubSubEngine,
-                                                                     umlDocuments=umlProject.umlDocuments,
-                                                                     editMenu=editMenu
-                                                                     )
+        self._projectTree:      UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
+        self._umlDiagramManager: UmlDiagramManager = UmlDiagramManager(parent=self,
+                                                                       appPubSubEngine=appPubSubEngine,
+                                                                       umlPubSubEngine=umlPubSubEngine,
+                                                                       umlDocuments=umlProject.umlDocuments,
+                                                                       editMenu=editMenu
+                                                                       )
 
         self.SetMinimumPaneSize(200)            # TODO: This should be a preference
 
-        self.SplitVertically(self._projectTree, self._documentManager)
+        self.SplitVertically(self._projectTree, self._umlDiagramManager)
 
         uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
         for uniqueId in uniqueNodeIds:
@@ -87,7 +87,7 @@ class UmlProjectPanel(SplitterWindow):
 
     @property
     def umlProject(self) -> UmlProject:
-        self._umlProject.umlDocuments = self._documentManager.umlDocuments
+        self._umlProject.umlDocuments = self._umlDiagramManager.umlDocuments
         return self._umlProject
 
     @property
@@ -101,15 +101,15 @@ class UmlProjectPanel(SplitterWindow):
         # Now tell each of the frames
         #
         if modified is False:
-            self._documentManager.markFramesSaved()
+            self._umlDiagramManager.markFramesSaved()
 
     @property
     def frameIdMap(self) -> FrameIdMap:
-        return self._documentManager.frameIdMap
+        return self._umlDiagramManager.frameIdMap
 
     @property
     def currentUmlFrameId(self) -> FrameId:
-        return self._documentManager.currentUmlFrameId
+        return self._umlDiagramManager.currentUmlFrameId
 
     def createNewDocument(self, documentType: UmlDocumentType):
         """
@@ -125,11 +125,17 @@ class UmlProjectPanel(SplitterWindow):
             umlDocument = UmlDocument.sequenceDocument()
         else:
             assert False, 'Unknown UML document type'
+        #
+        # the following 2 lines ensure that document names within a project are unique
+        #
+        uniqueDocumentTitle: UmlDocumentTitle = self._umlDiagramManager.createUniqueDocumentName(umlDocument.documentTitle)
+
+        umlDocument.documentTitle = uniqueDocumentTitle
 
         treeNodeTopicId: UniqueId = self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
-        self._documentManager.createNewDiagram(umlDocument=umlDocument)
+        self._umlDiagramManager.createNewDiagram(umlDocument=umlDocument)
 
-        self._documentManager.switchToDocumentDiagram(umlDocument)
+        self._umlDiagramManager.switchToDocumentDiagram(umlDocument)
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
@@ -141,7 +147,7 @@ class UmlProjectPanel(SplitterWindow):
 
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
-        self._documentManager.switchToDocumentDiagram(treeData.umlDocument)
+        self._umlDiagramManager.switchToDocumentDiagram(treeData.umlDocument)
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
@@ -150,14 +156,14 @@ class UmlProjectPanel(SplitterWindow):
     def _documentNameChangedListener(self, oldDocumentTitle: UmlDocumentTitle, newDocumentTitle: UmlDocumentTitle):
 
         self.logger.debug(f'{oldDocumentTitle=} {newDocumentTitle=}')
-        self._documentManager.renameDiagram(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
+        self._umlDiagramManager.renameDiagram(oldDocumentTitle=oldDocumentTitle, newDocumentTitle=newDocumentTitle)
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.DOCUMENT_NAME_CHANGED,
                                           uniqueId=NOTEBOOK_ID,
                                           projectName=self._umlProject.fileName.stem)
 
     def _deleteDiagramListener(self, diagramName: str):
-        self._documentManager.deleteDiagram(documentName=diagramName)
+        self._umlDiagramManager.deleteDiagram(documentName=diagramName)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem

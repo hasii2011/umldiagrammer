@@ -71,6 +71,8 @@ from umlio.IOTypes import UmlLollipopInterfaces
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
+from umldiagrammer.UniqueNameGenerator import NameList
+from umldiagrammer.UniqueNameGenerator import createUniqueName
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
@@ -203,6 +205,21 @@ class UmlDiagramManager(Simplebook):
 
         self.logger.info(f'Updated: {self._umlDocuments=}')
 
+    def createUniqueDocumentName(self, umlDocumentTitle: UmlDocumentTitle) -> UmlDocumentTitle:
+        """
+        Ensures that document title within a project are unique
+
+        Args:
+            umlDocumentTitle:
+
+        Returns:  Either the original document title unmodified or one that is unique
+        within this project
+        """
+        documentNames: NameList = cast(NameList, self._umlDocuments.keys())
+        uniqueName:    str      = createUniqueName(nameToCheck=umlDocumentTitle, names=documentNames)
+
+        return UmlDocumentTitle(uniqueName)
+
     def createNewDiagram(self, umlDocument: UmlDocument):
         """
 
@@ -214,6 +231,7 @@ class UmlDiagramManager(Simplebook):
 
         self.AddPage(diagramFrame, umlDocument.documentTitle)
         self._frameIdMap[diagramFrame.id] = diagramFrame
+        self._umlDocuments[umlDocument.documentTitle] = umlDocument
 
     def deleteDiagram(self, documentName: str):
         """
@@ -228,6 +246,7 @@ class UmlDiagramManager(Simplebook):
             currentName: str = self.GetPageText(pageIdx)
             if currentName == documentName:
                 self.DeletePage(pageIdx)
+                self._umlDocuments.pop(documentName)
                 break
 
     def markFramesSaved(self):

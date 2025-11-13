@@ -37,7 +37,7 @@ from wx.lib.sized_controls import SizedDialog
 from wx.lib.sized_controls import SizedPanel
 
 from umldiagrammer import __version__ as diagrammerVersion
-from umldiagrammer.Versions import Versions
+from umldiagrammer.DependencyVersions import DependencyVersions
 
 from umldiagrammer.resources.icons.AboutDialogLogo import embeddedImage as AboutDialogLogo
 
@@ -63,7 +63,7 @@ class DlgAbout(SizedDialog):
         self._versionFont.SetPointSize(pointSize=12)
         self._versionFont.SetWeight(FONTWEIGHT_SEMIBOLD)
 
-        self._versions: Versions = Versions()
+        self._versions: DependencyVersions = DependencyVersions()
         # Main panel
         mainPanel:  SizedPanel = self.GetContentsPane()
         mainPanel.SetSizerType("horizontal")
@@ -102,7 +102,7 @@ class DlgAbout(SizedDialog):
         versionPanel.SetSizerType('vertical')
         versionPanel.SetSizerProps(expand=True, proportion=1)
 
-        versions: Versions = self._versions
+        versions: DependencyVersions = self._versions
         versionDescriptors: VersionDescriptors = VersionDescriptors(
             [
                 VersionDescriptor(name=f'{versions.applicationName}', version=f'{versions.applicationVersion}'),

@@ -58,7 +58,8 @@ class HelpMenuHandler(BaseMenuHandler):
 
         gorgeousStr = pformat(self._topicCount, indent=4)
 
-        self.logger.info(f'\n{gorgeousStr}')
+        # self.logger.info(f'\n{gorgeousStr}')
+        print(f'\n{gorgeousStr}')
 
     # noinspection PyUnusedLocal
     def _snoop(self, opaqueTopicStr=pub.AUTO_TOPIC, **kwargs):
