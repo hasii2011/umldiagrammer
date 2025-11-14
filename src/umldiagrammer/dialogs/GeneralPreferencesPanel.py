@@ -36,9 +36,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
 
-# from pyut.resources.img import folder as ImgFolder
-
-
 @dataclass
 class ControlData:
     label:        str      = ''
@@ -68,6 +65,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._change: bool   = False
 
         self._projectHistoryPathPref: RadioBox          = cast(RadioBox, None)
+        self._toolBarIconSizePref:    RadioBox          = cast(RadioBox, None)
         self._directorySelector:      DirectorySelector = cast(DirectorySelector, None)
 
         p: DiagrammerPreferences = self._preferences
@@ -82,6 +80,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._setControlValues()
 
         self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged, self._projectHistoryPathPref)
+        self.Bind(EVT_RADIOBOX, self._toolBarIconSizePrefChanged,   self._toolBarIconSizePref)
 
     @property
     def name(self) -> str:
@@ -127,7 +126,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._directorySelector = DirectorySelector(parent=dsPanel, pathChangedCallback=self._pathChangedCallback)
         self._directorySelector.SetSizerProps(expand=True, proportion=1)
 
-    def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedPanel):
+    def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedStaticBox):
 
         options: List[str] = [
             ProjectHistoryDisplayType.SHOW_NEVER.value,
@@ -146,7 +145,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self._projectHistoryPathPref = rb
 
-    def _layoutToolBarIconSize(self, parentPanel: SizedPanel):
+    def _layoutToolBarIconSize(self, parentPanel: SizedStaticBox):
 
         options: List[str] = [
             ToolBarIconSize.SMALL.value,
@@ -172,10 +171,14 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         """
         self._directorySelector.directoryPath = self._preferences.diagramsDirectory
 
-        chosen: str = self._preferences.fileHistoryDisplay.value
-        idx:    int = self._projectHistoryPathPref.FindString(chosen)
+        chosen:     str = self._preferences.fileHistoryDisplay.value
+        historyIdx: int = self._projectHistoryPathPref.FindString(chosen)
 
-        self._projectHistoryPathPref.SetSelection(idx)
+        self._projectHistoryPathPref.SetSelection(historyIdx)
+
+        iconSizeValue: ToolBarIconSize = self._preferences.toolBarIconSize
+        iconSizeIdx:    int = self._toolBarIconSizePref.FindString(string=iconSizeValue.value)
+        self._toolBarIconSizePref.SetSelection(iconSizeIdx)
 
     def _onTrueFalsePreferenceChanged(self, event: CommandEvent):
 
@@ -205,9 +208,16 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
     def _onFileHistoryPathPrefChanged(self, event: CommandEvent):
 
         newValue: str = event.GetString()
-        self.logger.info(f'File History Path Preferences changed.  {newValue=}')
+        self.logger.info(f'File History Path Preference changed.  {newValue=}')
         newPreference: ProjectHistoryDisplayType = ProjectHistoryDisplayType(newValue)
         self._preferences.fileHistoryDisplay = newPreference
+
+    def _toolBarIconSizePrefChanged(self, event: CommandEvent):
+
+        newValue: str = event.GetString()
+        self.logger.info(f'Tool Bar Icon Size Preference changed.  {newValue=}')
+        newPreference: ToolBarIconSize = ToolBarIconSize(newValue)
+        self._preferences.toolBarIconSize = newPreference
 
     def _pathChangedCallback(self, newPath: Path):
         self._preferences.diagramsDirectory = str(newPath)
