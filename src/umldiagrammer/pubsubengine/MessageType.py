@@ -26,6 +26,12 @@ class MessageType(Enum):
 
     CREATE_NEW_DIAGRAM    = 'Create New Diagram'
     DELETE_DIAGRAM        = 'Delete Diagram'
+
+    #
+    # The diagram needs to send messages
+    # The applications needs to listen for messages from the frame
+    #
+    REGISTER_NEW_FRAME  = 'Register New Frame'
     #
     # This message is used by the project tree to communicate with the project panel
     # Additionally, used by the project panel to communicate to the UML Note book

@@ -229,7 +229,7 @@ class UmlDiagramManager(Simplebook):
 
         diagramFrame: DiagramFrameType = self._createDiagramFrame(documentType=umlDocument.documentType)
 
-        self.AddPage(diagramFrame, umlDocument.documentTitle)
+        self.AddPage(diagramFrame, umlDocument.documentTitle, select=True)
         self._frameIdMap[diagramFrame.id] = diagramFrame
         self._umlDocuments[umlDocument.documentTitle] = umlDocument
 
@@ -327,7 +327,7 @@ class UmlDiagramManager(Simplebook):
             assert False, f'Unknown UML document type: {documentType=}'
 
         diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
-        self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU,      uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
+        self._appPubSubEngine.subscribe(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, diagramFrame.id), listener=self._updateEditMenuListener)
 
         umlDiagram: UmlDiagram = diagramFrame.umlDiagram
         if self._umlPreferences.snapToGrid is True:

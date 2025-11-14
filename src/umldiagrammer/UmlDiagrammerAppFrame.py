@@ -53,6 +53,7 @@ from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
+from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
@@ -431,6 +432,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _lollipopCreationRequestListener(self, lollipopCreationData: LollipopCreationData):
         self._actionSupervisor.createLollipopInterface(lollipopCreationData=lollipopCreationData)
 
+    def _registerNewFrameListener(self, frameId: FrameId):
+        self._doRegistration(frameId=frameId)
+
     def _subscribeToMessagesWeHandle(self):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._openProjectListener)
@@ -446,6 +450,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_TEXT,  uniqueId=APPLICATION_FRAME_ID, listener=self._editTextListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
+
+        self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME, uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
 
     def _getFrameStyle(self) -> int:
         """
@@ -543,11 +549,22 @@ class UmlDiagrammerAppFrame(SizedFrame):
         frameIdMap: FrameIdMap = projectPanel.frameIdMap
 
         for frameId in frameIdMap.keys():
-            self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
-                                            frameId=frameId,
-                                            listener=self._updateApplicationStatusListener)
-
-            self._actionSupervisor.registerNewFrame(frameId=frameId)
+            self._doRegistration(frameId)
 
         if umlProject.fileName != DEFAULT_PROJECT_PATH:
             self._projectHistory.AddFileToHistory(filename=str(umlProject.fileName))
+
+    def _doRegistration(self, frameId):
+        """
+        Get notified when s frame asks us to update the application status
+        The action supervisor handles other relevant messages.  See that method
+
+        Args:
+            frameId:
+        """
+
+        self._umlPubSubEngine.subscribe(UmlMessageType.UPDATE_APPLICATION_STATUS,
+                                        frameId=frameId,
+                                        listener=self._updateApplicationStatusListener)
+
+        self._actionSupervisor.registerNewFrame(frameId=frameId)

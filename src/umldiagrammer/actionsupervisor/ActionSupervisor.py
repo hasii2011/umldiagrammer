@@ -205,6 +205,13 @@ class ActionSupervisor(metaclass=SingletonV3):
         self._setStatusText(msg)
 
     def registerNewFrame(self, frameId: FrameId):
+        """
+        We handle when the frame is clicked on or a shape is clicked on
+
+        Args:
+            frameId:
+
+        """
         self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_LEFT_CLICK,   frameId=frameId, listener=self._frameClickListener)
         self._umlPubSubEngine.subscribe(messageType=UmlMessageType.UML_SHAPE_SELECTED, frameId=frameId, listener=self._shapeSelectedListener)
 

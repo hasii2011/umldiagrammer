@@ -16,6 +16,7 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlio.IOTypes import UmlProject
 
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
@@ -140,7 +141,10 @@ class UmlProjectPanel(SplitterWindow):
                                           uniqueId=EDIT_MENU_HANDLER_ID,
                                           activeFrameId=self.currentUmlFrameId
                                           )
-
+        self._appPubSubEngine.sendMessage(messageType=MessageType.REGISTER_NEW_FRAME,
+                                          uniqueId=APPLICATION_FRAME_ID,
+                                          frameId=self.currentUmlFrameId
+                                          )
         self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                         uniqueId=treeNodeTopicId,
                                         listener=self._diagramSelectionChangedListener)
