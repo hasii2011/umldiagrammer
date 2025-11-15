@@ -6,7 +6,6 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from wx import NB_LEFT
 from wx import ID_YES
 from wx import YES_NO
@@ -27,6 +26,7 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 
 from umlio.IOTypes import UmlDocumentType
+from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
@@ -49,6 +49,14 @@ class UmlNotebook(Notebook):
 
     """
     def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
+        """
+        Manages Project Panels
+
+        Args:
+            sizedPanel:
+            appPubSubEngine:
+            umlPubSubEngine:
+        """
 
         self.logger:           Logger           = getLogger(__name__)
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
@@ -80,7 +88,13 @@ class UmlNotebook(Notebook):
                                         )
         self._appPubSubEngine.subscribe(messageType=MessageType.CLOSE_PROJECT,
                                         uniqueId=NOTEBOOK_ID,
-                                        listener=self._closeProjectListener)
+                                        listener=self._closeProjectListener
+                                        )
+
+        self._appPubSubEngine.subscribe(messageType=MessageType.DELETE_DIAGRAM,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._deleteDiagramListener
+                                        )
 
     @property
     def currentProject(self) -> ProjectDossier:
@@ -152,7 +166,7 @@ class UmlNotebook(Notebook):
         Args:
             modifiedFrameId:
         """
-        self._indicatedCurrentProjectModified()
+        self._indicateCurrentProjectModified()
 
     def _currentProjectSavedListener(self, projectPath: Path):
         """
@@ -195,7 +209,7 @@ class UmlNotebook(Notebook):
     def _documentNameChangedListener(self, projectName: str):
         currentProjectName: str = self.currentProject.umlProject.fileName.stem
         assert currentProjectName == projectName, 'My assumption is wrong'
-        self._indicatedCurrentProjectModified()
+        self._indicateCurrentProjectModified()
 
     def _closeProjectListener(self):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
@@ -219,7 +233,7 @@ class UmlNotebook(Notebook):
         idx: int = self.GetSelection()
         self.SetPageText(idx, newName)
 
-    def _indicatedCurrentProjectModified(self):
+    def _indicateCurrentProjectModified(self):
 
         if self._currentProjectPanel.umlProjectModified is False:
             idx:              int = self.GetSelection()
@@ -247,3 +261,14 @@ class UmlNotebook(Notebook):
         pageIdx:     int = self.GetSelection()
         self.DeletePage(pageIdx)
         self.logger.info(f'Project closed: {projectName}')
+
+    def _deleteDiagramListener(self):
+        """
+        Deletes the currently visible diagram
+
+        """
+        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        diagramName: str = projectPanel.deleteCurrentDiagram()
+        self._indicateCurrentProjectModified()
+        self.logger.info(f'Diagram {diagramName} removed from project {projectPanel.umlProject.fileName}')
+

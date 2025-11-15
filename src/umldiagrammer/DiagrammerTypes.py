@@ -22,7 +22,7 @@ from umlshapes.shapes.UmlUseCase import UmlUseCase
 from umldiagrammer.pubsubengine.IAppPubSubEngine import UniqueId
 
 
-FrameIdMap             = NewType('FrameIdMap',             Dict[FrameId, ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame])
+FrameIdMap = NewType('FrameIdMap', Dict[FrameId, ClassDiagramFrame | UseCaseDiagramFrame | SequenceDiagramFrame])
 
 APPLICATION_FRAME_ID: UniqueId = UniqueId('FEED ZOMBIES')
 EDIT_MENU_HANDLER_ID: UniqueId = UniqueId('REALITY DENIAL')

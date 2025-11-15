@@ -93,7 +93,7 @@ class UIMenuCreator:
         fileMenu.Append(ID_SAVE)
         fileMenu.Append(ID_SAVEAS)
         fileMenu.Append(UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE,  "&Close project\tCtrl-W", "Close current project")
-        fileMenu.Append(UIIdentifiers.ID_MENU_FILE_REMOVE_DIAGRAM, "&Delete diagram",        "Delete the diagram from the project")
+        fileMenu.Append(UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM, "&Delete diagram", "Delete the diagram from the project")
         fileMenu.AppendSeparator()
 
         fileMenu.AppendSeparator()

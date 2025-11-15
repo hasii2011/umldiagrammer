@@ -2,9 +2,6 @@
 from logging import Logger
 from logging import getLogger
 
-from umlio.IOTypes import UmlDocument
-from umlio.IOTypes import UmlDocumentTitle
-from umlio.IOTypes import UmlDocumentType
 from wx import Menu
 from wx import Size
 from wx import Window
@@ -15,6 +12,9 @@ from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlio.IOTypes import UmlProject
+from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlDocumentTitle
+from umlio.IOTypes import UmlDocumentType
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
@@ -66,6 +66,9 @@ class UmlProjectPanel(SplitterWindow):
         self.SplitVertically(self._projectTree, self._umlDiagramManager)
 
         uniqueNodeIds: UniqueIds = self._projectTree.uniqueNodeIds
+        #
+        # Listen for the Tree to tell us stuff
+        #
         for uniqueId in uniqueNodeIds:
             self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                             uniqueId=uniqueId,
@@ -114,7 +117,11 @@ class UmlProjectPanel(SplitterWindow):
 
     def createNewDocument(self, documentType: UmlDocumentType):
         """
-
+        Does too many things
+        1) Creates UML Document
+        2) Requests creation the UML Diagram UI frame
+        3) Sends out messages to application controls
+        4) Subscribes diagram tree events
         Args:
             documentType:
         """
@@ -148,6 +155,19 @@ class UmlProjectPanel(SplitterWindow):
         self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                         uniqueId=treeNodeTopicId,
                                         listener=self._diagramSelectionChangedListener)
+        self.logger.info(f'Diagram {umlDocument.documentTitle} added to {self._umlProject.fileName}')
+
+    def deleteCurrentDiagram(self) -> str:
+        """
+        Must remove both the diagram and the associated tree node
+
+        Returns:  The name of the diagram we removed
+        """
+        diagramName: str = self._umlDiagramManager.currentDiagramName()
+        self._umlDiagramManager.deleteDiagram(diagramName=diagramName)
+        self._projectTree.deleteCurrentProjectNode()
+
+        return diagramName
 
     def _diagramSelectionChangedListener(self, treeData: TreeNodeData):
         self.logger.debug(f'{treeData=}')
@@ -167,7 +187,7 @@ class UmlProjectPanel(SplitterWindow):
                                           projectName=self._umlProject.fileName.stem)
 
     def _deleteDiagramListener(self, diagramName: str):
-        self._umlDiagramManager.deleteDiagram(documentName=diagramName)
+        self._umlDiagramManager.deleteDiagram(diagramName=diagramName)
 
     def __str__(self) -> str:
         return self._umlProject.fileName.stem

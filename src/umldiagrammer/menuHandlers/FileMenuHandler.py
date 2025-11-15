@@ -94,6 +94,7 @@ class FileMenuHandler(BaseMenuHandler):
         sizedFrame.Bind(EVT_MENU, self.fileSave,       id=ID_SAVE)
         sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,  id=ID_SAVEAS)
         sizedFrame.Bind(EVT_MENU, self._closeProject,  id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
+        sizedFrame.Bind(EVT_MENU, self._deleteDiagram, id=UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM)
         sizedFrame.Bind(EVT_MENU, self._onPreferences, id=ID_PREFERENCES)
 
         sizedFrame.Bind(EVT_MENU_RANGE, self._onOpenRecent, id=ID_FILE1, id2=ID_FILE9)
@@ -154,6 +155,10 @@ class FileMenuHandler(BaseMenuHandler):
     # noinspection PyUnusedLocal
     def _closeProject(self, event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CLOSE_PROJECT, uniqueId=NOTEBOOK_ID)
+
+    # noinspection PyUnusedLocal
+    def _deleteDiagram(self, event: CommandEvent):
+        self._appPubSubEngine.sendMessage(messageType=MessageType.DELETE_DIAGRAM, uniqueId=NOTEBOOK_ID)
 
     def _loadProject(self, umlProject: UmlProject):
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)

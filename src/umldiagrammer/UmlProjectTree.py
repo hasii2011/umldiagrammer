@@ -6,15 +6,14 @@ from logging import getLogger
 
 from dataclasses import dataclass
 
+from wx import OK
+from wx import ID_OK
 from wx import CANCEL
 from wx import CENTRE
 from wx import EVT_MENU
 from wx import EVT_MENU_CLOSE
 from wx import EVT_TREE_SEL_CHANGED
-from wx import ID_OK
 from wx import ITEM_NORMAL
-from wx import MenuEvent
-from wx import OK
 from wx import TR_HAS_BUTTONS
 from wx import TR_HIDE_ROOT
 from wx import EVT_TREE_ITEM_RIGHT_CLICK
@@ -24,10 +23,12 @@ from wx import TreeEvent
 from wx import TreeItemId
 from wx import Window
 from wx import Menu
+from wx import MenuEvent
 from wx import CommandEvent
 from wx import TextEntryDialog
 
 from wx import NewIdRef as wxNewIdRef
+from wx import CallAfter as wxCallAfter
 
 from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlProject
@@ -112,6 +113,19 @@ class UmlProjectTree(TreeCtrl):
             self.SelectItem(documentNode)
 
         return treeNodeTopicId
+
+    def deleteCurrentProjectNode(self):
+        """
+        Delete the currently selected Tree node that represent the display diagram fram
+        """
+        documentNode: TreeItemId   = self.GetSelection()
+        treeData:     TreeNodeData = self.GetItemData(documentNode)
+        #
+        #
+        #
+        self._uniqueIds.remove(treeData.uniqueNodeId)
+        self.Delete(documentNode)
+        wxCallAfter(self._selectItemAfterNodeDeleted)
 
     def _onProjectTreeRightClick(self, treeEvent: TreeEvent):
 
@@ -199,6 +213,7 @@ class UmlProjectTree(TreeCtrl):
 
         diagramName: str = self.GetItemText(self._rightClickedTreeNodeData.treeNodeID)
 
+        self._uniqueIds.remove(self._rightClickedTreeNodeData.uniqueNodeId)
         self.Delete(self._rightClickedTreeNodeData.treeNodeID)
 
         self._appPubSubEngine.sendMessage(messageType=MessageType.DELETE_DIAGRAM,
@@ -207,6 +222,7 @@ class UmlProjectTree(TreeCtrl):
                                           )
 
         self._rightClickedTreeNodeData = NO_TREE_NODE_DATA
+        wxCallAfter(self._selectItemAfterNodeDeleted)
 
     # noinspection PyUnusedLocal
     def _onPopupMenuClose(self, event: MenuEvent):
@@ -216,3 +232,9 @@ class UmlProjectTree(TreeCtrl):
             event:
         """
         self._appPubSubEngine.sendMessage(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG, uniqueId=APPLICATION_FRAME_ID, message='')
+
+    def _selectItemAfterNodeDeleted(self):
+
+        if self.GetCount() > 0:
+            documentNode: TreeItemId = self.GetFirstVisibleItem()
+            self.SelectItem(documentNode, select=True)

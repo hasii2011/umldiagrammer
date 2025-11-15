@@ -174,6 +174,10 @@ class UmlDiagramManager(Simplebook):
 
         return umlFrame.id
 
+    def currentDiagramName(self) -> str:
+        idx: int = self.GetSelection()
+        return self.GetPageText(idx)
+
     def switchToDocumentDiagram(self, umlDocument: UmlDocument):
         """
         Handles selection within SimpleBook;
@@ -233,20 +237,19 @@ class UmlDiagramManager(Simplebook):
         self._frameIdMap[diagramFrame.id] = diagramFrame
         self._umlDocuments[umlDocument.documentTitle] = umlDocument
 
-    def deleteDiagram(self, documentName: str):
+    def deleteDiagram(self, diagramName: str):
         """
         No need to update any other internal data structures
 
         Args:
-            documentName:
+            diagramName:
 
         """
-
         for pageIdx in range(self.GetPageCount()):
             currentName: str = self.GetPageText(pageIdx)
-            if currentName == documentName:
+            if currentName == diagramName:
                 self.DeletePage(pageIdx)
-                self._umlDocuments.pop(documentName)
+                self._umlDocuments.pop(UmlDocumentTitle(diagramName))
                 break
 
     def markFramesSaved(self):
