@@ -481,13 +481,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
 
-        if appModeStr is None:
-            appMode: bool = False
-        else:
-            appMode = SecureConversions.secureBoolean(appModeStr)
+        # if appModeStr is None:
+        #     appMode: bool = False
+        # else:
+        #     appMode = SecureConversions.secureBoolean(appModeStr)
         frameStyle: int  = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
-        if appMode is True:
-            frameStyle = frameStyle | FRAME_TOOL_WINDOW
+        # if appMode is True:
+        #     frameStyle = frameStyle | FRAME_TOOL_WINDOW
 
         return frameStyle
 

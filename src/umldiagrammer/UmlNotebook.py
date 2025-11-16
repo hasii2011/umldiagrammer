@@ -1,5 +1,8 @@
 
+from typing import List
+from typing import NewType
 from typing import cast
+from typing import Callable
 
 from logging import Logger
 from logging import getLogger
@@ -39,6 +42,11 @@ from umldiagrammer.data.ProjectDossier import ProjectDossier
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
+
+
+PathList = NewType('PathList', List[Path])
+
+OpenProjectsCallback = Callable[[PathList], None]
 
 MODIFIED_INDICATOR: str = '*'
 
@@ -98,6 +106,10 @@ class UmlNotebook(Notebook):
                                         listener=self._deleteDiagramListener
                                         )
 
+        self._appPubSubEngine.subscribe(messageType=MessageType.GET_OPEN_PROJECTS,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._getOpenProjectListener)
+
     @property
     def currentProject(self) -> ProjectDossier:
 
@@ -143,6 +155,7 @@ class UmlNotebook(Notebook):
         self.logger.debug(f'{projectPanel.currentUmlFrameId=}')
 
     def handleUnsavedProjects(self):
+
         projectCount: int = self.GetPageCount()
         for idx in range(projectCount):
             projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetPage(idx))
@@ -227,6 +240,22 @@ class UmlNotebook(Notebook):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
 
         self._actuallyCloseProject(projectPanel)
+
+    def _getOpenProjectListener(self, callback: OpenProjectsCallback):
+        """
+
+        Args:
+            callback:   Who to call with the payload
+        """
+
+        fileNames: PathList = PathList([])
+
+        projectCount: int = self.GetPageCount()
+        for idx in range(projectCount):
+            projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetPage(idx))
+            fileNames.append(projectPanel.umlProject.fileName)
+
+        callback(fileNames)
 
     def _actuallyCloseProject(self, projectPanel: UmlProjectPanel):
         """

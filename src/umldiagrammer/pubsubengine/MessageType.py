@@ -27,6 +27,11 @@ class MessageType(Enum):
     CREATE_NEW_DIAGRAM    = 'Create New Diagram'
     DELETE_DIAGRAM        = 'Delete Diagram'
     SAVE_NAMED_PROJECT    = 'Saved Named Project'
+    #
+    # Subscribers provide a callback method that accepts a parameter
+    # The parameter is a list of Paths currently being edited by the UML Diagrammer
+    #
+    GET_OPEN_PROJECTS   = 'Get Open Projects'
 
     #
     # The diagram needs to send messages

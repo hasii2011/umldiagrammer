@@ -1,4 +1,7 @@
 
+from typing import List
+from typing import cast
+
 from logging import Logger
 from logging import getLogger
 
@@ -27,6 +30,8 @@ from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreference
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
+NO_SAVE_AS_FILENAME = cast(str, None)
+
 
 class UmlProjectIO:
     """
@@ -43,6 +48,9 @@ class UmlProjectIO:
 
         self.logger:       Logger                = getLogger(__name__)
         self._preferences: DiagrammerPreferences = DiagrammerPreferences()
+
+        self._saveAsFileName:   str  = NO_SAVE_AS_FILENAME
+        self._saveAsFileIsOpen: bool = False
 
     def readProject(self, fileToOpen: str) -> UmlProject:
         """
@@ -131,14 +139,35 @@ class UmlProjectIO:
 
     def _isProjectAlreadyOpen(self, fileName: str) -> bool:
         """
-        TODO:
+        Using a callback from the pub/sub engine message works because messages are not async.  The
+        trick is to use class instance variables to pass a variable to the callback and another
+        instance variable to hold the results from the callback
         Args:
             fileName:
 
-        Returns:
-
+        Returns:  `True` if the project is already in the diagrammer, else `False`
         """
 
         self.logger.debug(f'{fileName=}')
+        self._saveAsFileName = fileName
+        self._appPubSubEngine.sendMessage(messageType=MessageType.GET_OPEN_PROJECTS, uniqueId=NOTEBOOK_ID, callback=self._getOpenProjectCallback)
 
-        return False
+        return self._saveAsFileIsOpen
+
+    def _getOpenProjectCallback(self, openProjects: List[Path]):
+        """
+
+        Args:
+            openProjects:  Passed from the pub/sub subscriber
+
+        """
+
+        assert self._saveAsFileName != NO_SAVE_AS_FILENAME, 'Developer forget to set this'
+
+        self.logger.debug(f'{openProjects=}')
+        saveAsFileName: Path = Path(self._saveAsFileName)
+
+        if saveAsFileName in openProjects:
+            self._saveAsFileIsOpen = True
+        else:
+            self._saveAsFileIsOpen = False
