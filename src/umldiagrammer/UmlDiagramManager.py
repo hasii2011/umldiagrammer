@@ -224,7 +224,7 @@ class UmlDiagramManager(Simplebook):
 
         return UmlDocumentTitle(uniqueName)
 
-    def createNewDiagram(self, umlDocument: UmlDocument):
+    def createNewDiagram(self, umlDocument: UmlDocument) -> FrameId:
         """
 
         Args:
@@ -236,6 +236,8 @@ class UmlDiagramManager(Simplebook):
         self.AddPage(diagramFrame, umlDocument.documentTitle, select=True)
         self._frameIdMap[diagramFrame.id] = diagramFrame
         self._umlDocuments[umlDocument.documentTitle] = umlDocument
+
+        return diagramFrame.id
 
     def deleteDiagram(self, diagramName: str):
         """

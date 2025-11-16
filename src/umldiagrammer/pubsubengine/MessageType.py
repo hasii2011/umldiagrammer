@@ -26,6 +26,7 @@ class MessageType(Enum):
 
     CREATE_NEW_DIAGRAM    = 'Create New Diagram'
     DELETE_DIAGRAM        = 'Delete Diagram'
+    SAVE_NAMED_PROJECT    = 'Saved Named Project'
 
     #
     # The diagram needs to send messages

@@ -76,25 +76,34 @@ class UmlProjectIO:
             writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
             self.logger.info(f'Project Saved - {fileName=}')
 
-    def doFileSaveAs(self, umlProject: UmlProject):
+    def doFileSaveAs(self, umlProject: UmlProject) -> str:
         """
         Actually do the file save as
+        May return a blank file name if the user cancelled out of the file selection or
+        tried to rename to a current project in the diagrammer
+
         Args:
             umlProject:
+
+        Returns:   The name of the newly created project
         """
+        specifiedFileName: str = ''
         with (FileDialog(None,
                          defaultDir=self._preferences.diagramsDirectory,
                          wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
                          style=FD_SAVE | FD_OVERWRITE_PROMPT)
               as fDialog):
             if fDialog.ShowModal() == ID_OK:
-                specifiedFileName: str = fDialog.GetPath()
+                specifiedFileName = fDialog.GetPath()
                 if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
                     eMsg: str = f'Error ! This project `{Path(specifiedFileName).stem}` is currently open.  Please choose another name!'
                     with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
                         dlg.ShowModal()
+                    specifiedFileName = ''
                 else:
                     self.saveAsProject(umlProject, specifiedFileName)
+
+        return specifiedFileName
 
     def saveAsProject(self, umlProject: UmlProject, specifiedFileName: str):
         """

@@ -53,7 +53,7 @@ class UmlProjectPanel(SplitterWindow):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self._editMenu:        Menu             = editMenu
 
-        self._projectTree:      UmlProjectTree     = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
+        self._projectTree:       UmlProjectTree    = UmlProjectTree(parent=self, appPubSubEngine=appPubSubEngine, umlProject=umlProject)
         self._umlDiagramManager: UmlDiagramManager = UmlDiagramManager(parent=self,
                                                                        appPubSubEngine=appPubSubEngine,
                                                                        umlPubSubEngine=umlPubSubEngine,
@@ -115,7 +115,7 @@ class UmlProjectPanel(SplitterWindow):
     def currentUmlFrameId(self) -> FrameId:
         return self._umlDiagramManager.currentUmlFrameId
 
-    def createNewDocument(self, documentType: UmlDocumentType):
+    def createNewDocument(self, documentType: UmlDocumentType) -> FrameId:
         """
         Does too many things
         1) Creates UML Document
@@ -141,7 +141,7 @@ class UmlProjectPanel(SplitterWindow):
         umlDocument.documentTitle = uniqueDocumentTitle
 
         treeNodeTopicId: UniqueId = self._projectTree.createTreeItem(umlDocument=umlDocument, selectItem=True)
-        self._umlDiagramManager.createNewDiagram(umlDocument=umlDocument)
+        frameId: FrameId = self._umlDiagramManager.createNewDiagram(umlDocument=umlDocument)
 
         self._umlDiagramManager.switchToDocumentDiagram(umlDocument)
         self._appPubSubEngine.sendMessage(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
@@ -155,7 +155,10 @@ class UmlProjectPanel(SplitterWindow):
         self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_SELECTION_CHANGED,
                                         uniqueId=treeNodeTopicId,
                                         listener=self._diagramSelectionChangedListener)
+        self.umlProjectModified = True
         self.logger.info(f'Diagram {umlDocument.documentTitle} added to {self._umlProject.fileName}')
+
+        return frameId
 
     def deleteCurrentDiagram(self) -> str:
         """

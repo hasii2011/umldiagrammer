@@ -194,7 +194,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         Closing handler overload. Save files and ask for confirmation.
         """
         # Close all files
-        # self._pyutUI.handleUnsavedProjects()
+        if self._umlNotebook is not None:
+            self._umlNotebook.handleUnsavedProjects()
         if self._overrideProgramExitPosition is False:
             # Only save position we are not in full screen
             if self._preferences.centerAppOnStartup is False:
@@ -393,6 +394,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         projectDossier: ProjectDossier = self._umlNotebook.currentProject
         umlProject:     UmlProject     = projectDossier.umlProject
+
         umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
 
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
@@ -407,6 +409,18 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                   )
             else:
                 self.SetStatusText(text='No save needed, project not modified')
+
+    def _saveNamedProjectListener(self, umlProject: UmlProject):
+
+        umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+
+        if umlProject.fileName == DEFAULT_PROJECT_PATH:
+            projectName: str = umlProjectIO.doFileSaveAs(umlProject=umlProject)
+        else:
+            umlProjectIO.saveProject(umlProject=umlProject)
+            projectName = str(umlProject.fileName)
+
+        self._projectHistory.AddFileToHistory(projectName)
 
     def _saveAsProjectListener(self):
         """
@@ -452,6 +466,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME, uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_NAMED_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveNamedProjectListener)
 
     def _getFrameStyle(self) -> int:
         """

@@ -28,8 +28,10 @@ from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
+
 from umldiagrammer.UmlProjectIO import UmlProjectIO
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
@@ -140,6 +142,13 @@ class UmlNotebook(Notebook):
 
         self.logger.debug(f'{projectPanel.currentUmlFrameId=}')
 
+    def handleUnsavedProjects(self):
+        projectCount: int = self.GetPageCount()
+        for idx in range(projectCount):
+            projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetPage(idx))
+            if projectPanel.umlProjectModified is True:
+                self._actuallyCloseProject(projectPanel=projectPanel)
+
     # noinspection PyUnusedLocal
     def _onNewProjectDisplayed(self, event: BookCtrlEvent):
         """
@@ -204,7 +213,10 @@ class UmlNotebook(Notebook):
     def _createNewDiagramListener(self, documentType: UmlDocumentType):
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
-        projectPanel.createNewDocument(documentType=documentType)
+        frameId: FrameId = projectPanel.createNewDocument(documentType=documentType)
+
+        self._umlPubSubEngine.subscribe(messageType=UmlMessageType.FRAME_MODIFIED, frameId=frameId, listener=self._frameModifiedListener)
+        self._indicateCurrentProjectModified()
 
     def _documentNameChangedListener(self, projectName: str):
         currentProjectName: str = self.currentProject.umlProject.fileName.stem
@@ -213,7 +225,24 @@ class UmlNotebook(Notebook):
 
     def _closeProjectListener(self):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
-        self._closeProject(projectPanel=projectPanel)
+
+        self._actuallyCloseProject(projectPanel)
+
+    def _actuallyCloseProject(self, projectPanel: UmlProjectPanel):
+        """
+
+        Args:
+            projectPanel:
+
+        """
+        if projectPanel.umlProjectModified is True:
+            with MessageDialog(parent=None, message='Save modified project before closing?', caption='', style=YES_NO | ICON_QUESTION) as dlg:
+                ans = dlg.ShowModal()
+                if ans == ID_YES:
+                    self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_NAMED_PROJECT,
+                                                      uniqueId=APPLICATION_FRAME_ID,
+                                                      umlProject=projectPanel.umlProject
+                                                      )
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:
@@ -235,13 +264,16 @@ class UmlNotebook(Notebook):
 
     def _indicateCurrentProjectModified(self):
 
-        if self._currentProjectPanel.umlProjectModified is False:
-            idx:              int = self.GetSelection()
-            projectTitle:     str = self.GetPageText(idx)
+        # if self._currentProjectPanel.umlProjectModified is False:
+        idx:              int = self.GetSelection()
+        projectTitle:     str = self.GetPageText(idx)
+        if projectTitle.endswith(MODIFIED_INDICATOR):
+            pass
+        else:
             modifiedTitleStr: str = f'{projectTitle}{MODIFIED_INDICATOR}'
 
-            pageIndex: int = self.GetSelection()
-            self.SetPageText(pageIndex, modifiedTitleStr)
+            # pageIndex: int = self.GetSelection()
+            self.SetPageText(idx, modifiedTitleStr)
 
             projectPanel: UmlProjectPanel = self._currentProjectPanel
             projectPanel.umlProjectModified = True
@@ -271,4 +303,3 @@ class UmlNotebook(Notebook):
         diagramName: str = projectPanel.deleteCurrentDiagram()
         self._indicateCurrentProjectModified()
         self.logger.info(f'Diagram {diagramName} removed from project {projectPanel.umlProject.fileName}')
-
