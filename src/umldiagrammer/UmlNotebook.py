@@ -31,7 +31,6 @@ from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
-from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 
