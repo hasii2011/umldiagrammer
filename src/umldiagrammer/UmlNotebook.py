@@ -160,7 +160,7 @@ class UmlNotebook(Notebook):
         for idx in range(projectCount):
             projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetPage(idx))
             if projectPanel.umlProjectModified is True:
-                self._actuallyCloseProject(projectPanel=projectPanel)
+                self._closeProject(projectPanel=projectPanel)
 
     # noinspection PyUnusedLocal
     def _onNewProjectDisplayed(self, event: BookCtrlEvent):
@@ -239,7 +239,7 @@ class UmlNotebook(Notebook):
     def _closeProjectListener(self):
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
 
-        self._actuallyCloseProject(projectPanel)
+        self._closeProject(projectPanel)
 
     def _getOpenProjectListener(self, callback: OpenProjectsCallback):
         """
@@ -256,22 +256,6 @@ class UmlNotebook(Notebook):
             fileNames.append(projectPanel.umlProject.fileName)
 
         callback(fileNames)
-
-    def _actuallyCloseProject(self, projectPanel: UmlProjectPanel):
-        """
-
-        Args:
-            projectPanel:
-
-        """
-        if projectPanel.umlProjectModified is True:
-            with MessageDialog(parent=None, message='Save modified project before closing?', caption='', style=YES_NO | ICON_QUESTION) as dlg:
-                ans = dlg.ShowModal()
-                if ans == ID_YES:
-                    self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_NAMED_PROJECT,
-                                                      uniqueId=APPLICATION_FRAME_ID,
-                                                      umlProject=projectPanel.umlProject
-                                                      )
 
     @property
     def _currentProjectPanel(self) -> UmlProjectPanel:
