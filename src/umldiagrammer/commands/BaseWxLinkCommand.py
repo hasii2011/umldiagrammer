@@ -6,18 +6,16 @@ from typing import Callable
 from logging import Logger
 from logging import getLogger
 
+from umlmodel.Class import Class
+from umlmodel.Link import Link
+from umlmodel.Note import Note
+from umlmodel.enumerations.LinkType import LinkType
 from wx import OK
 from wx import Point
 from wx import ICON_ERROR
 
 from wx import Command
 from wx import MessageDialog
-
-from pyutmodelv2.PyutNote import PyutNote
-from pyutmodelv2.PyutLink import PyutLink
-from pyutmodelv2.PyutClass import PyutClass
-
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.frames.UmlFrame import UmlFrame
 
@@ -51,7 +49,7 @@ class BaseWxLinkCommand(Command):
 
     def __init__(self,
                  partialName: str,
-                 linkType:    PyutLinkType,
+                 linkType:    LinkType,
                  umlFrame:    UmlFrame,
                  appPubSubEngine: IAppPubSubEngine,
                  umlPubSubEngine: IUmlPubSubEngine):
@@ -78,26 +76,26 @@ class BaseWxLinkCommand(Command):
         self._sourceUmlShape:      UmlShapeGenre = cast(UmlShapeGenre, None)
         self._destinationUmlShape: UmlShapeGenre = cast(UmlShapeGenre, None)
 
-        self._linkType: PyutLinkType = linkType
+        self._linkType: LinkType = linkType
 
         self._srcPoint: Point = cast(Point, None)
         self._dstPoint: Point = cast(Point, None)
 
-        self._link:     UmlLink  = cast(UmlLink, None)
-        self._pyutLink: PyutLink = cast(PyutLink, None)    # for undo of delete
+        self._link:      UmlLink  = cast(UmlLink, None)
+        self._modelLink: Link = cast(Link, None)    # for undo of delete
         self._spline:   bool     = False
         # self._controlPoints: ControlPoints = ControlPoints([])       # for undo of delete or create link from plugin manager
 
         #
         # Dispatch table, aka dictionary
         #
-        self._linkCreationDispatcher: Dict[PyutLinkType, Callable] = {
-            PyutLinkType.INHERITANCE: self._createInheritanceLink,
-            PyutLinkType.INTERFACE:   self._createInterfaceLink,
-            PyutLinkType.NOTELINK:    self._createNoteLink,
-            PyutLinkType.ASSOCIATION: self._createAssociationLink,
-            PyutLinkType.AGGREGATION: self._createAggregationLink,
-            PyutLinkType.COMPOSITION: self._createCompositionLink,
+        self._linkCreationDispatcher: Dict[LinkType, Callable] = {
+            LinkType.INHERITANCE: self._createInheritanceLink,
+            LinkType.INTERFACE:   self._createInterfaceLink,
+            LinkType.NOTELINK:    self._createNoteLink,
+            LinkType.ASSOCIATION: self._createAssociationLink,
+            LinkType.AGGREGATION: self._createAggregationLink,
+            LinkType.COMPOSITION: self._createCompositionLink,
         }
 
     def GetName(self) -> str:
@@ -149,7 +147,7 @@ class BaseWxLinkCommand(Command):
 
         Returns:  A specific UmlLink instance depending on the link type
         """
-        linkType: PyutLinkType = self._linkType
+        linkType: LinkType = self._linkType
         try:
             return self._linkCreationDispatcher[linkType]()
         except KeyError as ke:
@@ -169,13 +167,13 @@ class BaseWxLinkCommand(Command):
         sourceClass:      UmlClass = cast(UmlClass, self._sourceUmlShape)
         destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=sourceClass, destination=destinationClass)
-        umlAssociation: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+        link:           Link                = self._getAppropriateModelLink(source=sourceClass, destination=destinationClass)
+        umlAssociation: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
 
         umlAssociation = self._completeTheAssociationLink(umlAssociation=umlAssociation,
                                                           sourceClass=sourceClass,
                                                           destinationClass=destinationClass,
-                                                          pyutLink=pyutLink
+                                                          link=link
                                                           )
 
         return umlAssociation
@@ -185,13 +183,13 @@ class BaseWxLinkCommand(Command):
         aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)
         aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=aggregator, destination=aggregated)
-        umlAggregation: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+        link:           Link                = self._getAppropriateModelLink(source=aggregator, destination=aggregated)
+        umlAggregation: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
 
         umlAggregation = self._completeTheAssociationLink(umlAssociation=umlAggregation,
                                                           sourceClass=aggregator,
                                                           destinationClass=aggregated,
-                                                          pyutLink=pyutLink
+                                                          link=link
                                                           )
         return umlAggregation   # type: ignore
 
@@ -199,27 +197,26 @@ class BaseWxLinkCommand(Command):
         composer: UmlClass = cast(UmlClass, self._sourceUmlShape)
         composed: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        pyutLink:       PyutLink            = self._getAppropriateModelLink(source=composer, destination=composed)
-        umlComposition: UmlAssociationGenre = self._getAppropriateAssociation(pyutLink=pyutLink)
+        link:           Link                = self._getAppropriateModelLink(source=composer, destination=composed)
+        umlComposition: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
 
         umlComposition = self._completeTheAssociationLink(umlAssociation=umlComposition,
                                                           sourceClass=composer,
                                                           destinationClass=composed,
-                                                          pyutLink=pyutLink
+                                                          link=link
                                                           )
         return umlComposition   # type: ignore
 
-    def _completeTheAssociationLink(self, umlAssociation: UmlAssociationGenre, sourceClass: UmlClass, destinationClass: UmlClass, pyutLink: PyutLink) -> UmlAssociationGenre:
+    def _completeTheAssociationLink(self, umlAssociation: UmlAssociationGenre, sourceClass: UmlClass, destinationClass: UmlClass, link: Link) -> UmlAssociationGenre:
         """
 
         Args:
             umlAssociation:
             sourceClass:
             destinationClass:
-            pyutLink:
+            link:
 
         Returns:
-
         """
 
         umlAssociation.umlPubSubEngine = self._umlPubSubEngine
@@ -228,11 +225,11 @@ class BaseWxLinkCommand(Command):
 
         sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
         # add it to the source PyutClass
-        sourceClass.pyutClass.addLink(pyutLink)
+        sourceClass.modelClass.addLink(link)
 
         # Update the model
-        srcClassPyutClass: PyutClass = sourceClass.pyutClass
-        destPyutClass: PyutClass = destinationClass.pyutClass
+        srcClassPyutClass: Class = sourceClass.modelClass
+        destPyutClass:     Class = destinationClass.modelClass
         destPyutClass.addParent(srcClassPyutClass)
 
         eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
@@ -240,7 +237,7 @@ class BaseWxLinkCommand(Command):
         eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
         umlAssociation.SetEventHandler(eventHandler)
 
-        self._name = self._toCommandName(pyutLink.linkType)
+        self._name = self._toCommandName(link.linkType)
 
         return umlAssociation
 
@@ -257,26 +254,26 @@ class BaseWxLinkCommand(Command):
         subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
         baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        sourceModelClass:      PyutClass = cast(PyutClass, subClass.pyutClass)
-        destinationModelClass: PyutClass = cast(PyutClass, baseClass.pyutClass)
+        sourceModelClass:      Class = cast(Class, subClass.modelClass)
+        destinationModelClass: Class = cast(Class, baseClass.modelClass)
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
-        if self._pyutLink is None:
-            pyutLink: PyutLink  = PyutLink("", linkType=PyutLinkType.INHERITANCE, source=sourceModelClass, destination=destinationModelClass)
+        if self._modelLink is None:
+            link: Link  = Link("", linkType=LinkType.INHERITANCE, source=sourceModelClass, destination=destinationModelClass)
         else:
-            pyutLink = self._pyutLink
+            link = self._modelLink
 
-        umlLink: UmlInheritance = UmlInheritance(pyutLink=pyutLink, baseClass=baseClass, subClass=subClass)
+        umlLink: UmlInheritance = UmlInheritance(link=link, baseClass=baseClass, subClass=subClass)
         umlLink.umlFrame = self._umlFrame
         umlLink.MakeLineControlPoints(n=2)       # Make this configurable
 
         subClass.addLink(umlLink=umlLink, destinationClass=baseClass)
 
         # Update the model
-        subClassPyutClass: PyutClass = subClass.pyutClass
-        basePyutClass:     PyutClass = baseClass.pyutClass
+        subClassModelClass: Class = subClass.modelClass
+        baseModelClass:     Class = baseClass.modelClass
 
-        subClassPyutClass.addParent(basePyutClass)
+        subClassModelClass.addParent(baseModelClass)
 
         eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
@@ -290,11 +287,11 @@ class BaseWxLinkCommand(Command):
         interface:      UmlClass = cast(UmlClass, self._destinationUmlShape)
         implementation: UmlClass = cast(UmlClass, self._sourceUmlShape)
 
-        implementorModelClass: PyutClass = implementation.pyutClass
-        interfaceModelClass:   PyutClass = interface.pyutClass
-        pyutLink:              PyutLink  = PyutLink('', linkType=PyutLinkType.INTERFACE, source=implementorModelClass, destination=interfaceModelClass)
+        implementorModelClass: Class = implementation.modelClass
+        interfaceModelClass:   Class = interface.modelClass
+        link:                  Link  = Link('', linkType=LinkType.INTERFACE, source=implementorModelClass, destination=interfaceModelClass)
 
-        umlInterface: UmlInterface = UmlInterface(pyutLink=pyutLink, interfaceClass=interface, implementingClass=implementation)
+        umlInterface: UmlInterface = UmlInterface(link=link, interfaceClass=interface, implementingClass=implementation)
         umlInterface.umlFrame = self._umlFrame
         umlInterface.MakeLineControlPoints(n=2)
 
@@ -312,17 +309,17 @@ class BaseWxLinkCommand(Command):
         sourceNote:       UmlNote  = cast(UmlNote, self._sourceUmlShape)
         destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
 
-        sourceModelClass:      PyutNote  = cast(PyutNote,  sourceNote.pyutNote)
-        destinationModelClass: PyutClass = cast(PyutClass, destinationClass.pyutClass)
+        sourceModelNote:      Note  = cast(Note,  sourceNote.modelNote)
+        destinationModelClass: Class = cast(Class, destinationClass.modelClass)
 
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
-        if self._pyutLink is None:
-            pyutLink: PyutLink  = PyutLink("", linkType=PyutLinkType.NOTELINK, source=sourceModelClass, destination=destinationModelClass)
+        if self._modelLink is None:
+            link: Link  = Link("", linkType=LinkType.NOTELINK, source=sourceModelNote, destination=destinationModelClass)
         else:
-            pyutLink = self._pyutLink
+            link = self._modelLink
 
-        umlNoteLink: UmlNoteLink = UmlNoteLink(pyutLink=pyutLink)
+        umlNoteLink: UmlNoteLink = UmlNoteLink(link=link)
         umlNoteLink.sourceNote       = sourceNote
         umlNoteLink.destinationClass = destinationClass
         umlNoteLink.umlPubSubEngine  = self._umlPubSubEngine
@@ -338,17 +335,17 @@ class BaseWxLinkCommand(Command):
 
         return umlNoteLink
 
-    def _getAppropriateAssociation(self, pyutLink: PyutLink) -> UmlAssociationGenre:
-        if self._linkType == PyutLinkType.ASSOCIATION:
-            return UmlAssociation(pyutLink=pyutLink)
-        elif self._linkType == PyutLinkType.AGGREGATION:
-            return UmlAggregation(pyutLink=pyutLink)
-        elif self._linkType == PyutLinkType.COMPOSITION:
-            return UmlComposition(pyutLink=pyutLink)
+    def _getAppropriateAssociation(self, link: Link) -> UmlAssociationGenre:
+        if self._linkType == LinkType.ASSOCIATION:
+            return UmlAssociation(link=link)
+        elif self._linkType == LinkType.AGGREGATION:
+            return UmlAggregation(link=link)
+        elif self._linkType == LinkType.COMPOSITION:
+            return UmlComposition(link=link)
         else:
             assert False, 'Unknown association'
 
-    def _getAppropriateModelLink(self, source: UmlClass, destination: UmlClass) -> PyutLink:
+    def _getAppropriateModelLink(self, source: UmlClass, destination: UmlClass) -> Link:
         """
 
         Args:
@@ -358,21 +355,21 @@ class BaseWxLinkCommand(Command):
         Returns:  The correct model link instance
         """
 
-        linkType: PyutLinkType = self._linkType
+        linkType: LinkType = self._linkType
 
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
-        if self._pyutLink is None:
-            pyutLink: PyutLink = PyutLink(name="", linkType=linkType, source=source.pyutClass, destination=destination.pyutClass)
+        if self._modelLink is None:
+            pyutLink: Link = Link(name="", linkType=linkType, source=source.modelClass, destination=destination.modelClass)
             pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
         else:
-            pyutLink = self._pyutLink
+            pyutLink = self._modelLink
 
         return pyutLink
 
-    def _toCommandName(self, linkType: PyutLinkType) -> str:
+    def _toCommandName(self, linkType: LinkType) -> str:
         # Because I do not like the generated name
-        if linkType == PyutLinkType.SD_MESSAGE:
+        if linkType == LinkType.SD_MESSAGE:
             return f'SDMessage Link'
         else:
             return f'{linkType.name.capitalize()} Link'

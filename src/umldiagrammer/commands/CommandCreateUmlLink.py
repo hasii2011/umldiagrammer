@@ -4,7 +4,7 @@ from logging import getLogger
 
 from wx import Yield as wxYield
 
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
+from umlmodel.enumerations.LinkType import LinkType
 
 from umlshapes.frames.UmlFrame import UmlFrame
 
@@ -24,7 +24,7 @@ class CommandCreateUmlLink(BaseWxLinkCommand):
                  umlPubSubEngine: IUmlPubSubEngine,
                  source:       UmlShapeGenre,
                  destination:  UmlShapeGenre,
-                 linkType: PyutLinkType = PyutLinkType.INHERITANCE
+                 linkType: LinkType = LinkType.INHERITANCE
                  ):
         """
         Lollipop Interface

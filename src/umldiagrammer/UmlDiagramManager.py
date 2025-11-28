@@ -8,11 +8,12 @@ from wx import Menu
 from wx import Window
 from wx import Simplebook
 
-from pyutmodelv2.PyutInterface import PyutInterfaces
+from umlmodel.Interface import Interfaces
+
+from umlshapes.ShapeTypes import UmlShapes
 
 from umlshapes.UmlDiagram import UmlDiagram
 
-from umlshapes.types.Common import UmlShapeList
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.UmlFrame import UmlFrame
@@ -262,7 +263,7 @@ class UmlDiagramManager(Simplebook):
     def _createLollipopInterfaceListener(self,
                                          requestingFrame:    ClassDiagramFrame,
                                          requestingUmlClass: UmlClass,
-                                         pyutInterfaces:     PyutInterfaces,
+                                         interfaces:         Interfaces,
                                          perimeterPoint:     UmlPosition
                                          ):
         """
@@ -272,13 +273,13 @@ class UmlDiagramManager(Simplebook):
         Args:
             requestingFrame:
             requestingUmlClass:
-            pyutInterfaces:
+            interfaces:
             perimeterPoint:
 
         """
         lollipopCreationData: LollipopCreationData = LollipopCreationData(requestingFrame=requestingFrame,
                                                                           requestingUmlClass=requestingUmlClass,
-                                                                          pyutInterfaces=pyutInterfaces,
+                                                                          interfaces=interfaces,
                                                                           perimeterPoint=perimeterPoint
                                                                           )
 
@@ -505,7 +506,7 @@ class UmlDiagramManager(Simplebook):
 
         umlFrame: UmlFrame = cast(UmlFrame, page)
 
-        umlShapes: UmlShapeList = umlFrame.umlShapes
+        umlShapes: UmlShapes = umlFrame.umlShapes
 
         for umlShape in umlShapes:
             # noinspection PyUnusedLocal
@@ -528,12 +529,12 @@ class UmlDiagramManager(Simplebook):
                     pass
                 # case OglSDMessage() as umlShape:  # Put here so it does not fall into OglLink
                 #     oglSDMessage: OglSDMessage = cast(OglSDMessage, umlShape)
-                #     modelId: int = oglSDMessage.pyutObject.id
+                #     modelId: int = oglSDMessage.object.id
                 #     oglDocument.oglSDMessages[modelId] = oglSDMessage
                 #
                 # case OglSDInstance() as umlShape:
                 #     oglSDInstance: OglSDInstance = cast(OglSDInstance, umlShape)
-                #     modelId = oglSDInstance.pyutSDInstance.id
+                #     modelId = oglSDInstance.SDInstance.id
                 #     umlDocument.oglSDInstances[modelId] = oglSDInstance
                 case _:
                     self.logger.warning(f'Unknown Uml object type: {umlShape}, not saved')

@@ -4,7 +4,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from pyutmodelv2.PyutNote import PyutNote
+from umlmodel.Note import Note
 
 from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
@@ -37,10 +37,10 @@ class CommandCreateUmlNote(BaseWxCreateCommand):
         """
         noteName: str = f'UmlNote{CommandCreateUmlNote.clsCounter}'
 
-        pyutNote: PyutNote = PyutNote(content=self._umlPreferences.noteText)
-        pyutNote.name = noteName        # Do we really need this
+        modelNote: Note = Note(content=self._umlPreferences.noteText)
+        modelNote.name = noteName        # Do we really need this
 
-        umlNote: UmlNote  = UmlNote(pyutNote)
+        umlNote: UmlNote  = UmlNote(modelNote)
 
         CommandCreateUmlNote.clsCounter += 1
 
@@ -50,11 +50,11 @@ class CommandCreateUmlNote(BaseWxCreateCommand):
         """
         Place self._shape on the UML frame
         """
-        umlNote:  UmlNote  = cast(UmlNote, self._shape)              # get old
-        pyutNote: PyutNote = umlNote.pyutNote
+        umlNote:   UmlNote = cast(UmlNote, self._shape)              # get old
+        modelNote: Note    = umlNote.modelNote
 
         self._addUmlShapeToFrame(umlFrame=self._umlFrame, umlShape=umlNote, umlPosition=self._umlPosition)
 
         self._umlFrame.refresh()
 
-        self._appPubSubEngine.sendMessage(messageType=MessageType.EDIT_NOTE, uniqueId=APPLICATION_FRAME_ID, umlFrame=self._umlFrame, pyutNote=pyutNote)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.EDIT_NOTE, uniqueId=APPLICATION_FRAME_ID, umlFrame=self._umlFrame, note=modelNote)

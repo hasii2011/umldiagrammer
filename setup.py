@@ -65,9 +65,9 @@ setup(
         'semantic-version==2.10.0',
         'codeallybasic>=1.30.0',
         'codeallyadvanced>=2.3.0',
-        'pyutmodelv2>=2.2.6',
-        'umlshapes>=0.9.310',
-        'umlio>=0.4.8',
+        'umlmodel>=3.4.0',
+        'umlshapes>=1.1.0',
+        'umlio>=0.5.0',
         'wxPython==4.2.4',
     ]
 )

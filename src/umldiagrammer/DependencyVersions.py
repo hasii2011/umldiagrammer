@@ -13,7 +13,7 @@ from wx import __version__ as wxVersion
 
 from codeallybasic.SingletonV3 import SingletonV3
 
-from pyutmodelv2 import __version__ as dataModelVersion
+from umlmodel import __version__ as dataModelVersion
 from umlshapes import __version__ as __umlShapesVersion__
 from umlio import __version__ as __umlIoVersion__
 
@@ -29,7 +29,7 @@ PackageVersionsMap = NewType('PackageVersionsMap', Dict[PackageName, PackageVers
 
 class DependencyVersions(metaclass=SingletonV3):
 
-    __appName__: str = 'Pyut'
+    __appName__: str = 'UmlDiagrammer'
 
     __longVersion__: str = "Python UML Diagrammer"
     __website__:     str = 'https://github.com/hasii2011/umldiagramer'
@@ -67,7 +67,7 @@ class DependencyVersions(metaclass=SingletonV3):
         return wxVersion
 
     @property
-    def pyutModelVersion(self) -> str:
+    def dataModelVersion(self) -> str:
         return dataModelVersion
 
     @property

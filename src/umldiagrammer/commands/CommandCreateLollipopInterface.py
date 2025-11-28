@@ -2,12 +2,11 @@
 from logging import Logger
 from logging import getLogger
 
+from umlmodel.Interface import Interface
+from umlmodel.Interface import Interfaces
+from umlmodel.ModelTypes import ClassName
 from wx import OK
 from wx import Command
-
-from pyutmodelv2.PyutModelTypes import ClassName
-from pyutmodelv2.PyutInterface import PyutInterface
-from pyutmodelv2.PyutInterface import PyutInterfaces
 
 from umlshapes.UmlUtils import UmlUtils
 
@@ -67,12 +66,12 @@ class CommandCreateLollipopInterface(Command):
 
     def Do(self) -> bool:
         requestingFrame: ClassDiagramFrame = self._creationData.requestingFrame
-        pyutInterfaces:  PyutInterfaces    = self._creationData.pyutInterfaces
+        interfaces:      Interfaces        = self._creationData.interfaces
 
         with DlgEditInterface(parent=requestingFrame,
                               lollipopInterface=self._prototypeLollipop,
                               umlPubSubEngine=self._umlPubSubEngine,
-                              pyutInterfaces=pyutInterfaces) as dlg:
+                              interfaces=interfaces) as dlg:
             if dlg.ShowModal() == OK:
                 diagram: UmlDiagram = requestingFrame.umlDiagram  # And then I break the opaqueness
 
@@ -98,16 +97,16 @@ class CommandCreateLollipopInterface(Command):
         creationData:       LollipopCreationData = self._creationData
         requestingFrame:    ClassDiagramFrame    = creationData.requestingFrame
         requestingUmlClass: UmlClass             = creationData.requestingUmlClass
-        pyutInterfaces:     PyutInterfaces       = creationData.pyutInterfaces
+        interfaces:         Interfaces       = creationData.interfaces
         perimeterPoint:     UmlPosition          = creationData.perimeterPoint
 
         interfaceName: str = f'{self._umlPreferences.defaultNameInterface}{CommandCreateLollipopInterface.pyutInterfaceCount}'
         CommandCreateLollipopInterface.pyutInterfaceCount += 1
 
-        pyutInterface: PyutInterface = PyutInterface(interfaceName)
-        pyutInterface.addImplementor(ClassName(requestingUmlClass.pyutClass.name))
+        interface: Interface = Interface(interfaceName)
+        interface.addImplementor(ClassName(requestingUmlClass.modelClass.name))
 
-        umlLollipopInterface: UmlLollipopInterface = UmlLollipopInterface(pyutInterface=pyutInterface)
+        umlLollipopInterface: UmlLollipopInterface = UmlLollipopInterface(interface=interface)
         umlLollipopInterface.attachedTo            = requestingUmlClass
 
         attachmentSide: AttachmentSide      = UmlUtils.attachmentSide(x=perimeterPoint.x, y=perimeterPoint.y, rectangle=requestingUmlClass.rectangle)
@@ -123,6 +122,6 @@ class CommandCreateLollipopInterface(Command):
         umlLollipopInterface.SetEventHandler(eventHandler)
 
         # Update with our generated one
-        pyutInterfaces.append(pyutInterface)
+        interfaces.append(interface)
 
         return umlLollipopInterface

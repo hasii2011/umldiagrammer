@@ -18,7 +18,8 @@ jobs:
       - image: cimg/python:3.13-browsers
     executor: python/default
     steps:
-      - checkout
+      - checkout:
+          method: full
       - restore_cache:
           key: &deps1-cache deps1-{{ .Branch }}-{{ checksum "setup.py" }}
       - run:
@@ -36,9 +37,9 @@ jobs:
             pip install semantic-version==2.10.0
             pip install codeallybasic==1.30.0
             pip install codeallyadvanced==2.3.0
-            pip install pyutmodelv2==2.2.6
-            pip install umlshapes==0.9.310
-            pip install umlio==0.4.8
+            pip install umlmodel==3.4.0
+            pip install umlshapes==1.1.0
+            pip install umlio==0.5.0
             pip install buildlackey==2.0.0
             pip install semantic-version==2.10.0
             pip install Pypubsub==4.0.3

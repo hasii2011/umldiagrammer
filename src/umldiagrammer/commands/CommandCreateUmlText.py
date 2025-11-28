@@ -4,7 +4,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from pyutmodelv2.PyutText import PyutText
+from umlmodel.Text import Text
 
 from umlshapes.frames.UmlFrame import UmlFrame
 
@@ -42,10 +42,10 @@ class CommandCreateUmlText(BaseWxCreateCommand):
         """
         textName: str = f'UmlText-{CommandCreateUmlText.clsCounter}'
 
-        pyutText: PyutText = PyutText(content=self._umlPreferences.textValue)
-        pyutText.name = textName        # Do we really need this
+        text: Text = Text(content=self._umlPreferences.textValue)
+        text.name = textName        # Do we really need this
 
-        umlText: UmlText = UmlText(pyutText)
+        umlText: UmlText = UmlText(text)
 
         CommandCreateUmlText.clsCounter += 1
 
@@ -55,11 +55,11 @@ class CommandCreateUmlText(BaseWxCreateCommand):
         """
         Place self._shape on the UML frame
         """
-        umlText:  UmlText  = cast(UmlText, self._shape)              # get old
-        pyutText: PyutText = umlText.pyutText
+        umlText:   UmlText = cast(UmlText, self._shape)              # get old
+        modelText: Text    = umlText.modelText
 
         self._addUmlShapeToFrame(umlFrame=self._umlFrame, umlShape=umlText, umlPosition=self._umlPosition)
 
         self._umlFrame.refresh()
 
-        self._appPubSubEngine.sendMessage(messageType=MessageType.EDIT_TEXT, uniqueId=APPLICATION_FRAME_ID, umlFrame=self._umlFrame, pyutText=pyutText)
+        self._appPubSubEngine.sendMessage(messageType=MessageType.EDIT_TEXT, uniqueId=APPLICATION_FRAME_ID, umlFrame=self._umlFrame, text=modelText)

@@ -18,7 +18,7 @@ from wx import MessageDialog
 
 from codeallybasic.SingletonV3 import SingletonV3
 
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
+from umlmodel.enumerations.LinkType import LinkType
 
 from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlNote import UmlNote
@@ -148,13 +148,13 @@ UML_RELATIONSHIP_LINK_ACTIONS: UIActions = UIActions([
 ])
 
 UI_ACTION_TO_LINK_TYPE = {
-    UIAction.DESTINATION_IMPLEMENT_LINK:     PyutLinkType.INTERFACE,
-    UIAction.DESTINATION_INHERIT_LINK:       PyutLinkType.INHERITANCE,
-    UIAction.DESTINATION_AGGREGATION_LINK:   PyutLinkType.AGGREGATION,
-    UIAction.DESTINATION_COMPOSITION_LINK:   PyutLinkType.COMPOSITION,
-    UIAction.DESTINATION_ASSOCIATION_LINK:   PyutLinkType.ASSOCIATION,
-    UIAction.DESTINATION_NOTE_LINK:          PyutLinkType.NOTELINK,
-    UIAction.DESTINATION_SD_MESSAGE:         PyutLinkType.SD_MESSAGE,
+    UIAction.DESTINATION_IMPLEMENT_LINK:     LinkType.INTERFACE,
+    UIAction.DESTINATION_INHERIT_LINK:       LinkType.INHERITANCE,
+    UIAction.DESTINATION_AGGREGATION_LINK:   LinkType.AGGREGATION,
+    UIAction.DESTINATION_COMPOSITION_LINK:   LinkType.COMPOSITION,
+    UIAction.DESTINATION_ASSOCIATION_LINK:   LinkType.ASSOCIATION,
+    UIAction.DESTINATION_NOTE_LINK:          LinkType.NOTELINK,
+    UIAction.DESTINATION_SD_MESSAGE:         LinkType.SD_MESSAGE,
 }
 
 
@@ -439,7 +439,7 @@ class ActionSupervisor(metaclass=SingletonV3):
 
         assert self._source is not None, 'Developer error: The link source is not set'
         assert self._destination is not None, 'Developer error: The link destination is not set'
-        linkType: PyutLinkType = UI_ACTION_TO_LINK_TYPE[self._currentAction]
+        linkType: LinkType = UI_ACTION_TO_LINK_TYPE[self._currentAction]
 
         umlFrame: UmlFrame = self._source.umlFrame
 

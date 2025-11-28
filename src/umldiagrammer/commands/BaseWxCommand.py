@@ -6,18 +6,17 @@ from logging import getLogger
 
 from wx import Command
 
-
-from pyutmodelv2.PyutLinkedObject import PyutLinkedObject
+from umlmodel.LinkedObject import LinkedObject
 
 from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlUseCase import UmlUseCase
 from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.ShapeTypes import UmlShapes
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
-from umlshapes.types.Common import UmlShapeList
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.UmlDiagram import UmlDiagram
@@ -75,9 +74,9 @@ class BaseWxCommand(Command):
 
         self._baseLogger.info(f'Created {umlClass}')
 
-    def _removeUmlShapeFromFrame(self, umlFrame: UmlFrame, umlShape: DoableObjectType, pyutClass: PyutLinkedObject | None = None):
+    def _removeUmlShapeFromFrame(self, umlFrame: UmlFrame, umlShape: DoableObjectType, modelClass: LinkedObject | None = None):
 
-        umlShapes: UmlShapeList = umlFrame.umlShapes
+        umlShapes: UmlShapes = umlFrame.umlShapes
 
         for obj in umlShapes:
 
@@ -88,12 +87,12 @@ class BaseWxCommand(Command):
 
             if self._isSameShape(objectToRemove=umlShape, potentialObject=potentialObject):
 
-                umlDiagram:       UmlDiagram       = umlFrame.umlDiagram
-                pyutLinkedObject: PyutLinkedObject = self._getPyutLinkedObject(umlShape=potentialObject)
+                umlDiagram:   UmlDiagram   = umlFrame.umlDiagram
+                linkedObject: LinkedObject = self._getLinkedObject(umlShape=potentialObject)
 
-                if pyutClass in pyutLinkedObject.parents:
-                    self._baseLogger.warning(f'Removing {pyutClass=} from {pyutLinkedObject=}')
-                    for parent in pyutLinkedObject.parents:
+                if modelClass in linkedObject.parents:
+                    self._baseLogger.warning(f'Removing {modelClass=} from {linkedObject=}')
+                    for parent in linkedObject.parents:
                         umlDiagram.RemoveShape(parent)
 
                 umlDiagram.RemoveShape(potentialObject)
@@ -116,7 +115,7 @@ class BaseWxCommand(Command):
 
         # if isinstance(objectToRemove, UmlSDInstance):
         #     nonOglObject: OglSDInstance = cast(OglSDInstance, objectToRemove)
-        #     if nonOglObject.pyutSDInstance.id == nonOglObject.pyutSDInstance.id:
+        #     if nonOglObject.sdInstance.id == nonOglObject.sdInstance.id:
         #         ans = True
         # else:
         if objectToRemove.id == potentialObject.id:
@@ -124,17 +123,17 @@ class BaseWxCommand(Command):
 
         return ans
 
-    def _getPyutLinkedObject(self, umlShape: UmlActor | UmlClass | UmlNote | UmlUseCase) -> PyutLinkedObject:
+    def _getLinkedObject(self, umlShape: UmlActor | UmlClass | UmlNote | UmlUseCase) -> LinkedObject:
 
         if isinstance(umlShape, UmlActor) is True:
             umlActor: UmlActor = cast(UmlActor, umlShape)
-            return umlActor.pyutActor
+            return umlActor.modelActor
         elif isinstance(umlShape, UmlClass) is True:
             umlClass: UmlClass = cast(UmlClass, umlShape)
-            return umlClass.pyutClass
+            return umlClass.modelClass
         elif isinstance(umlShape, UmlNote) is True:
             umlNote: UmlNote = cast(UmlNote, umlShape)
-            return umlNote.pyutNote
+            return umlNote.modelNote
         else:
             umlUseCase: UmlUseCase = cast(UmlUseCase, umlShape)
-            return umlUseCase.pyutUseCase
+            return umlUseCase.modelUseCase

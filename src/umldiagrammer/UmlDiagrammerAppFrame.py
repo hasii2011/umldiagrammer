@@ -1,13 +1,10 @@
 
 from typing import List
 from typing import NewType
-from typing import Optional
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
-
-from os import getenv as osGetEnv
 
 from wx import EVT_ACTIVATE
 from wx import EVT_WINDOW_DESTROY
@@ -20,7 +17,6 @@ from wx import STB_DEFAULT_STYLE
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
 from wx import FRAME_FLOAT_ON_PARENT
-from wx import FRAME_TOOL_WINDOW
 
 from wx import MessageDialog
 from wx import ActivateEvent
@@ -38,14 +34,12 @@ from wx import Yield as wxYield
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
-from pyutmodelv2.PyutClass import PyutClass
-
 from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
-from codeallybasic.SecureConversions import SecureConversions
 
-from pyutmodelv2.PyutNote import PyutNote
-from pyutmodelv2.PyutText import PyutText
+from umlmodel.Class import Class
+from umlmodel.Note import Note
+from umlmodel.Text import Text
 
 from umlshapes.dialogs.DlgEditNote import DlgEditNote
 from umlshapes.dialogs.DlgEditText import DlgEditText
@@ -65,7 +59,6 @@ from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
-from umldiagrammer import DiagrammerTypes
 from umldiagrammer import START_STOP_MARKER
 
 from umldiagrammer.ProjectHistory import ProjectHistory
@@ -97,6 +90,8 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
+
+I_AM_RUNNING_INDICATOR: str = '/tmp/DemoRunning.txt'
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -339,48 +334,48 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self._doToolSelect(toolId=toolId)
 
-    def _editClassListener(self, umlFrame: ClassDiagramFrame, pyutClass: PyutClass):
+    def _editClassListener(self, umlFrame: ClassDiagramFrame, modelClass: Class):
         """
         This handles the case when a new UML Class is created
         TODO:  Does this really belong here
 
         Args:
             umlFrame:
-            pyutClass:
+            modelClass:
 
         """
-        self.logger.debug(f"Edit: {pyutClass}")
+        self.logger.debug(f"Edit: {modelClass}")
 
-        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=pyutClass) as dlg:
+        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=modelClass) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
-    def _editNoteListener(self, umlFrame: ClassDiagramFrame, pyutNote: PyutNote):
+    def _editNoteListener(self, umlFrame: ClassDiagramFrame, note: Note):
         """
         This handles the case when a new UML Note is created
         TODO:  Does this really belong here
 
         Args:
             umlFrame:
-            pyutNote:
+            note:
         """
-        with DlgEditNote(umlFrame, pyutNote=pyutNote) as dlg:
+        with DlgEditNote(umlFrame, note=note) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
 
-    def _editTextListener(self, umlFrame: ClassDiagramFrame, pyutText: PyutText):
+    def _editTextListener(self, umlFrame: ClassDiagramFrame, text: Text):
         """
         This handles the case when a new UML Text is created
         TODO:  Does this really belong here
 
         Args:
             umlFrame:
-            pyutText:
+            text:
 
         """
-        with DlgEditText(umlFrame, pyutText=pyutText) as dlg:
+        with DlgEditText(umlFrame, text=text) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
@@ -479,7 +474,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         Returns:  An appropriate frame style
         """
-        appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
+        # appModeStr: Optional[str] = osGetEnv(DiagrammerTypes.APP_MODE)
 
         # if appModeStr is None:
         #     appMode: bool = False
