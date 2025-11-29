@@ -59,6 +59,8 @@ from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
+from umlextensions.ExtensionsPubSub import ExtensionsPubSub
+
 from umldiagrammer import START_STOP_MARKER
 
 from umldiagrammer.ProjectHistory import ProjectHistory
@@ -183,6 +185,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.Bind(EVT_WINDOW_DESTROY, self._onWindowDestroy)
 
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
+        self._extensionsPubSub: ExtensionsPubSub = uiMenuCreator.extensionsMenuHandler.extensionsPubSub
 
     def Close(self, force: bool = False) -> bool:
         """
@@ -250,14 +253,16 @@ class UmlDiagrammerAppFrame(SizedFrame):
         uiMenuCreator: UIMenuCreator = UIMenuCreator(frame=self, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
         uiMenuCreator.initializeMenus()
 
-        menuBar:  MenuBar = MenuBar()
-        fileMenu: Menu    = uiMenuCreator.fileMenu
-        editMenu: Menu    = uiMenuCreator.editMenu
-        helpMenu: Menu    = uiMenuCreator.helpMenu
+        menuBar:        MenuBar = MenuBar()
+        fileMenu:       Menu    = uiMenuCreator.fileMenu
+        editMenu:       Menu    = uiMenuCreator.editMenu
+        extensionsMenu: Menu    = uiMenuCreator.extensionsMenu
+        helpMenu:       Menu    = uiMenuCreator.helpMenu
 
-        menuBar.Append(fileMenu, 'File')
-        menuBar.Append(editMenu, 'Edit')
-        menuBar.Append(helpMenu, 'Help')
+        menuBar.Append(fileMenu,       'File')
+        menuBar.Append(editMenu,       'Edit')
+        menuBar.Append(extensionsMenu, 'Extensions')
+        menuBar.Append(helpMenu,       'Help')
 
         self.SetMenuBar(menuBar)
 
@@ -512,13 +517,19 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _setApplicationPosition(self):
         """
         Observe preferences how to set the application position
+        The test preference overrides everything
         """
-        if self._preferences.fullScreen is False:
-            if self._preferences.centerAppOnStartup is True:
-                self.Center(BOTH)  # Center on the screen
-            else:
-                appPosition: Position = self._preferences.startupPosition
-                self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+        if self._preferences.inTestMode is True:
+            testPosition: Position = self._preferences.testPosition
+
+            self.SetPosition(pt=Point(x=testPosition.x, y=testPosition.y))
+        else:
+            if self._preferences.fullScreen is False:
+                if self._preferences.centerAppOnStartup is True:
+                    self.Center(BOTH)  # Center on the screen
+                else:
+                    appPosition: Position = self._preferences.startupPosition
+                    self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
 
     def _doToolSelect(self, toolId: int):
 
@@ -545,7 +556,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
             # Lazy UI creation
 
             sizedPanel: SizedPanel = self.GetContentsPane()
-            self._umlNotebook = UmlNotebook(sizedPanel, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+            self._umlNotebook = UmlNotebook(sizedPanel,
+                                            appPubSubEngine=self._appPubSubEngine,
+                                            umlPubSubEngine=self._umlPubSubEngine,
+                                            extensionsPubSub=self._extensionsPubSub
+                                            )
 
         self._umlNotebook.closeDefaultProject()
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,

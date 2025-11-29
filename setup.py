@@ -68,6 +68,7 @@ setup(
         'umlmodel>=3.4.0',
         'umlshapes>=1.1.0',
         'umlio>=0.5.0',
-        'wxPython==4.2.4',
+        'wxPython>=4.2.4',
+        'umlextensions>=0.2.0',
     ]
 )

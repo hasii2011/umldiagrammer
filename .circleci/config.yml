@@ -40,6 +40,7 @@ jobs:
             pip install umlmodel==3.4.0
             pip install umlshapes==1.1.0
             pip install umlio==0.5.0
+            pip install umlextensions==0.2.0
             pip install buildlackey==2.0.0
             pip install semantic-version==2.10.0
             pip install Pypubsub==4.0.3

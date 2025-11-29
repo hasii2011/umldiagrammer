@@ -7,6 +7,7 @@ from wx import Size
 from wx import Window
 from wx import SplitterWindow
 
+from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.frames.DiagramFrame import FrameId
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
@@ -110,6 +111,14 @@ class UmlProjectPanel(SplitterWindow):
     @property
     def frameIdMap(self) -> FrameIdMap:
         return self._umlDiagramManager.frameIdMap
+
+    @property
+    def currentFrame(self) -> UmlFrame:
+        return self._umlDiagramManager.currentUmlFrame
+
+    @property
+    def currentDiagramName(self) -> str:
+        return self._umlDiagramManager.currentDiagramName()
 
     @property
     def currentUmlFrameId(self) -> FrameId:
