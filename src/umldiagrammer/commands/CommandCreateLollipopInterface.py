@@ -34,7 +34,7 @@ from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 class CommandCreateLollipopInterface(Command):
-    pyutInterfaceCount: int = 0
+    interfaceCount: int = 0
 
     def __init__(self, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, creationData: LollipopCreationData):
         """
@@ -45,7 +45,7 @@ class CommandCreateLollipopInterface(Command):
             creationData:
         """
 
-        name: str = f'Lollipop{CommandCreateLollipopInterface.pyutInterfaceCount}'
+        name: str = f'Lollipop{CommandCreateLollipopInterface.interfaceCount}'
         super().__init__(canUndo=True, name=name)
 
         self.logger:           Logger = getLogger(__name__)
@@ -100,8 +100,8 @@ class CommandCreateLollipopInterface(Command):
         interfaces:         Interfaces       = creationData.interfaces
         perimeterPoint:     UmlPosition          = creationData.perimeterPoint
 
-        interfaceName: str = f'{self._umlPreferences.defaultNameInterface}{CommandCreateLollipopInterface.pyutInterfaceCount}'
-        CommandCreateLollipopInterface.pyutInterfaceCount += 1
+        interfaceName: str = f'{self._umlPreferences.defaultNameInterface}{CommandCreateLollipopInterface.interfaceCount}'
+        CommandCreateLollipopInterface.interfaceCount += 1
 
         interface: Interface = Interface(interfaceName)
         interface.addImplementor(ClassName(requestingUmlClass.modelClass.name))

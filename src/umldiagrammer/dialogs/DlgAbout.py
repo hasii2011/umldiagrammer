@@ -112,11 +112,11 @@ class DlgAbout(SizedDialog):
         )
         appPackageDescriptors: VersionDescriptors = VersionDescriptors(
             [
-                VersionDescriptor(name=f'wxPython:',    version=f'{versions.wxPythonVersion}'),
+                VersionDescriptor(name=f'wxPython:',   version=f'{versions.wxPythonVersion}'),
                 VersionDescriptor(name=f'Data Model:', version=f'{versions.dataModelVersion}'),
-                VersionDescriptor(name=f'UmlIO:',       version=f'{versions.umlioVersion}'),
-                VersionDescriptor(name=f'UmlShapes:',   version=f'{versions.umlShapesVersion}'),
-                # VersionDescriptor(name=f'Plugins Platform:', version=f'{versions.pyutPluginsVersion}'),
+                VersionDescriptor(name=f'UmlIO:',      version=f'{versions.umlioVersion}'),
+                VersionDescriptor(name=f'UmlShapes:',  version=f'{versions.umlShapesVersion}'),
+                VersionDescriptor(name=f'Extensions:', version=f'{versions.extensionsVersion}'),
             ]
         )
         self._layoutVersionGrid(parentPanel=versionPanel, versionDescriptors=versionDescriptors)

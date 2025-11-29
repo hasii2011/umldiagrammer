@@ -20,6 +20,8 @@ DEFAULT_TB_ICON_SIZE:     str = ToolBarIconSize.SMALL.value
 DEFAULT_STARTUP_SIZE:     str = Dimensions(1024, 768).__str__()
 DEFAULT_STARTUP_POSITION: str = Position(5, 5).__str__()
 
+TEST_POSITION: str = Position(20, 40).__str__()
+
 DEFAULT_FILE_HISTORY_DISPLAY: str = ProjectHistoryDisplayType.SHOW_NEVER.value
 DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.LEFT.value
 
@@ -45,11 +47,17 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
         KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION, deserializer=ToolBarPosition),
     }
 )
-
+SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
+    {
+        KeyName('inTestMode'):   ValueDescription(defaultValue='False',         deserializer=SecureConversions.secureBoolean),
+        KeyName('testPosition'): ValueDescription(defaultValue=TEST_POSITION, deserializer=Position.deSerialize),
+    }
+)
 DIAGRAMMER_SECTIONS: Sections = Sections(
     {
         SectionName('General'): SECTION_GENERAL,
         SectionName('Startup'): SECTION_STARTUP,
+        SectionName('Debug'):   SECTION_DEBUG,
     }
 )
 

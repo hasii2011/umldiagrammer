@@ -16,6 +16,7 @@ from codeallybasic.SingletonV3 import SingletonV3
 from umlmodel import __version__ as dataModelVersion
 from umlshapes import __version__ as __umlShapesVersion__
 from umlio import __version__ as __umlIoVersion__
+from umlextensions import __version__ as __extensionsVersion__
 
 # noinspection PyPackageRequirements
 
@@ -77,3 +78,7 @@ class DependencyVersions(metaclass=SingletonV3):
     @property
     def umlioVersion(self) -> str:
         return __umlIoVersion__
+
+    @property
+    def extensionsVersion(self) -> str:
+        return __extensionsVersion__

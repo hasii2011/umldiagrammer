@@ -18,6 +18,7 @@ from wx import EVT_NOTEBOOK_PAGE_CHANGED
 from wx import Notebook
 from wx import BookCtrlEvent
 from wx import MessageDialog
+from wx import Size
 
 from wx import CallLater
 
@@ -31,8 +32,15 @@ from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
+from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+from umlextensions.ExtensionsPubSub import ExtensionsPubSub
+from umlextensions.ExtensionsTypes import FrameInformation
+from umlextensions.ExtensionsTypes import FrameSize
+
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
+from umldiagrammer.DiagrammerTypes import UmlLinkGenre
+from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 
 from umldiagrammer.UmlProjectIO import UmlProjectIO
 
@@ -57,7 +65,7 @@ class UmlNotebook(Notebook):
     Project Names are just the project file name with the suffix (aka, just the stem)
 
     """
-    def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
+    def __init__(self, sizedPanel: SizedPanel, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine, extensionsPubSub: ExtensionsPubSub):
         """
         Manages Project Panels
 
@@ -65,11 +73,13 @@ class UmlNotebook(Notebook):
             sizedPanel:
             appPubSubEngine:
             umlPubSubEngine:
+            extensionsPubSub:
         """
 
-        self.logger:           Logger           = getLogger(__name__)
-        self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
-        self._umlPubSubEngine: IUmlPubSubEngine = umlPubSubEngine
+        self.logger:            Logger           = getLogger(__name__)
+        self._appPubSubEngine:  IAppPubSubEngine = appPubSubEngine
+        self._umlPubSubEngine:  IUmlPubSubEngine = umlPubSubEngine
+        self._extensionsPubSub: ExtensionsPubSub = extensionsPubSub
 
         super().__init__(sizedPanel, style=NB_LEFT)  # TODO: should be an application preference
 
@@ -79,35 +89,8 @@ class UmlNotebook(Notebook):
         self.Bind(EVT_NOTEBOOK_PAGE_CHANGED, self._onNewProjectDisplayed)
 
         CallLater(millis=100, callableObj=self.PostSizeEventToParent)
-        self._appPubSubEngine.subscribe(messageType=MessageType.CURRENT_PROJECT_SAVED,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._currentProjectSavedListener
-                                        )
-        self._appPubSubEngine.subscribe(messageType=MessageType.PROJECT_RENAMED,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._projectRenamedListener
-                                        )
-        self._appPubSubEngine.subscribe(messageType=MessageType.CREATE_NEW_DIAGRAM,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._createNewDiagramListener
-                                        )
-        self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_NAME_CHANGED,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._documentNameChangedListener
-                                        )
-        self._appPubSubEngine.subscribe(messageType=MessageType.CLOSE_PROJECT,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._closeProjectListener
-                                        )
-
-        self._appPubSubEngine.subscribe(messageType=MessageType.DELETE_DIAGRAM,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._deleteDiagramListener
-                                        )
-
-        self._appPubSubEngine.subscribe(messageType=MessageType.GET_OPEN_PROJECTS,
-                                        uniqueId=NOTEBOOK_ID,
-                                        listener=self._getOpenProjectListener)
+        self._subscribeToApplicationMessages()
+        self._subscribeToExtensionsMessages()
 
     @property
     def currentProject(self) -> ProjectDossier:
@@ -315,3 +298,134 @@ class UmlNotebook(Notebook):
         diagramName: str = projectPanel.deleteCurrentDiagram()
         self._indicateCurrentProjectModified()
         self.logger.info(f'Diagram {diagramName} removed from project {projectPanel.umlProject.fileName}')
+
+    def _requestFrameInformationListener(self, callback: Callable):
+
+        from umlshapes.frames.UmlFrame import UmlFrame
+        from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+        from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
+        from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        size: Size = self.GetSize()
+        #
+        # Fix this in umlextensions
+        #
+        if isinstance(currentFrame, ClassDiagramFrame):
+            documentType: str = UmlDocumentType.CLASS_DOCUMENT.value
+        elif isinstance(currentFrame, UseCaseDiagramFrame):
+            documentType = UmlDocumentType.USE_CASE_DOCUMENT.value
+        elif isinstance(currentFrame, SequenceDiagramFrame):
+            documentType = UmlDocumentType.SEQUENCE_DOCUMENT.value
+        else:
+            assert False, 'Unknown document type'
+
+        frameInfo: FrameInformation = FrameInformation(
+            umlFrame=currentFrame,
+            frameActive=True,
+            selectedUmlShapes=currentFrame.selectedShapes,
+            diagramTitle=projectPanel.currentDiagramName,
+            diagramType=documentType,
+            frameSize=FrameSize(width=size.width, height=size.height)
+        )
+        callback(frameInfo)
+
+    def _addShapeListener(self, umlShape: UmlShapeGenre | UmlLinkGenre):
+        from umlshapes.frames.UmlFrame import UmlFrame
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        currentFrame.umlDiagram.AddShape(umlShape)
+        umlShape.Show(True)
+
+    def _extensionModifiedProjectListener(self):
+        self._indicateCurrentProjectModified()
+
+    def _refreshFrameListener(self):
+        from umlshapes.frames.UmlFrame import UmlFrame
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        currentFrame.refresh()
+
+    def _wiggleShapesListener(self):
+        """
+        This is a hack work around to simulate moving the shapes so
+        that the links are visible.
+        I tried refresh, redraw, and .DrawLinks;  None of it worked
+
+
+        So much of a hack that it depends on the umlshapes diagram option
+        .snapToGrid to be True
+        """
+        from umlshapes.frames.UmlFrame import UmlFrame
+        from umlshapes.ShapeTypes import UmlShapes
+        from umlshapes.types.UmlPosition import UmlPosition
+        from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        umlShapes: UmlShapes = currentFrame.umlShapes
+
+        for shape in umlShapes:
+
+            if isinstance(shape, UmlShapeGenre) is True:
+
+                umlShape: UmlShapeGenre = cast(UmlShapeGenre, shape)
+
+                oldPosition: UmlPosition = umlShape.position
+                newPosition: UmlPosition = UmlPosition(x=oldPosition.x + 10, y=oldPosition.y + 10)
+
+                eventHandler: UmlBaseEventHandler = umlShape.GetEventHandler()
+
+                eventHandler.OnDragLeft(draw=True, x=newPosition.x, y=newPosition.y)
+                eventHandler.OnDragLeft(draw=True, x=oldPosition.x, y=oldPosition.y)
+
+    def _subscribeToApplicationMessages(self):
+        """
+        The application wants some services
+        """
+        self._appPubSubEngine.subscribe(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._currentProjectSavedListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.PROJECT_RENAMED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._projectRenamedListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.CREATE_NEW_DIAGRAM,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._createNewDiagramListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.DOCUMENT_NAME_CHANGED,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._documentNameChangedListener
+                                        )
+        self._appPubSubEngine.subscribe(messageType=MessageType.CLOSE_PROJECT,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._closeProjectListener
+                                        )
+
+        self._appPubSubEngine.subscribe(messageType=MessageType.DELETE_DIAGRAM,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._deleteDiagramListener
+                                        )
+
+        self._appPubSubEngine.subscribe(messageType=MessageType.GET_OPEN_PROJECTS,
+                                        uniqueId=NOTEBOOK_ID,
+                                        listener=self._getOpenProjectListener)
+
+    def _subscribeToExtensionsMessages(self):
+        """
+        The diagrammer extensions wants some services
+        """
+        self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.REQUEST_FRAME_INFORMATION,  listener=self._requestFrameInformationListener)
+        self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.ADD_SHAPE,                  listener=self._addShapeListener)
+        self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT, listener=self._extensionModifiedProjectListener)
+        self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.REFRESH_FRAME,              listener=self._refreshFrameListener)
+        self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.WIGGLE_SHAPES,              listener=self._wiggleShapesListener)

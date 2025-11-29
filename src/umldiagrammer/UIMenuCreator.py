@@ -2,7 +2,6 @@
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from wx import ID_ABOUT
 from wx import ID_COPY
 from wx import ID_CUT
@@ -21,7 +20,10 @@ from wx import Menu
 
 from wx.lib.sized_controls import SizedFrame
 
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
+
 from umldiagrammer.menuHandlers.EditMenuHandler import EditMenuHandler
+from umldiagrammer.menuHandlers.ExtensionsMenuHandler import ExtensionsMenuHandler
 from umldiagrammer.menuHandlers.HelpMenuHandler import HelpMenuHandler
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -30,19 +32,36 @@ from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 
 class UIMenuCreator:
+    """
+    For extensions the sub menu items are built in the menu handler instead of here
+    """
     def __init__(self, frame: SizedFrame, appPubSubEngine: IAppPubSubEngine, umlPubSubEngine: IUmlPubSubEngine):
+        """
+
+        Args:
+            frame:
+            appPubSubEngine:
+            umlPubSubEngine:
+        """
 
         self.logger: Logger = getLogger(__name__)
         self._frame: Frame  = frame
 
-        self._fileMenu: Menu = Menu()
-        self._editMenu: Menu = Menu()
-        self._toolMenu: Menu = Menu()
-        self._helpMenu: Menu = Menu()
+        self._fileMenu:       Menu = Menu()
+        self._editMenu:       Menu = Menu()
+        self._extensionsMenu: Menu = Menu()
+        self._helpMenu:       Menu = Menu()
 
         self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, menu=self._fileMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._editMenuHandler: EditMenuHandler = EditMenuHandler(sizedFrame=frame, menu=self._editMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
         self._helpMenuHandler: HelpMenuHandler = HelpMenuHandler(sizedFrame=frame, menu=self._helpMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+
+        self._extensionsMenuHandler: ExtensionsMenuHandler = ExtensionsMenuHandler(
+            sizedFrame=frame,
+            menu=self._extensionsMenu,
+            appPubSubEngine=appPubSubEngine,
+            umlPubSubEngine=umlPubSubEngine
+        )
 
     @property
     def fileMenuHandler(self) -> FileMenuHandler:
@@ -53,12 +72,17 @@ class UIMenuCreator:
         return self._editMenuHandler
 
     @property
+    def extensionsMenuHandler(self) -> ExtensionsMenuHandler:
+        return self._extensionsMenuHandler
+
+    @property
     def helpMenuHandler(self) -> HelpMenuHandler:
         return self._helpMenuHandler
 
     def initializeMenus(self):
         self._initializeFileMenu()
         self._initializeEditMenu()
+        self._initializeExtensionsMenu()
         self._initializeHelpMenu()
 
     @property
@@ -68,6 +92,10 @@ class UIMenuCreator:
     @property
     def editMenu(self) -> Menu:
         return self._editMenu
+
+    @property
+    def extensionsMenu(self) -> Menu:
+        return self._extensionsMenu
 
     @property
     def helpMenu(self) -> Menu:
@@ -124,6 +152,11 @@ class UIMenuCreator:
         editMenu.AppendSeparator()
         editMenu.Append(ID_SELECTALL)
         editMenu.AppendSeparator()
+
+    def _initializeExtensionsMenu(self):
+
+        extensionsMenu: Menu = self._extensionsMenu
+        self._extensionsMenuHandler.initializeSubMenus(extensionsMenu=extensionsMenu)
 
     def _initializeHelpMenu(self):
 
