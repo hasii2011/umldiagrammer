@@ -6,6 +6,8 @@ from wx import CANCEL
 from wx import DEFAULT_DIALOG_STYLE
 from wx import EVT_BUTTON
 from wx import EVT_CLOSE
+from wx import ICON_EXCLAMATION
+from wx import MessageDialog
 from wx import NB_FIXEDWIDTH
 from wx import NB_TOP
 from wx import OK
@@ -28,11 +30,11 @@ from umldiagrammer.dialogs.GeneralPreferencesPanel import GeneralPreferencesPane
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
-#
-#
-# from pyutplugins.common.ui.preferences.PluginPreferencesPage import PluginPreferencesPage
-#
 
+#
+#
+# from umlextensions.ui.preferences.ExtensionsPreferencesPage import ExtensionsPreferencesPage
+#
 
 class DlgPreferences(SizedDialog):
     """
@@ -63,7 +65,7 @@ class DlgPreferences(SizedDialog):
 
         self.logger:  Logger          = getLogger(__name__)
 
-        self.__preferences: DiagrammerPreferences = DiagrammerPreferences()
+        self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True)
@@ -71,8 +73,8 @@ class DlgPreferences(SizedDialog):
         self._createTheControls(sizedPanel=sizedPanel)
         self.SetButtonSizer(self.CreateStdDialogButtonSizer(OK))
 
-        self.Bind(EVT_BUTTON, self.__OnCmdOk, id=ID_OK)
-        self.Bind(EVT_CLOSE,  self.__OnClose)
+        self.Bind(EVT_BUTTON, self._onOk, id=ID_OK)
+        self.Bind(EVT_CLOSE, self._onClose)
         # self.Fit()
         # self.SetMinSize(self.GetSize())
 
@@ -96,25 +98,27 @@ class DlgPreferences(SizedDialog):
         # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)
         # book.AddPage(pluginPreferences,      text=pluginPreferences.name,      select=False)
 
-    def __OnClose(self, event):
+    def _onClose(self, event):
 
-        self.__potentiallyDisplayInfoMessage()
+        self._potentiallyDisplayInfoMessage()
         self.EndModal(CANCEL)
         event.Skip(skip=True)
 
     # noinspection PyUnusedLocal
-    def __OnCmdOk(self, event: CommandEvent):
+    def _onOk(self, event: CommandEvent):
 
-        self.__potentiallyDisplayInfoMessage()
+        self._potentiallyDisplayInfoMessage()
 
         self.EndModal(OK)
         event.Skip(skip=True)
 
-    def __potentiallyDisplayInfoMessage(self):
+    def _potentiallyDisplayInfoMessage(self):
+        """
+        TODO:  Need help from StartupPreferencesPanel through the GeneralPreferencesPanel
+        """
 
         # if self._positioningPreferences.valuesChanged is True:
-        #     dlg = MessageDialog(self, "Restart Pyut for position/size changes", "Warning", OK | ICON_EXCLAMATION)
+        #     dlg = MessageDialog(self, "Restart the diagrammer for position/size changes", "Warning", OK | ICON_EXCLAMATION)
         #     dlg.ShowModal()
         #     dlg.Destroy()
-
         pass

@@ -44,7 +44,7 @@ class HelpMenuHandler(BaseMenuHandler):
     # noinspection PyUnusedLocal
     def _onAbout(self, event: CommandEvent):
         """
-        Show the Pyut about dialog
+        Show the Uml Diagrammer about dialog
 
         Args:
             event:

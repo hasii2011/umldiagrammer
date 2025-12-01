@@ -172,7 +172,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._tipsAlreadyDisplayed:        bool = False
         """
         The above are set to `True` by the preferences dialog when the end-user either manually specifies
-        the size or position of the Pyut application.  If it is False, then normal end
+        the size or position of the Diagrammer application.  If it is False, then normal end
         of application logic prevails;  The preferences dialog sends this class an
         event; To change the value
         """
@@ -322,7 +322,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         else:
             self.logger.debug(f'Displaying Tips is not yet implemented')
             #     # Display tips frame
-            #     prefs: PyutPreferences = PyutPreferences()
+            #     prefs: DiagrammerPreferences = DiagrammerPreferences()
             #     self.logger.debug(f'Show tips on startup: {self._prefs.showTipsOnStartup=}')
             #     if prefs.showTipsOnStartup is True:
             #         # noinspection PyUnusedLocal

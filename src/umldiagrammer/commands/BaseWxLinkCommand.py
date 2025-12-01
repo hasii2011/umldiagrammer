@@ -224,13 +224,13 @@ class BaseWxLinkCommand(Command):
         umlAssociation.MakeLineControlPoints(n=2)  # Make this configurable
 
         sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
-        # add it to the source PyutClass
+        # add it to the source Model Class
         sourceClass.modelClass.addLink(link)
 
         # Update the model
-        srcClassPyutClass: Class = sourceClass.modelClass
-        destPyutClass:     Class = destinationClass.modelClass
-        destPyutClass.addParent(srcClassPyutClass)
+        srcModelClass:  Class = sourceClass.modelClass
+        destModelClass: Class = destinationClass.modelClass
+        destModelClass.addParent(srcModelClass)
 
         eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
@@ -360,12 +360,12 @@ class BaseWxLinkCommand(Command):
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
         if self._modelLink is None:
-            pyutLink: Link = Link(name="", linkType=linkType, source=source.modelClass, destination=destination.modelClass)
-            pyutLink.name = f'{linkType.name.capitalize()}-{pyutLink.id}'
+            link: Link = Link(name="", linkType=linkType, source=source.modelClass, destination=destination.modelClass)
+            link.name = f'{linkType.name.capitalize()}-{link.id}'
         else:
-            pyutLink = self._modelLink
+            link = self._modelLink
 
-        return pyutLink
+        return link
 
     def _toCommandName(self, linkType: LinkType) -> str:
         # Because I do not like the generated name
