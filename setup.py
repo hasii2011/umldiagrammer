@@ -66,9 +66,9 @@ setup(
         'codeallybasic>=1.30.0',
         'codeallyadvanced>=2.3.0',
         'umlmodel>=3.4.0',
-        'umlshapes>=1.1.0',
-        'umlio>=0.5.0',
+        'umlshapes>=1.2.0',
+        'umlio>=0.5.1',
         'wxPython>=4.2.4',
-        'umlextensions>=0.2.0',
+        'umlextensions>=0.2.1',
     ]
 )

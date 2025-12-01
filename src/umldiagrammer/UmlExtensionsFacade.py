@@ -43,10 +43,10 @@ class UmlExtensionsFacade(IExtensionsFacade):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT)
 
     def selectUmlShapes(self):
-        pass
+        self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.SELECT_UML_SHAPES)
 
     def getSelectedUmlShapes(self, callback: SelectedUmlShapesCallback):
-        pass
+        self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.GET_SELECTED_UML_SHAPES, callback=callback)
 
     def refreshFrame(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.REFRESH_FRAME)

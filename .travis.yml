@@ -46,8 +46,8 @@ install:
   - URL=https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04
   - pip install -U -f $URL wxPython
   - pip install codeallyadvanced==2.3.0
-  - pip install umlshapes==1.1.0
-  - pip install umlio==0.5.0
+  - pip install umlshapes==1.2.0
+  - pip install umlio==0.5.1
 
 # command to run tests
 script:

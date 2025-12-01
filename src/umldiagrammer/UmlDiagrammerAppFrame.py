@@ -351,7 +351,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self.logger.debug(f"Edit: {modelClass}")
 
-        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, pyutClass=modelClass) as dlg:
+        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, modelClass=modelClass) as dlg:
             if dlg.ShowModal() == ID_OK:
                 umlFrame.Refresh()
                 umlFrame.frameModified = True
