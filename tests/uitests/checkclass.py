@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+
+import pyautogui
+
+from pyautogui import press
+from pyautogui import click
+from pyautogui import typewrite
+from pyautogui import moveTo
+
+from pymsgbox import alert
+from umlshapes.preferences.UmlPreferences import UmlPreferences
+
+from umlshapes.types.UmlPosition import UmlPosition
+
+from tests.uitests.common import isAppRunning
+from tests.uitests.common import makeAppActive
+
+LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=710, y=60)
+LOC_CREATE_CLASS:           UmlPosition = UmlPosition(x=680, y=370)
+LOC_CLICK_ADD_METHOD:       UmlPosition = UmlPosition(x=600, y=620)
+LOC_CLICK_ADD_PARAMETER:    UmlPosition = UmlPosition(x=600, y=565)
+LOC_CLICK_ADD_FIELD:        UmlPosition = UmlPosition(x=595, y=490)
+
+LOC_CLICK_PARAMETER_NAME:   UmlPosition = UmlPosition(x=645, y=395)
+LOC_CLICK_PARAMETER_TYPE:   UmlPosition = UmlPosition(x=729, y=398)
+
+LOC_CLICK_PARAMETER_VALUE:  UmlPosition = UmlPosition(x=860, y=395)
+LOC_CLICK_PARAMETER_OK:     UmlPosition = UmlPosition(x=855, y=445)
+
+LOC_CLICK_PUBLIC_FIELD:     UmlPosition = UmlPosition(x=570, y=366)
+LOC_CLICK_FIELD_NAME:       UmlPosition = UmlPosition(x=715, y=395)
+LOC_CLICK_FIELD_TYPE:       UmlPosition = UmlPosition(x=805, y=395)
+LOC_CLICK_FIELD_VALUE:      UmlPosition = UmlPosition(x=905, y=395)
+LOC_CLICK_FIELD_OK:         UmlPosition = UmlPosition(x=915, y=455)
+
+LOC_CLICK_METHOD_OK:        UmlPosition = UmlPosition(x=950, y=605)
+LOC_CLICK_CLASS_OK:         UmlPosition = UmlPosition(x=980, y=685)
+
+LOC_RIGHT_CLICK_CLASS:       UmlPosition = UmlPosition(x=740, y=440)
+LOC_CLICK_PARAMETER_DISPLAY: UmlPosition = UmlPosition(x=797, y=517)
+
+LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=390, y=70)
+LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1379, y=333)
+LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1690, y=745)
+GENERATED_CLASS_PROJECT: str = '/tmp/UIClassTest'
+
+def addParameterMethod():
+
+    click(x=LOC_CLICK_ADD_PARAMETER.x, y=LOC_CLICK_ADD_PARAMETER.y)
+    click(x=LOC_CLICK_PARAMETER_NAME.x, y=LOC_CLICK_PARAMETER_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
+    press('backspace', presses=len(defaultMethodName))
+    typewrite('floatParameter', interval=TYPE_WRITE_INTERVAL)
+
+    click(x=LOC_CLICK_PARAMETER_TYPE.x, y=LOC_CLICK_PARAMETER_TYPE.y)
+    typewrite('float', interval=TYPE_WRITE_INTERVAL)
+
+    click(x=LOC_CLICK_PARAMETER_VALUE.x, y=LOC_CLICK_PARAMETER_VALUE.y)
+    typewrite('42.0', interval=TYPE_WRITE_INTERVAL)
+
+    click(x=LOC_CLICK_PARAMETER_OK.x, y=LOC_CLICK_PARAMETER_OK.y)
+
+
+def addPublicField():
+
+    click(x=LOC_CLICK_ADD_FIELD.x, y=LOC_CLICK_ADD_FIELD.y)
+    click(x=LOC_CLICK_PUBLIC_FIELD.x, y=LOC_CLICK_PUBLIC_FIELD.y)
+
+    click(x=LOC_CLICK_FIELD_NAME.x, y=LOC_CLICK_FIELD_NAME.y)
+    press('backspace', presses=len(defaultFieldName))
+    typewrite('publicField', interval=TYPE_WRITE_INTERVAL)
+
+    click(x=LOC_CLICK_FIELD_TYPE.x, y=LOC_CLICK_FIELD_TYPE.y)
+    typewrite('int', interval=TYPE_WRITE_INTERVAL)
+
+    click(x=LOC_CLICK_FIELD_VALUE.x, y=LOC_CLICK_FIELD_VALUE.y)
+    typewrite('42', interval=TYPE_WRITE_INTERVAL)
+    click(x=LOC_CLICK_FIELD_OK.x, y=LOC_CLICK_FIELD_OK.y)
+
+
+if __name__ == '__main__':
+
+    pyautogui.PAUSE = 0.5
+
+    umlPreferences: UmlPreferences = UmlPreferences()
+
+    DRAG_DURATION:         float = 0.5
+    TYPE_WRITE_INTERVAL:   float = 0.1
+    DOUBLE_CLICK_INTERVAL: float = 0.2
+    defaultMethodName:     str   = umlPreferences.defaultNameMethod
+    defaultFieldName:      str   = umlPreferences.defaultNameField
+
+    if isAppRunning() is False:
+        alert(text='The diagrammer is not running', title='Hey, bonehead', button='OK')
+    else:
+        makeAppActive()
+
+        click(x=LOC_CLASS_TOOL_BAR.x,       y=LOC_CLASS_TOOL_BAR.y)
+        click(x=LOC_CREATE_CLASS.x,         y=LOC_CREATE_CLASS.y)
+
+        click(x=LOC_CLICK_ADD_METHOD.x,     y=LOC_CLICK_ADD_METHOD.y)
+        addParameterMethod()
+        click(x=LOC_CLICK_METHOD_OK.x,    y=LOC_CLICK_METHOD_OK.y)
+
+        addPublicField()
+        click(x=LOC_CLICK_CLASS_OK.x,     y=LOC_CLICK_CLASS_OK.y)
+
+        click(x=LOC_RIGHT_CLICK_CLASS.x,       y=LOC_RIGHT_CLICK_CLASS.y, button='right')
+        click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
+
+        click(x=LOC_CLICK_SAVE_PROJECT.x, y=LOC_CLICK_SAVE_PROJECT.y)
+        moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=3.0)
+
+        click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
+
+        press('backspace', presses=len('untitled'))
+        typewrite(GENERATED_CLASS_PROJECT, interval=TYPE_WRITE_INTERVAL)
+        press('enter')
+        click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)

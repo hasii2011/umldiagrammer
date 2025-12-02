@@ -39,7 +39,7 @@ jobs:
             pip install codeallyadvanced==2.3.0
             pip install umlmodel==3.4.0
             pip install umlshapes==1.2.0
-            pip install umlio==0.5.1
+            pip install umlio==0.5.2
             pip install umlextensions==0.2.1
             pip install buildlackey==2.0.0
             pip install semantic-version==2.10.0

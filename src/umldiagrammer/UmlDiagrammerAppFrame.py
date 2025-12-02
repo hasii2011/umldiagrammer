@@ -62,6 +62,7 @@ from umlio.IOTypes import DEFAULT_PROJECT_PATH
 from umlextensions.ExtensionsPubSub import ExtensionsPubSub
 
 from umldiagrammer import START_STOP_MARKER
+from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
 
 from umldiagrammer.ProjectHistory import ProjectHistory
 from umldiagrammer.ProjectHistoryConfiguration import ProjectHistoryConfiguration
@@ -92,8 +93,6 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
-
-I_AM_RUNNING_INDICATOR: str = '/tmp/DemoRunning.txt'
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -187,6 +186,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
         self._extensionsPubSub: ExtensionsPubSub = uiMenuCreator.extensionsMenuHandler.extensionsPubSub
 
+        self._setTestItems()
+
     def Close(self, force: bool = False) -> bool:
         """
         Closing handler overload. Save files and ask for confirmation.
@@ -216,6 +217,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.logger.info(f'UML Diagrammer execution complete')
         self.logger.info(START_STOP_MARKER)
         self.Destroy()
+
+        #
+        # Cleanup in case we were running in test mode
+        #
+        DIAGRAMMER_IN_TEST_MODE.unlink(missing_ok=True)
 
         return True
 
@@ -517,19 +523,14 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _setApplicationPosition(self):
         """
         Observe preferences how to set the application position
-        The test preference overrides everything
-        """
-        if self._preferences.inTestMode is True:
-            testPosition: Position = self._preferences.testPosition
 
-            self.SetPosition(pt=Point(x=testPosition.x, y=testPosition.y))
-        else:
-            if self._preferences.fullScreen is False:
-                if self._preferences.centerAppOnStartup is True:
-                    self.Center(BOTH)  # Center on the screen
-                else:
-                    appPosition: Position = self._preferences.startupPosition
-                    self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
+        """
+        if self._preferences.fullScreen is False:
+            if self._preferences.centerAppOnStartup is True:
+                self.Center(BOTH)  # Center on the screen
+            else:
+                appPosition: Position = self._preferences.startupPosition
+                self.SetPosition(pt=Point(x=appPosition.x, y=appPosition.y))
 
     def _doToolSelect(self, toolId: int):
 
@@ -593,3 +594,20 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                         listener=self._updateApplicationStatusListener)
 
         self._actionSupervisor.registerNewFrame(frameId=frameId)
+
+    def _setTestItems(self):
+        """
+        If we are in test mode:
+
+        * Override user application positioning
+        * Set the running indicator file
+
+        """
+        from pathlib import Path
+        if self._preferences.inTestMode is True:
+            testPosition: Position = self._preferences.testPosition
+
+            self.SetPosition(pt=Point(x=testPosition.x, y=testPosition.y))
+
+            iAmRunningPath: Path = Path(DIAGRAMMER_IN_TEST_MODE)
+            iAmRunningPath.touch()

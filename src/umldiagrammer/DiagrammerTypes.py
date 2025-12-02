@@ -2,6 +2,8 @@
 from typing import Dict
 from typing import NewType
 
+from pathlib import Path
+
 from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
@@ -41,3 +43,5 @@ HACK_ADJUST_EXIT_HEIGHT: int = 52    # TODO: I think this is the status bar and 
 # Python logging mechanism
 # Needs to match the name in loggingConfiguration.json
 MAIN_LOGGING_NAME: str = "UmlDiagrammer"
+
+DIAGRAMMER_IN_TEST_MODE: Path = Path('/tmp/UmlDiagrammer.txt')

@@ -8,11 +8,13 @@ setuptools==70.3.0
 # application with py2App
 chardet==5.2.0
 
-py2app==0.28.8
+py2app==0.28.9
 
 mypy==1.18.2
 html-testRunner~=1.2.1
-
+pyautogui==0.9.54
+pillow==12.0.0
+PyMsgBox==2.0.1
 # So Circle CI works
 
 buildlackey==2.0.0
@@ -25,5 +27,5 @@ codeallyadvanced==2.3.0
 umlmodel==3.4.0
 
 umlshapes==1.2.0
-umlio==0.5.1
+umlio==0.5.2
 umlextensions==0.2.1
