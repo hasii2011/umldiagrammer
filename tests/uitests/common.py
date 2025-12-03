@@ -1,4 +1,6 @@
 
+import zlib
+
 from pathlib import Path
 
 from PIL import ImageGrab
@@ -8,9 +10,6 @@ from pyautogui import moveTo
 from pyautogui import click
 
 from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
-
-# noinspection SpellCheckingInspection
-GOLDEN_IMAGE_PACKAGE: str = str('tests.uitests.goldenImages')
 
 LEFT:          str   = 'left'
 DRAG_DURATION: float = 0.5
@@ -46,3 +45,26 @@ def takeCompletionScreenShot(imagePath: Path):
     # Capture the specified region
     screenshot: Image = ImageGrab.grab(bbox)
     screenshot.save(imagePath, 'png')
+
+def decompress(inputFileName: Path, outputFileName: Path):
+    """
+    Takes a zlib compressed file and turns it into a text file
+    Args:
+        inputFileName:   The compressed file
+        outputFileName:  The decompressed text file
+
+    """
+    try:
+        with open(inputFileName, "rb") as inputFile:
+            # print(f'Inflating: {inputFileName}')
+            compressedData: bytes = inputFile.read()
+
+            # print(f'Bytes read: {len(compressedData)}')
+            xmlBytes:  bytes = zlib.decompress(compressedData)  # has b '....' around it
+            xmlString: str   = xmlBytes.decode()
+
+            # print(f'Writing {len(xmlString)} bytes to {outputFileName}')
+            with open(outputFileName, 'w') as outputFile:
+                outputFile.write(xmlString)
+    except (ValueError, Exception) as e:
+        print(f'Error:  {e}')

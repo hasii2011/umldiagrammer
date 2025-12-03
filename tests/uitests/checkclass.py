@@ -1,19 +1,55 @@
 #!/usr/bin/env python
 
+from typing import List
+
+from re import findall
+from re import sub as regExSub
+
+from difflib import unified_diff
+
 import pyautogui
+
+from pathlib import Path
 
 from pyautogui import press
 from pyautogui import click
-from pyautogui import typewrite
 from pyautogui import moveTo
+from pyautogui import typewrite
 
 from pymsgbox import alert
+
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.common import decompress
 from tests.uitests.common import isAppRunning
 from tests.uitests.common import makeAppActive
+
+#
+# Removed the IDs
+#
+GOLDEN_CLASS_XML: str = (
+    "<?xml version='1.0' encoding='iso-8859-1'?>\n"
+    '<UmlProject fileName="/private/tmp/UIClassTest.udt" version="14.0" codePath=".">\n'
+    '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
+    '        <UmlClass id="" width="325" height="150" x="420" y="271">\n'
+    '            <ModelClass id="" name="ClassName1" displayMethods="True" displayParameters="Display Parameters" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="">\n'
+    '                <ModelMethod name="MethodName" visibility="PUBLIC" returnType="">\n'
+    '                    <SourceCode />\n'
+    '                    <ModelParameter name="floatParameter" parameterType="float" defaultValue="42.0" />\n'
+    '                </ModelMethod>\n'
+    '                <ModelField name="publicField" visibility="PUBLIC" fieldType="int" defaultValue="42" />\n'
+    '            </ModelClass>\n'
+    '        </UmlClass>\n'
+    '    </UMLDiagram>\n'
+    '</UmlProject>'
+)
+
+MATCH_BETWEEN_QUOTES: str = '"(.*?)"'
+MATCH_STARTS_WITH_ID: str = f'id={MATCH_BETWEEN_QUOTES}'
+EMPTY_ID:             str = ''
+
 
 LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=710, y=60)
 LOC_CREATE_CLASS:           UmlPosition = UmlPosition(x=680, y=370)
@@ -42,8 +78,14 @@ LOC_CLICK_PARAMETER_DISPLAY: UmlPosition = UmlPosition(x=797, y=517)
 LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=390, y=70)
 LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1379, y=333)
 LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1690, y=745)
-GENERATED_CLASS_PROJECT: str = '/tmp/UIClassTest'
 
+BASENAME:                   str = 'UIClassTest'
+CLASS_PROJECT_FILENAME:     Path = Path(f'/tmp/{BASENAME}.udt')
+
+CLASS_XML_FILENAME:         str = f'{BASENAME}.xml'
+DECOMPRESSED_CLASS_PROJECT: Path = Path(f'/tmp/{CLASS_XML_FILENAME}')
+
+DIFF_CLI: str = '/usr/bin/diff '
 def addParameterMethod():
 
     click(x=LOC_CLICK_ADD_PARAMETER.x, y=LOC_CLICK_ADD_PARAMETER.y)
@@ -77,6 +119,34 @@ def addPublicField():
     click(x=LOC_CLICK_FIELD_OK.x, y=LOC_CLICK_FIELD_OK.y)
 
 
+def wasTestSuccessful() -> bool:
+    answer: bool = True
+
+    decompress(inputFileName=CLASS_PROJECT_FILENAME, outputFileName=DECOMPRESSED_CLASS_PROJECT)
+
+    generatedXmlFile: Path = Path(DECOMPRESSED_CLASS_PROJECT)
+    generatedXml:     str  = generatedXmlFile.read_text()
+
+    matches: List[str] = findall(MATCH_STARTS_WITH_ID, generatedXml)
+
+    fixedXml: str = generatedXml
+    for idStr in matches:
+        fixedXml = regExSub(pattern=idStr, repl=EMPTY_ID, string=fixedXml)
+
+    if fixedXml != GOLDEN_CLASS_XML:
+        diff = unified_diff(
+            GOLDEN_CLASS_XML.splitlines(),
+            fixedXml.splitlines(),
+            lineterm='',
+            fromfile='Golden',
+            tofile='Generated'
+        )
+        print('\n'.join(list(diff)))
+        answer = False
+
+    return answer
+
+
 if __name__ == '__main__':
 
     pyautogui.PAUSE = 0.5
@@ -89,15 +159,18 @@ if __name__ == '__main__':
     defaultMethodName:     str   = umlPreferences.defaultNameMethod
     defaultFieldName:      str   = umlPreferences.defaultNameField
 
+    CLASS_PROJECT_FILENAME.unlink(missing_ok=True)
+    DECOMPRESSED_CLASS_PROJECT.unlink(missing_ok=True)
+
     if isAppRunning() is False:
         alert(text='The diagrammer is not running', title='Hey, bonehead', button='OK')
     else:
         makeAppActive()
 
-        click(x=LOC_CLASS_TOOL_BAR.x,       y=LOC_CLASS_TOOL_BAR.y)
-        click(x=LOC_CREATE_CLASS.x,         y=LOC_CREATE_CLASS.y)
+        click(x=LOC_CLASS_TOOL_BAR.x,   y=LOC_CLASS_TOOL_BAR.y)
+        click(x=LOC_CREATE_CLASS.x,     y=LOC_CREATE_CLASS.y)
 
-        click(x=LOC_CLICK_ADD_METHOD.x,     y=LOC_CLICK_ADD_METHOD.y)
+        click(x=LOC_CLICK_ADD_METHOD.x, y=LOC_CLICK_ADD_METHOD.y)
         addParameterMethod()
         click(x=LOC_CLICK_METHOD_OK.x,    y=LOC_CLICK_METHOD_OK.y)
 
@@ -107,12 +180,25 @@ if __name__ == '__main__':
         click(x=LOC_RIGHT_CLICK_CLASS.x,       y=LOC_RIGHT_CLICK_CLASS.y, button='right')
         click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
 
-        click(x=LOC_CLICK_SAVE_PROJECT.x, y=LOC_CLICK_SAVE_PROJECT.y)
+        click(x=LOC_CLICK_SAVE_PROJECT.x,  y=LOC_CLICK_SAVE_PROJECT.y)
         moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=3.0)
 
         click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
 
         press('backspace', presses=len('untitled'))
-        typewrite(GENERATED_CLASS_PROJECT, interval=TYPE_WRITE_INTERVAL)
+        typewrite(str(CLASS_PROJECT_FILENAME), interval=TYPE_WRITE_INTERVAL)
         press('enter')
         click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
+
+        success: bool = wasTestSuccessful()
+
+        if success is True:
+            title:   str = 'Success'
+            message: str = 'You are a great programmer'
+        elif success is False:
+            title   = 'Failure'
+            message = 'You have failed as a programmer.  Check the console output'
+        else:
+            assert False, 'Developer error'
+
+        alert(text=message, title=title, button='OK')
