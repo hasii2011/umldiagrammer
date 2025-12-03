@@ -13,7 +13,7 @@ from pathlib import Path
 
 from pyautogui import press
 from pyautogui import click
-from pyautogui import moveTo
+
 from pyautogui import typewrite
 
 from pymsgbox import alert
@@ -22,7 +22,11 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.common import DOUBLE_CLICK_INTERVAL
+from tests.uitests.common import LOC_CLASS_TOOL_BAR
+from tests.uitests.common import TYPE_WRITE_INTERVAL
 from tests.uitests.common import decompress
+from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
 from tests.uitests.common import makeAppActive
 
@@ -51,7 +55,6 @@ MATCH_STARTS_WITH_ID: str = f'id={MATCH_BETWEEN_QUOTES}'
 EMPTY_ID:             str = ''
 
 
-LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=710, y=60)
 LOC_CREATE_CLASS:           UmlPosition = UmlPosition(x=680, y=370)
 LOC_CLICK_ADD_METHOD:       UmlPosition = UmlPosition(x=600, y=620)
 LOC_CLICK_ADD_PARAMETER:    UmlPosition = UmlPosition(x=600, y=565)
@@ -85,7 +88,7 @@ CLASS_PROJECT_FILENAME:     Path = Path(f'/tmp/{BASENAME}.udt')
 CLASS_XML_FILENAME:         str = f'{BASENAME}.xml'
 DECOMPRESSED_CLASS_PROJECT: Path = Path(f'/tmp/{CLASS_XML_FILENAME}')
 
-DIFF_CLI: str = '/usr/bin/diff '
+
 def addParameterMethod():
 
     click(x=LOC_CLICK_ADD_PARAMETER.x, y=LOC_CLICK_ADD_PARAMETER.y)
@@ -153,9 +156,6 @@ if __name__ == '__main__':
 
     umlPreferences: UmlPreferences = UmlPreferences()
 
-    DRAG_DURATION:         float = 0.5
-    TYPE_WRITE_INTERVAL:   float = 0.1
-    DOUBLE_CLICK_INTERVAL: float = 0.2
     defaultMethodName:     str   = umlPreferences.defaultNameMethod
     defaultFieldName:      str   = umlPreferences.defaultNameField
 
@@ -180,15 +180,7 @@ if __name__ == '__main__':
         click(x=LOC_RIGHT_CLICK_CLASS.x,       y=LOC_RIGHT_CLICK_CLASS.y, button='right')
         click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
 
-        click(x=LOC_CLICK_SAVE_PROJECT.x,  y=LOC_CLICK_SAVE_PROJECT.y)
-        moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=3.0)
-
-        click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
-
-        press('backspace', presses=len('untitled'))
-        typewrite(str(CLASS_PROJECT_FILENAME), interval=TYPE_WRITE_INTERVAL)
-        press('enter')
-        click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
+        invokeSaveAsProject(projectFileName=str(CLASS_PROJECT_FILENAME))
 
         success: bool = wasTestSuccessful()
 

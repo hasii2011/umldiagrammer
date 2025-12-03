@@ -8,11 +8,26 @@ from PIL.Image import Image
 
 from pyautogui import moveTo
 from pyautogui import click
+from pyautogui import press
+from pyautogui import typewrite
+
+from umlshapes.types.UmlPosition import UmlPosition
 
 from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
 
-LEFT:          str   = 'left'
-DRAG_DURATION: float = 0.5
+LEFT:                   str   = 'left'
+DRAG_DURATION:          float = 0.5
+TYPE_WRITE_INTERVAL:    float = 0.1
+DOUBLE_CLICK_INTERVAL:  float = 0.2
+
+LOC_TOOLBAR_Y: int = 65
+
+LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=730, y=LOC_TOOLBAR_Y)
+
+LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=390, y=70)
+LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1379, y=333)
+LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1690, y=745)
+
 
 def isAppRunning() -> bool:
     answer: bool = False
@@ -68,3 +83,15 @@ def decompress(inputFileName: Path, outputFileName: Path):
                 outputFile.write(xmlString)
     except (ValueError, Exception) as e:
         print(f'Error:  {e}')
+
+def invokeSaveAsProject(projectFileName: str):
+
+    click(x=LOC_CLICK_SAVE_PROJECT.x, y=LOC_CLICK_SAVE_PROJECT.y)
+    moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=3.0)
+
+    click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
+
+    press('backspace', presses=len('untitled'))
+    typewrite(projectFileName, interval=TYPE_WRITE_INTERVAL)
+    press('enter')
+    click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
