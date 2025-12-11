@@ -1,7 +1,14 @@
 
+from typing import List
+
 import zlib
 
 from pathlib import Path
+
+from re import findall
+from re import sub as regExSub
+
+from difflib import unified_diff
 
 from PIL import ImageGrab
 from PIL.Image import Image
@@ -11,9 +18,19 @@ from pyautogui import click
 from pyautogui import press
 from pyautogui import typewrite
 
+from pymsgbox import alert
+
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
+
+MATCH_BETWEEN_QUOTES: str = '"(.*?)"'
+MATCH_STARTS_WITH_ID: str = f'id={MATCH_BETWEEN_QUOTES}'
+
+MATCH_STARTS_WITH_SRC_ID: str = f'sourceId={MATCH_BETWEEN_QUOTES}'
+MATCH_STARTS_WITH_DST_DI: str = f'destinationId={MATCH_BETWEEN_QUOTES}'
+
+EMPTY_ID:             str = ''
 
 LEFT:                   str   = 'left'
 DRAG_DURATION:          float = 0.5
@@ -95,3 +112,44 @@ def invokeSaveAsProject(projectFileName: str):
     typewrite(projectFileName, interval=TYPE_WRITE_INTERVAL)
     press('enter')
     click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
+
+def wasTestSuccessful(projectFileName: Path, decompressedProjectFileName: Path, goldenXml: str) -> bool:
+
+    answer: bool = True
+
+    decompress(inputFileName=projectFileName, outputFileName=decompressedProjectFileName)
+
+    generatedXmlFile: Path = Path(decompressedProjectFileName)
+    generatedXml:     str  = generatedXmlFile.read_text()
+
+    matches: List[str] = findall(MATCH_STARTS_WITH_ID, generatedXml)
+
+    fixedXml: str = generatedXml
+    for idStr in matches:
+        fixedXml = regExSub(pattern=idStr, repl=EMPTY_ID, string=fixedXml)
+
+    if fixedXml != goldenXml:
+        diff = unified_diff(
+            goldenXml.splitlines(),
+            fixedXml.splitlines(),
+            lineterm='',
+            fromfile='Golden',
+            tofile='Generated'
+        )
+        print('\n'.join(list(diff)))
+        answer = False
+
+    return answer
+
+def displayAppropriateDialog(status: bool):
+
+    if status is True:
+        title: str = 'Success'
+        message: str = 'You are a great programmer'
+    elif status is False:
+        title = 'Failure'
+        message = 'You have failed as a programmer.  Check the console output'
+    else:
+        assert False, 'Developer error'
+
+    alert(text=message, title=title, button='OK')

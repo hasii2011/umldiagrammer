@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-from typing import List
-
-from re import findall
-from re import sub as regExSub
-
-from difflib import unified_diff
-
 import pyautogui
 
 from pathlib import Path
@@ -25,10 +18,11 @@ from umlshapes.types.UmlPosition import UmlPosition
 from tests.uitests.common import DOUBLE_CLICK_INTERVAL
 from tests.uitests.common import LOC_CLASS_TOOL_BAR
 from tests.uitests.common import TYPE_WRITE_INTERVAL
-from tests.uitests.common import decompress
+from tests.uitests.common import displayAppropriateDialog
 from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
 from tests.uitests.common import makeAppActive
+from tests.uitests.common import wasTestSuccessful
 
 #
 # Removed the IDs
@@ -122,34 +116,6 @@ def addPublicField():
     click(x=LOC_CLICK_FIELD_OK.x, y=LOC_CLICK_FIELD_OK.y)
 
 
-def wasTestSuccessful() -> bool:
-    answer: bool = True
-
-    decompress(inputFileName=CLASS_PROJECT_FILENAME, outputFileName=DECOMPRESSED_CLASS_PROJECT)
-
-    generatedXmlFile: Path = Path(DECOMPRESSED_CLASS_PROJECT)
-    generatedXml:     str  = generatedXmlFile.read_text()
-
-    matches: List[str] = findall(MATCH_STARTS_WITH_ID, generatedXml)
-
-    fixedXml: str = generatedXml
-    for idStr in matches:
-        fixedXml = regExSub(pattern=idStr, repl=EMPTY_ID, string=fixedXml)
-
-    if fixedXml != GOLDEN_CLASS_XML:
-        diff = unified_diff(
-            GOLDEN_CLASS_XML.splitlines(),
-            fixedXml.splitlines(),
-            lineterm='',
-            fromfile='Golden',
-            tofile='Generated'
-        )
-        print('\n'.join(list(diff)))
-        answer = False
-
-    return answer
-
-
 if __name__ == '__main__':
 
     pyautogui.PAUSE = 0.5
@@ -182,15 +148,10 @@ if __name__ == '__main__':
 
         invokeSaveAsProject(projectFileName=str(CLASS_PROJECT_FILENAME))
 
-        success: bool = wasTestSuccessful()
+        success: bool = wasTestSuccessful(
+            projectFileName=CLASS_PROJECT_FILENAME,
+            decompressedProjectFileName=DECOMPRESSED_CLASS_PROJECT,
+            goldenXml=GOLDEN_CLASS_XML
+        )
 
-        if success is True:
-            title:   str = 'Success'
-            message: str = 'You are a great programmer'
-        elif success is False:
-            title   = 'Failure'
-            message = 'You have failed as a programmer.  Check the console output'
-        else:
-            assert False, 'Developer error'
-
-        alert(text=message, title=title, button='OK')
+        displayAppropriateDialog(status=success)
