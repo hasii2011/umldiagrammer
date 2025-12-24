@@ -61,10 +61,9 @@ class BaseWxCommand(Command):
         diagram.AddShape(umlClass)
         umlClass.Show(True)
 
-        eventHandler: UmlClassEventHandler = UmlClassEventHandler()
+        eventHandler: UmlClassEventHandler = UmlClassEventHandler(previousEventHandler=umlClass.GetEventHandler())
         eventHandler.SetShape(umlClass)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlClass.GetEventHandler())
         umlClass.SetEventHandler(eventHandler)
 
         umlFrame.refresh()
@@ -126,14 +125,14 @@ class BaseWxCommand(Command):
     def _getLinkedObject(self, umlShape: UmlActor | UmlClass | UmlNote | UmlUseCase) -> LinkedObject:
 
         if isinstance(umlShape, UmlActor) is True:
-            umlActor: UmlActor = cast(UmlActor, umlShape)
+            umlActor: UmlActor = cast(UmlActor, umlShape)       # noqa
             return umlActor.modelActor
         elif isinstance(umlShape, UmlClass) is True:
-            umlClass: UmlClass = cast(UmlClass, umlShape)
+            umlClass: UmlClass = cast(UmlClass, umlShape)       # noqa
             return umlClass.modelClass
         elif isinstance(umlShape, UmlNote) is True:
-            umlNote: UmlNote = cast(UmlNote, umlShape)
+            umlNote: UmlNote = cast(UmlNote, umlShape)          # noqa
             return umlNote.modelNote
         else:
-            umlUseCase: UmlUseCase = cast(UmlUseCase, umlShape)
+            umlUseCase: UmlUseCase = cast(UmlUseCase, umlShape)     # noqa
             return umlUseCase.modelUseCase

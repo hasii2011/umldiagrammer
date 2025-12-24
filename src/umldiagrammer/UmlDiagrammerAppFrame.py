@@ -434,7 +434,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         projectDossier: ProjectDossier = self._umlNotebook.currentProject
 
-        if len(projectDossier.umlProject.umlDocuments) == 0:
+        if projectDossier.umlProject is None:
             booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
             booBoo.ShowModal()
         else:
@@ -605,9 +605,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         from pathlib import Path
         if self._preferences.inTestMode is True:
-            testPosition: Position = self._preferences.testPosition
+            testPosition: Position   = self._preferences.testPosition
+            testSize:     Dimensions = self._preferences.testSize
 
             self.SetPosition(pt=Point(x=testPosition.x, y=testPosition.y))
+            self.SetSize(width=testSize.width, height=testSize.height)
 
             iAmRunningPath: Path = Path(DIAGRAMMER_IN_TEST_MODE)
             iAmRunningPath.touch()

@@ -25,6 +25,7 @@ from wx import CallLater
 from wx.lib.sized_controls import SizedPanel
 
 from umlshapes.frames.DiagramFrame import FrameId
+from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
@@ -94,13 +95,16 @@ class UmlNotebook(Notebook):
 
     @property
     def currentProject(self) -> ProjectDossier:
+        from umlio.IOTypes import UmlProject
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
-
-        return ProjectDossier(
-            umlProject=projectPanel.umlProject,
-            modified=projectPanel.umlProjectModified
-        )
+        if projectPanel is None:
+            return ProjectDossier(umlProject=cast(UmlProject,None), modified=False)
+        else:
+            return ProjectDossier(
+                umlProject=projectPanel.umlProject,
+                modified=projectPanel.umlProjectModified
+            )
 
     def closeDefaultProject(self) -> bool:
         """
@@ -302,25 +306,13 @@ class UmlNotebook(Notebook):
     def _requestFrameInformationListener(self, callback: Callable):
 
         from umlshapes.frames.UmlFrame import UmlFrame
-        from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-        from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
-        from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
 
         projectPanel: UmlProjectPanel = self._currentProjectPanel
         currentFrame: UmlFrame        = projectPanel.currentFrame
 
         size: Size = self.GetSize()
-        #
-        # Fix this in umlextensions
-        #
-        if isinstance(currentFrame, ClassDiagramFrame):
-            documentType: str = UmlDocumentType.CLASS_DOCUMENT.value
-        elif isinstance(currentFrame, UseCaseDiagramFrame):
-            documentType = UmlDocumentType.USE_CASE_DOCUMENT.value
-        elif isinstance(currentFrame, SequenceDiagramFrame):
-            documentType = UmlDocumentType.SEQUENCE_DOCUMENT.value
-        else:
-            assert False, 'Unknown document type'
+
+        documentType: UmlDocumentType = self._determineDocumentType(currentFrame)
 
         frameInfo: FrameInformation = FrameInformation(
             umlFrame=currentFrame,
@@ -331,6 +323,30 @@ class UmlNotebook(Notebook):
             frameSize=FrameSize(width=size.width, height=size.height)
         )
         callback(frameInfo)
+
+    def _determineDocumentType(self, currentFrame: UmlFrame) -> UmlDocumentType:
+        """
+        There must be a better way to do this
+
+        Args:
+            currentFrame:
+
+        Returns:  The document type the frame hosts
+        """
+        from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+        from umlshapes.frames.UseCaseDiagramFrame import UseCaseDiagramFrame
+        from umlshapes.frames.SequenceDiagramFrame import SequenceDiagramFrame
+
+        if isinstance(currentFrame, ClassDiagramFrame):
+            documentType: UmlDocumentType = UmlDocumentType.CLASS_DOCUMENT
+        elif isinstance(currentFrame, UseCaseDiagramFrame):
+            documentType = UmlDocumentType.USE_CASE_DOCUMENT
+        elif isinstance(currentFrame, SequenceDiagramFrame):
+            documentType = UmlDocumentType.SEQUENCE_DOCUMENT
+        else:
+            assert False, 'Unknown document type'
+
+        return documentType
 
     def _addShapeListener(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         from umlshapes.frames.UmlFrame import UmlFrame
