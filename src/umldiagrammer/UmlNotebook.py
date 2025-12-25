@@ -38,6 +38,7 @@ from umlextensions.ExtensionsPubSub import ExtensionsPubSub
 from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsTypes import FrameSize
 
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import EDIT_MENU_HANDLER_ID
 from umldiagrammer.DiagrammerTypes import UmlLinkGenre
@@ -99,7 +100,7 @@ class UmlNotebook(Notebook):
 
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         if projectPanel is None:
-            return ProjectDossier(umlProject=cast(UmlProject,None), modified=False)
+            return ProjectDossier(umlProject=cast(UmlProject, None), modified=False)
         else:
             return ProjectDossier(
                 umlProject=projectPanel.umlProject,
@@ -292,6 +293,8 @@ class UmlNotebook(Notebook):
         pageIdx:     int = self.GetSelection()
         self.DeletePage(pageIdx)
         self.logger.info(f'Project closed: {projectName}')
+        if self.GetPageCount() == 0:
+            self._appPubSubEngine.sendMessage(MessageType.NO_OPEN_PROJECTS, APPLICATION_FRAME_ID)
 
     def _deleteDiagramListener(self):
         """

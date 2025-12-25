@@ -52,16 +52,17 @@ class UIMenuCreator:
         self._extensionsMenu: Menu = Menu()
         self._helpMenu:       Menu = Menu()
 
-        self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, menu=self._fileMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
-        self._editMenuHandler: EditMenuHandler = EditMenuHandler(sizedFrame=frame, menu=self._editMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
-        self._helpMenuHandler: HelpMenuHandler = HelpMenuHandler(sizedFrame=frame, menu=self._helpMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
-
         self._extensionsMenuHandler: ExtensionsMenuHandler = ExtensionsMenuHandler(
             sizedFrame=frame,
             menu=self._extensionsMenu,
             appPubSubEngine=appPubSubEngine,
             umlPubSubEngine=umlPubSubEngine
         )
+
+        self._initializeMenus()
+        self._fileMenuHandler: FileMenuHandler = FileMenuHandler(sizedFrame=frame, menu=self._fileMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        self._editMenuHandler: EditMenuHandler = EditMenuHandler(sizedFrame=frame, menu=self._editMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
+        self._helpMenuHandler: HelpMenuHandler = HelpMenuHandler(sizedFrame=frame, menu=self._helpMenu, appPubSubEngine=appPubSubEngine, umlPubSubEngine=umlPubSubEngine)
 
     @property
     def fileMenuHandler(self) -> FileMenuHandler:
@@ -79,12 +80,6 @@ class UIMenuCreator:
     def helpMenuHandler(self) -> HelpMenuHandler:
         return self._helpMenuHandler
 
-    def initializeMenus(self):
-        self._initializeFileMenu()
-        self._initializeEditMenu()
-        self._initializeExtensionsMenu()
-        self._initializeHelpMenu()
-
     @property
     def fileMenu(self) -> Menu:
         return self._fileMenu
@@ -100,6 +95,22 @@ class UIMenuCreator:
     @property
     def helpMenu(self) -> Menu:
         return self._helpMenu
+
+    def enableMenus(self):
+        self._fileMenuHandler.enableMenuItems()
+        self._editMenuHandler.enableMenuItems()
+        self._extensionsMenuHandler.enableMenuItems()
+
+    def disableMenus(self):
+        self._fileMenuHandler.disableMenuItems()
+        self._editMenuHandler.disableMenuItems()
+        self._extensionsMenuHandler.disableMenuItems()
+
+    def _initializeMenus(self):
+        self._initializeFileMenu()
+        self._initializeEditMenu()
+        self._initializeExtensionsMenu()
+        self._initializeHelpMenu()
 
     def _initializeFileMenu(self):
 

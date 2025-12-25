@@ -186,6 +186,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
         self._extensionsPubSub: ExtensionsPubSub = uiMenuCreator.extensionsMenuHandler.extensionsPubSub
 
+        self._uiMenuCreator: UIMenuCreator = uiMenuCreator
         self._setTestItems()
 
     def Close(self, force: bool = False) -> bool:
@@ -257,7 +258,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _createApplicationMenuBar(self):
 
         uiMenuCreator: UIMenuCreator = UIMenuCreator(frame=self, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
-        uiMenuCreator.initializeMenus()
 
         menuBar:        MenuBar = MenuBar()
         fileMenu:       Menu    = uiMenuCreator.fileMenu
@@ -393,6 +393,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _openProjectListener(self, umlProject: UmlProject):
         self._displayProject(umlProject=umlProject)
+        #
+        # Blindly re-enable if we open more than 1 project
+        #
+        self._toolBarCreator.enableToolBar()
+        self._uiMenuCreator.enableMenus()
 
     def _saveProjectListener(self):
         """
@@ -452,6 +457,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _lollipopCreationRequestListener(self, lollipopCreationData: LollipopCreationData):
         self._actionSupervisor.createLollipopInterface(lollipopCreationData=lollipopCreationData)
 
+    def _noOpenProjectsListener(self):
+        self._toolBarCreator.disableToolBar()
+        self._uiMenuCreator.disableMenus()
+
     def _registerNewFrameListener(self, frameId: FrameId):
         self._doRegistration(frameId=frameId)
 
@@ -473,6 +482,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME, uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_NAMED_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveNamedProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NO_OPEN_PROJECTS,   uniqueId=APPLICATION_FRAME_ID, listener=self._noOpenProjectsListener)
 
     def _getFrameStyle(self) -> int:
         """

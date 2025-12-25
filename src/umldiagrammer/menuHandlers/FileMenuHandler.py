@@ -81,6 +81,16 @@ class FileMenuHandler(BaseMenuHandler):
 
         self._openProjects: List[UmlProject] = []
 
+        self._toggleableItems = [
+            self._menu.FindItemById(UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM),
+            self._menu.FindItemById(UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM),
+            self._menu.FindItemById(UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM),
+
+            self._menu.FindItemById(ID_SAVE),
+            self._menu.FindItemById(ID_SAVEAS),
+            self._menu.FindItemById(UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE),
+            self._menu.FindItemById(UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM),
+        ]
         self._notebook:    Notebook    = cast(Notebook, None)
         self._fileHistory: FileHistory = cast(FileHistory, None)    # Must be injected
 
