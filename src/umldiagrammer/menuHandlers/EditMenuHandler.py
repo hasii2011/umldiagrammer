@@ -47,16 +47,19 @@ class EditMenuHandler(BaseMenuHandler):
         sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_PASTE)
         sizedFrame.Bind(EVT_MENU, self.onEditMenu, id=ID_SELECTALL)
 
+        self._toggleableItems = [
+            self._menu.FindItemById(ID_UNDO),
+            self._menu.FindItemById(ID_REDO),
+            self._menu.FindItemById(ID_CUT),
+            self._menu.FindItemById(ID_COPY),
+            self._menu.FindItemById(ID_PASTE),
+            self._menu.FindItemById(ID_SELECTALL),
+        ]
+
         self._appPubSubEngine.subscribe(messageType=MessageType.ACTIVE_DOCUMENT_CHANGED,
                                         uniqueId=EDIT_MENU_HANDLER_ID,
                                         listener=self._activeDocumentChangedListener
                                         )
-
-    def _activeDocumentChangedListener(self, activeFrameId: FrameId):
-        self.logger.debug(f'{activeFrameId=}')
-        self._activeFrameId = activeFrameId
-
-        self._appPubSubEngine.sendMessage(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, activeFrameId))
 
     def onEditMenu(self, event: CommandEvent):
 
@@ -81,3 +84,9 @@ class EditMenuHandler(BaseMenuHandler):
                 self._umlPubSubEngine.sendMessage(messageType=UmlMessageType.SELECT_ALL_SHAPES, frameId=self._activeFrameId)
             case _:
                 self.logger.warning(f'Unknown event id {eventId}')
+
+    def _activeDocumentChangedListener(self, activeFrameId: FrameId):
+        self.logger.debug(f'{activeFrameId=}')
+        self._activeFrameId = activeFrameId
+
+        self._appPubSubEngine.sendMessage(MessageType.UPDATE_EDIT_MENU, uniqueId=cast(UniqueId, activeFrameId))

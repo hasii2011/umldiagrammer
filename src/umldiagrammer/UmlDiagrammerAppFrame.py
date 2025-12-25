@@ -186,6 +186,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
         self._extensionsPubSub: ExtensionsPubSub = uiMenuCreator.extensionsMenuHandler.extensionsPubSub
 
+        self._uiMenuCreator: UIMenuCreator = uiMenuCreator
         self._setTestItems()
 
     def Close(self, force: bool = False) -> bool:
@@ -257,7 +258,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _createApplicationMenuBar(self):
 
         uiMenuCreator: UIMenuCreator = UIMenuCreator(frame=self, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
-        uiMenuCreator.initializeMenus()
 
         menuBar:        MenuBar = MenuBar()
         fileMenu:       Menu    = uiMenuCreator.fileMenu
@@ -393,6 +393,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _openProjectListener(self, umlProject: UmlProject):
         self._displayProject(umlProject=umlProject)
+        #
+        # Blindly re-enable if we open more than 1 project
+        #
+        self._toolBarCreator.enableToolBar()
+        self._uiMenuCreator.enableMenus()
 
     def _saveProjectListener(self):
         """
@@ -434,7 +439,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         projectDossier: ProjectDossier = self._umlNotebook.currentProject
 
-        if len(projectDossier.umlProject.umlDocuments) == 0:
+        if projectDossier.umlProject is None:
             booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
             booBoo.ShowModal()
         else:
@@ -451,6 +456,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _lollipopCreationRequestListener(self, lollipopCreationData: LollipopCreationData):
         self._actionSupervisor.createLollipopInterface(lollipopCreationData=lollipopCreationData)
+
+    def _noOpenProjectsListener(self):
+        self._toolBarCreator.disableToolBar()
+        self._uiMenuCreator.disableMenus()
 
     def _registerNewFrameListener(self, frameId: FrameId):
         self._doRegistration(frameId=frameId)
@@ -473,6 +482,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME, uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_NAMED_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveNamedProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NO_OPEN_PROJECTS,   uniqueId=APPLICATION_FRAME_ID, listener=self._noOpenProjectsListener)
 
     def _getFrameStyle(self) -> int:
         """
@@ -605,9 +615,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         from pathlib import Path
         if self._preferences.inTestMode is True:
-            testPosition: Position = self._preferences.testPosition
+            testPosition: Position   = self._preferences.testPosition
+            testSize:     Dimensions = self._preferences.testSize
 
             self.SetPosition(pt=Point(x=testPosition.x, y=testPosition.y))
+            self.SetSize(width=testSize.width, height=testSize.height)
 
             iAmRunningPath: Path = Path(DIAGRAMMER_IN_TEST_MODE)
             iAmRunningPath.touch()

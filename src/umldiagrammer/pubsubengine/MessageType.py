@@ -43,5 +43,10 @@ class MessageType(Enum):
     # Additionally, used by the project panel to communicate to the UML Note book
     #
     DOCUMENT_NAME_CHANGED = 'Document Name Changed'
+    #
+    # Used the let the application that there are not open projects
+    # So, probably good idea to 'grey' out some items, including the tool bar
+    #
+    NO_OPEN_PROJECTS = 'No Open Projects'
 
     NO_EVENT = 'NoEvent'

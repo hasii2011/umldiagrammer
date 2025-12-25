@@ -114,7 +114,7 @@ class BaseWxLinkCommand(Command):
         link: UmlLink = self._link
 
         if isinstance(link, UmlAssociation):
-            umlAssociation: UmlAssociation = cast(UmlAssociation, link)
+            umlAssociation: UmlAssociation = cast(UmlAssociation, link)     # noqa
             self._linkLogger.info(f'{umlAssociation} we might have to do something here')
             # if oglAssociation.centerLabel is not None:
             #     oglAssociation.centerLabel.Detach()
@@ -164,8 +164,8 @@ class BaseWxLinkCommand(Command):
 
         Returns:
         """
-        sourceClass:      UmlClass = cast(UmlClass, self._sourceUmlShape)
-        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        sourceClass:      UmlClass = cast(UmlClass, self._sourceUmlShape)               # noqa
+        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)          # noqa
 
         link:           Link                = self._getAppropriateModelLink(source=sourceClass, destination=destinationClass)
         umlAssociation: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
@@ -180,8 +180,8 @@ class BaseWxLinkCommand(Command):
 
     def _createAggregationLink(self) -> UmlAggregation:
 
-        aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)
-        aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        aggregator: UmlClass = cast(UmlClass, self._sourceUmlShape)             # noqa
+        aggregated: UmlClass = cast(UmlClass, self._destinationUmlShape)        # noqa
 
         link:           Link                = self._getAppropriateModelLink(source=aggregator, destination=aggregated)
         umlAggregation: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
@@ -194,8 +194,8 @@ class BaseWxLinkCommand(Command):
         return umlAggregation   # type: ignore
 
     def _createCompositionLink(self) -> UmlComposition:
-        composer: UmlClass = cast(UmlClass, self._sourceUmlShape)
-        composed: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        composer: UmlClass = cast(UmlClass, self._sourceUmlShape)               # noqa
+        composed: UmlClass = cast(UmlClass, self._destinationUmlShape)          # noqa
 
         link:           Link                = self._getAppropriateModelLink(source=composer, destination=composed)
         umlComposition: UmlAssociationGenre = self._getAppropriateAssociation(link=link)
@@ -231,11 +231,8 @@ class BaseWxLinkCommand(Command):
         srcModelClass:  Class = sourceClass.modelClass
         destModelClass: Class = destinationClass.modelClass
         destModelClass.addParent(srcModelClass)
-
-        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
-        eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
-        umlAssociation.SetEventHandler(eventHandler)
+        # noinspection PyUnusedLocal
+        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation, umlPubSubEngine=self._umlPubSubEngine)
 
         self._name = self._toCommandName(link.linkType)
 
@@ -251,11 +248,11 @@ class BaseWxLinkCommand(Command):
         Returns:
             The inheritance UmlLink
         """
-        subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)
-        baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        subClass:  UmlClass = cast(UmlClass, self._sourceUmlShape)                  # noqa
+        baseClass: UmlClass = cast(UmlClass, self._destinationUmlShape)             # noqa
 
-        sourceModelClass:      Class = cast(Class, subClass.modelClass)
-        destinationModelClass: Class = cast(Class, baseClass.modelClass)
+        sourceModelClass:      Class = subClass.modelClass
+        destinationModelClass: Class = baseClass.modelClass
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
         if self._modelLink is None:
@@ -275,17 +272,16 @@ class BaseWxLinkCommand(Command):
 
         subClassModelClass.addParent(baseModelClass)
 
-        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink)
+        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink, previousEventHandler=umlLink.GetEventHandler())
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlLink.GetEventHandler())
         umlLink.SetEventHandler(eventHandler)
 
         return umlLink
 
     def _createInterfaceLink(self) -> UmlInterface:
 
-        interface:      UmlClass = cast(UmlClass, self._destinationUmlShape)
-        implementation: UmlClass = cast(UmlClass, self._sourceUmlShape)
+        interface:      UmlClass = cast(UmlClass, self._destinationUmlShape)        # noqa
+        implementation: UmlClass = cast(UmlClass, self._sourceUmlShape)             # noqa
 
         implementorModelClass: Class = implementation.modelClass
         interfaceModelClass:   Class = interface.modelClass
@@ -297,20 +293,19 @@ class BaseWxLinkCommand(Command):
 
         implementation.addLink(umlLink=umlInterface, destinationClass=interface)
 
-        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInterface)
+        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInterface, previousEventHandler=umlInterface.GetEventHandler())
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlInterface.GetEventHandler())
         umlInterface.SetEventHandler(eventHandler)
 
         return umlInterface
 
     def _createNoteLink(self) -> UmlNoteLink:
 
-        sourceNote:       UmlNote  = cast(UmlNote, self._sourceUmlShape)
-        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)
+        sourceNote:       UmlNote  = cast(UmlNote, self._sourceUmlShape)                # noqa
+        destinationClass: UmlClass = cast(UmlClass, self._destinationUmlShape)          # noqa
 
-        sourceModelNote:      Note  = cast(Note,  sourceNote.modelNote)
-        destinationModelClass: Class = cast(Class, destinationClass.modelClass)
+        sourceModelNote:       Note  = sourceNote.modelNote
+        destinationModelClass: Class = destinationClass.modelClass
 
         # If none, we are creating from scratch
         # If we have a value, we are undoing a delete action
@@ -328,9 +323,8 @@ class BaseWxLinkCommand(Command):
 
         sourceNote.addLink(umlNoteLink=umlNoteLink, umlClass=destinationClass)
 
-        eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink)
+        eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlNoteLink.GetEventHandler())
         umlNoteLink.SetEventHandler(eventHandler)
 
         return umlNoteLink

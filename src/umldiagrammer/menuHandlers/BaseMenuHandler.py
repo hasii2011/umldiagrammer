@@ -1,5 +1,7 @@
+from typing import List
 
 from wx import Menu
+from wx import MenuItem
 
 from wx.lib.sized_controls import SizedFrame
 
@@ -15,3 +17,15 @@ class BaseMenuHandler:
 
         self._menu:   Menu       = menu
         self._parent: SizedFrame = sizedFrame
+
+        self._toggleableItems: List[MenuItem] = []
+
+    def enableMenuItems(self):
+        self._enableMenu(enable=True)
+
+    def disableMenuItems(self):
+        self._enableMenu(enable=False)
+
+    def _enableMenu(self, enable: bool):
+        for menuItem in self._toggleableItems:
+            menuItem.Enable(enable=enable)

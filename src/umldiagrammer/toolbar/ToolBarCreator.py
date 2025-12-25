@@ -109,6 +109,12 @@ class ToolBarCreator:
     def toolBarIds(self) -> List[int]:
         return TOOL_BAR_IDs
 
+    def disableToolBar(self):
+        self._enableToolBar(enable=False)
+
+    def enableToolBar(self):
+        self._enableToolBar(enable=True)
+
     # noinspection PyUnusedLocal
     def _bogus(self, event):
         self.logger.warning(f'NOT YET IMPLEMENTED !!!')
@@ -182,7 +188,6 @@ class ToolBarCreator:
             caption="Undo",
             tooltip="Undo the last action",
             toolGroup=ToolGroup.Menu,
-            # actionCallback=self._editMenuHandler.onUndo,
             actionCallback=self._editMenuHandler.onEditMenu,
             wxID=ID_UNDO
         )
@@ -193,7 +198,6 @@ class ToolBarCreator:
             caption="Redo",
             tooltip="Redo the action",
             toolGroup=ToolGroup.Menu,
-            # actionCallback=self._editMenuHandler.onRedo,
             actionCallback=self._editMenuHandler.onEditMenu,
             wxID=ID_REDO
         )
@@ -407,3 +411,17 @@ class ToolBarCreator:
             self._toolBar.SetToolBitmapSize(Size(32, 32))
         elif preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
             self._toolBar.SetToolBitmapSize(Size(64, 64))
+
+    def _enableToolBar(self, enable: bool):
+        toolBar: ToolBar = self._toolBar
+        for toggleId in TOOL_BAR_IDs:
+            toolBar.EnableTool(toolId=toggleId, enable=enable)
+
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_PROJECT_SAVE, enable=enable)
+
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    enable=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  enable=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, enable=enable)
+
+        toolBar.EnableTool(toolId=ID_UNDO, enable=enable)
+        toolBar.EnableTool(toolId=ID_REDO, enable=enable)

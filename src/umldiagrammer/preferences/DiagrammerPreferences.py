@@ -21,6 +21,7 @@ DEFAULT_STARTUP_SIZE:     str = Dimensions(1024, 768).__str__()
 DEFAULT_STARTUP_POSITION: str = Position(5, 5).__str__()
 
 TEST_POSITION: str = Position(20, 40).__str__()
+TEST_SIZE:     str = str(Dimensions(1247, 842))
 
 DEFAULT_FILE_HISTORY_DISPLAY: str = ProjectHistoryDisplayType.SHOW_NEVER.value
 DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.LEFT.value
@@ -49,8 +50,9 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
 )
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('inTestMode'):   ValueDescription(defaultValue='False',         deserializer=SecureConversions.secureBoolean),
+        KeyName('inTestMode'):   ValueDescription(defaultValue='False',       deserializer=SecureConversions.secureBoolean),
         KeyName('testPosition'): ValueDescription(defaultValue=TEST_POSITION, deserializer=Position.deSerialize),
+        KeyName('testSize'):     ValueDescription(defaultValue=TEST_SIZE,     deserializer=Dimensions.deSerialize),
     }
 )
 DIAGRAMMER_SECTIONS: Sections = Sections(

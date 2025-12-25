@@ -65,19 +65,32 @@ class ExtensionsMenuHandler(BaseMenuHandler):
     def initializeSubMenus(self, extensionsMenu: Menu):
         pass
 
-        inputSubMenu:  Menu = self._initializeInputSubMenu()
-        outputSubMenu: Menu = self._initializeOutputSubMenu()
-        toolsSubMenu:  Menu = self._initializeToolSubMenu()
+        inputSubMenu:  Menu = self._initializeInputMenu()
+        outputSubMenu: Menu = self._initializeOutputMenu()
+        toolsSubMenu:  Menu = self._initializeTool()
         #
         extensionsMenu.AppendSubMenu(inputSubMenu,  'Input')
         extensionsMenu.AppendSubMenu(outputSubMenu, 'Output')
         extensionsMenu.AppendSubMenu(toolsSubMenu,  'Tools')
 
-    def _initializeInputSubMenu(self) -> Menu:
+        inputItems  = inputSubMenu.GetMenuItems()
+        outputItems = outputSubMenu.GetMenuItems()
+        toolItems   = toolsSubMenu.GetMenuItems()
+
+        for itm in inputItems:
+            self._toggleableItems.append(itm)
+
+        for itm in outputItems:
+            self._toggleableItems.append(itm)
+
+        for itm in toolItems:
+            self._toggleableItems.append(itm)
+
+    def _initializeInputMenu(self) -> Menu:
         """
         Returns: The import submenu.
         """
-        subMenu: Menu = Menu()
+        menu: Menu = Menu()
 
         inputExtensionsMap: InputExtensionMap = self._extensionManager.inputExtensionsMap
 
@@ -87,16 +100,16 @@ class ExtensionsMenuHandler(BaseMenuHandler):
 
             pluginName: str = extensionInstance.inputFormat.formatName
 
-            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=pluginName, callback=self._onImport)
+            menu = self._makeSubMenuEntry(subMenu=menu, wxId=wxId, pluginName=pluginName, callback=self._onImport)
 
-        return subMenu
+        return menu
 
-    def _initializeOutputSubMenu(self) -> Menu:
-        subMenu: Menu = Menu()
-        return subMenu
+    def _initializeOutputMenu(self) -> Menu:
+        menu: Menu = Menu()
+        return menu
 
-    def _initializeToolSubMenu(self) -> Menu:
-        subMenu: Menu = Menu()
+    def _initializeTool(self) -> Menu:
+        menu: Menu = Menu()
 
         toolExtensionsMap: ToolExtensionMap = self._extensionManager.toolExtensionsMap
 
@@ -105,9 +118,9 @@ class ExtensionsMenuHandler(BaseMenuHandler):
             toolInstance: BaseInputExtension = clazz(None)
 
             toolName: str = toolInstance.name
-            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=toolName, callback=self._onToolAction)
+            menu = self._makeSubMenuEntry(subMenu=menu, wxId=wxId, pluginName=toolName, callback=self._onToolAction)
 
-        return subMenu
+        return menu
 
     def _makeSubMenuEntry(self, subMenu: Menu, wxId: int, pluginName: str, callback: Callable) -> Menu:
 

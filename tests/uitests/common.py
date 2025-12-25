@@ -26,6 +26,8 @@ from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
 
 MATCH_BETWEEN_QUOTES: str = '"(.*?)"'
 MATCH_STARTS_WITH_ID: str = f'id={MATCH_BETWEEN_QUOTES}'
+SOURCE_ID:            str = f'sourceId={MATCH_BETWEEN_QUOTES}'
+DESTINATION_ID:       str = f'destinationId={MATCH_BETWEEN_QUOTES}'
 
 MATCH_STARTS_WITH_SRC_ID: str = f'sourceId={MATCH_BETWEEN_QUOTES}'
 MATCH_STARTS_WITH_DST_DI: str = f'destinationId={MATCH_BETWEEN_QUOTES}'

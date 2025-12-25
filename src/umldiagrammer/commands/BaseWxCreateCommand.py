@@ -112,18 +112,17 @@ class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
 
         eventHandler: UmlBaseEventHandler = cast(UmlBaseEventHandler, None)
         if isinstance(umlShape, UmlClass):
-            eventHandler = UmlClassEventHandler()
+            eventHandler = UmlClassEventHandler(previousEventHandler=umlShape.GetEventHandler())
         elif isinstance(umlShape, UmlNote):
-            eventHandler = UmlNoteEventHandler()
+            eventHandler = UmlNoteEventHandler(previousEventHandler=umlShape.GetEventHandler())
         elif isinstance(umlShape, UmlText):
-            eventHandler = UmlTextEventHandler()
+            eventHandler = UmlTextEventHandler(previousEventHandler=umlShape.GetEventHandler())
         else:
             pass
 
         if eventHandler is not None:
             eventHandler.SetShape(umlShape)
             eventHandler.umlPubSubEngine = self._umlPubSubEngine
-            eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
             umlShape.SetEventHandler(eventHandler)
 
         umlFrame.refresh()

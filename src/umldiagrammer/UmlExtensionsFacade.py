@@ -5,7 +5,14 @@ from logging import Logger
 from logging import getLogger
 
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+from umlextensions.ExtensionsTypes import CreatedLinkCallback
 from umlextensions.ExtensionsTypes import FrameInformationCallback
+from umlextensions.ExtensionsTypes import IntegerList
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
+from umlextensions.ExtensionsTypes import Points
+from umlextensions.ExtensionsTypes import Rectangle
+from umlextensions.ExtensionsTypes import Rectangles
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -20,6 +27,7 @@ class UmlExtensionsFacade(IExtensionsFacade):
     This class simplifies communication between the extensions
     and the UML Diagrammer
     """
+
     def __init__(self):
 
         self.logger: Logger = getLogger(__name__)
@@ -56,3 +64,21 @@ class UmlExtensionsFacade(IExtensionsFacade):
 
     def wiggleShapes(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.WIGGLE_SHAPES)
+
+    def getShapeBoundaries(self, callback: ObjectBoundaryCallback):
+        assert False, 'Not implemented'
+
+    def deleteLink(self, umlLink: UmlLinkGenre):
+        assert False, 'Not implemented'
+
+    def createLink(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
+        assert False, 'Not implemented'
+
+    def showOrthogonalRoutingPoints(self, show: bool, spots: Points):
+        assert False, 'Not implemented'
+
+    def showRulers(self, show: bool, horizontalRulers: IntegerList, verticalRulers: IntegerList, diagramBounds: Rectangle):
+        assert False, 'Not implemented'
+
+    def showRouteGrid(self, show: bool, routeGrid: Rectangles):
+        assert False, 'Not implemented'
