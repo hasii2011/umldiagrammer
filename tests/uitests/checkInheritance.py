@@ -38,7 +38,7 @@ GOLDEN_INHERITANCE_XML: str = (
     '            <ModelClass id="" name="SubClass" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
     '        <UmlLink id="" fromX="640" fromY="424" toX="220" toY="170" spline="False">\n'
-    '            <ModelLink name="" type="INHERITANCE" sourceId="work-cultural-white-month" destinationId="can-certain-morning-education" bidirectional="False" sourceCardinalityValue="" destinationCardinalityValue="" />\n'
+    '            <ModelLink name="" type="INHERITANCE" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="" destinationCardinalityValue="" />\n'
     '        </UmlLink>\n'
     '    </UMLDiagram>\n'
     '</UmlProject>'
