@@ -437,6 +437,19 @@ class UmlDiagramManager(Simplebook):
                 umlLink.Show(True)
                 # noinspection PyUnusedLocal
                 umlAssociationEventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlLink, umlPubSubEngine=self._umlPubSubEngine)
+            elif isinstance(umlLink, UmlInterface):
+                umlInterface: UmlInterface = umlLink
+                implementingClass: UmlClass = umlInterface.implementingClass
+                interfaceClass:    UmlClass = umlInterface.interfaceClass
+
+                implementingClass.addLink(umlLink=umlInterface, destinationClass=interfaceClass)
+                diagramFrame.umlDiagram.AddShape(umlInterface)
+                umlInterface.Show(True)
+                umlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInterface, previousEventHandler=umlInterface.GetEventHandler())
+
+                umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
+
+                umlInterface.SetEventHandler(umlLinkEventHandler)
 
     def _layoutLollipops(self, diagramFrame: ClassDiagramFrame, umlLollipops: UmlLollipopInterfaces):
 
@@ -508,7 +521,7 @@ class UmlDiagramManager(Simplebook):
             match umlShape:
                 case UmlClass() as umlShape:
                     umlDocument.umlClasses.append(umlShape)
-                case UmlInheritance() | UmlInterface() | UmlAssociation() as umlShape:
+                case UmlInheritance() | UmlInterface() | UmlAssociation() | UmlNoteLink() as umlShape:
                     umlDocument.umlLinks.append(umlShape)
                 case UmlLollipopInterface() as umlShape:
                     umlDocument.umlLinks.append(cast(UmlLink, umlShape))  # temp cast until umlio supports UmlLollipopInterfaces
