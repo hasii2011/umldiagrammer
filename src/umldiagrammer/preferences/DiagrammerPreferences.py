@@ -12,6 +12,7 @@ from codeallybasic.DynamicConfiguration import ValueDescriptions
 from codeallybasic.DynamicConfiguration import DynamicConfiguration
 
 from umldiagrammer.preferences.ProjectHistoryDisplayType import ProjectHistoryDisplayType
+from umldiagrammer.preferences.ProjectTabPosition import ProjectTabPosition
 
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
@@ -24,7 +25,8 @@ TEST_POSITION: str = Position(20, 40).__str__()
 TEST_SIZE:     str = str(Dimensions(1247, 842))
 
 DEFAULT_FILE_HISTORY_DISPLAY: str = ProjectHistoryDisplayType.SHOW_NEVER.value
-DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.LEFT.value
+DEFAULT_TOOLBAR_POSITION:     str = ToolBarPosition.RIGHT.value
+DEFAULT_PROJECT_TAB_POSITION: str = ProjectTabPosition.TOP.value
 
 SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
     {
@@ -41,11 +43,12 @@ SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
 
 SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
     {
-        KeyName('fullScreen'):         ValueDescription(defaultValue='False',                  deserializer=SecureConversions.secureBoolean),
-        KeyName('startupSize'):        ValueDescription(defaultValue=DEFAULT_STARTUP_SIZE,     deserializer=Dimensions.deSerialize),
-        KeyName('centerAppOnStartup'): ValueDescription(defaultValue='False',                  deserializer=SecureConversions.secureBoolean),
-        KeyName('startupPosition'):    ValueDescription(defaultValue=DEFAULT_STARTUP_POSITION, deserializer=Position.deSerialize),
-        KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION, deserializer=ToolBarPosition),
+        KeyName('fullScreen'):         ValueDescription(defaultValue='False',                      deserializer=SecureConversions.secureBoolean),
+        KeyName('startupSize'):        ValueDescription(defaultValue=DEFAULT_STARTUP_SIZE,         deserializer=Dimensions.deSerialize),
+        KeyName('centerAppOnStartup'): ValueDescription(defaultValue='False',                      deserializer=SecureConversions.secureBoolean),
+        KeyName('startupPosition'):    ValueDescription(defaultValue=DEFAULT_STARTUP_POSITION,     deserializer=Position.deSerialize),
+        KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION,     deserializer=ToolBarPosition),
+        KeyName('projectTabPosition'): ValueDescription(defaultValue=DEFAULT_PROJECT_TAB_POSITION, deserializer=ProjectTabPosition, enumUseValue=True)
     }
 )
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(

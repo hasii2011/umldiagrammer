@@ -15,7 +15,7 @@ class ToolBarPosition(Enum):
     NOT_SET = 'Not Set'
 
     @classmethod
-    def toWxpPosition(cls, toolBarPosition: 'ToolBarPosition') -> int:
+    def toWxPosition(cls, toolBarPosition: 'ToolBarPosition') -> int:
 
         wxToolBarPosition: int = TB_LEFT
 

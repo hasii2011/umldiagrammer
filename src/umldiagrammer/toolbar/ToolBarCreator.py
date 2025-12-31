@@ -58,7 +58,7 @@ class ToolBarCreator:
 
         self.logger: Logger = getLogger(__name__)
 
-        wxToolBarPosition: int = ToolBarPosition.toWxpPosition(DiagrammerPreferences().toolBarPosition)
+        wxToolBarPosition: int = ToolBarPosition.toWxPosition(DiagrammerPreferences().toolBarPosition)
         # self._toolBar: ToolBar = parent.CreateToolBar(wxToolBarPosition)
         # Manually create my own tool bar so that the icons sizes are honored
         #
@@ -114,10 +114,6 @@ class ToolBarCreator:
 
     def enableToolBar(self):
         self._enableToolBar(enable=True)
-
-    # noinspection PyUnusedLocal
-    def _bogus(self, event):
-        self.logger.warning(f'NOT YET IMPLEMENTED !!!')
 
     def _createMenuTools(self):
 

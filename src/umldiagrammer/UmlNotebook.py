@@ -9,7 +9,6 @@ from logging import getLogger
 
 from pathlib import Path
 
-from wx import NB_LEFT
 from wx import ID_YES
 from wx import YES_NO
 from wx import ICON_QUESTION
@@ -48,6 +47,8 @@ from umldiagrammer.UmlProjectIO import UmlProjectIO
 
 from umldiagrammer.UmlProjectPanel import UmlProjectPanel
 from umldiagrammer.data.ProjectDossier import ProjectDossier
+from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+from umldiagrammer.preferences.ProjectTabPosition import ProjectTabPosition
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
@@ -83,7 +84,10 @@ class UmlNotebook(Notebook):
         self._umlPubSubEngine:  IUmlPubSubEngine = umlPubSubEngine
         self._extensionsPubSub: ExtensionsPubSub = extensionsPubSub
 
-        super().__init__(sizedPanel, style=NB_LEFT)  # TODO: should be an application preference
+        self._preferences:      DiagrammerPreferences = DiagrammerPreferences()
+
+        style: int = ProjectTabPosition.toWxNotebookPosition(self._preferences.projectTabPosition)
+        super().__init__(sizedPanel, style=style)
 
         # noinspection PyUnresolvedReferences
         self.SetSizerProps(expand=True, proportion=1)
