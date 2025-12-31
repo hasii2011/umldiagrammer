@@ -501,7 +501,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         #     appMode: bool = False
         # else:
         #     appMode = SecureConversions.secureBoolean(appModeStr)
-        frameStyle: int  = DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT
+        frameStyle: int  = DEFAULT_FRAME_STYLE
         # if appMode is True:
         #     frameStyle = frameStyle | FRAME_TOOL_WINDOW
 

@@ -6,7 +6,7 @@ from time import sleep
 
 import pyautogui
 print('Press Ctrl-C to quit.')
-
+print(f'Screen Size: {pyautogui.size()}')
 try:
     while True:
         x, y = pyautogui.position()
