@@ -6,8 +6,6 @@ from wx import CANCEL
 from wx import DEFAULT_DIALOG_STYLE
 from wx import EVT_BUTTON
 from wx import EVT_CLOSE
-from wx import ICON_EXCLAMATION
-from wx import MessageDialog
 from wx import NB_FIXEDWIDTH
 from wx import NB_TOP
 from wx import OK
@@ -60,7 +58,7 @@ class DlgPreferences(SizedDialog):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
         style:   int  = DEFAULT_DIALOG_STYLE | RESIZE_BORDER
-        dlgSize: Size = Size(460, 575)
+        dlgSize: Size = Size(width=460, height=600)
         super().__init__(parent, ID_ANY, "Diagrammer Preferences", size=dlgSize, style=style)
 
         self.logger:  Logger          = getLogger(__name__)

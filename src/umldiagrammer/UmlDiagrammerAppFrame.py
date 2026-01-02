@@ -16,12 +16,12 @@ from wx import OK
 from wx import STB_DEFAULT_STYLE
 from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
-from wx import FRAME_FLOAT_ON_PARENT
+# from wx import FRAME_FLOAT_ON_PARENT
 
 from wx import MessageDialog
 from wx import ActivateEvent
 from wx import Point
-from wx import ScreenDC
+# from wx import ScreenDC
 from wx import Size
 from wx import ToolBar
 from wx import Menu
@@ -69,7 +69,7 @@ from umldiagrammer.ProjectHistoryConfiguration import ProjectHistoryConfiguratio
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
-from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
+# from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
@@ -119,10 +119,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
         # Show full screen ?
         if self._preferences.fullScreen is True:
 
-            dc:   ScreenDC = ScreenDC()
-            appSize: Size     = dc.GetSize()
+            # dc:   ScreenDC = ScreenDC()
+            # appSize: Size  = dc.GetSize()
 
-            appSize.height -= HACK_ADJUST_EXIT_HEIGHT
+            # appSize.height -= HACK_ADJUST_EXIT_HEIGHT     This does not seem to be needed anymore since I change the frame style
 
             super().__init__(parent=None, title='UML Diagrammer')
             self.Maximize(True)
@@ -212,7 +212,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
                 # See issue https://github.com/hasii2011/umldiagrammer/issues/3q1
                 # I need to check this on a larger monitor;
-                self._preferences.startupSize = Dimensions(width=ourSize.GetWidth(), height=ourSize.GetHeight() - HACK_ADJUST_EXIT_HEIGHT)
+                # This does not seem to be needed anymore since I change the frame style
+                # self._preferences.startupSize = Dimensions(width=ourSize.GetWidth(), height=ourSize.GetHeight() - HACK_ADJUST_EXIT_HEIGHT)
+                self._preferences.startupSize = Dimensions(width=ourSize.GetWidth(), height=ourSize.GetHeight())
                 self.logger.info(f'Set new startup size: {ourSize}')
 
         self.logger.info(f'UML Diagrammer execution complete')

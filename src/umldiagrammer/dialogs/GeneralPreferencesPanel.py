@@ -9,19 +9,20 @@ from dataclasses import dataclass
 
 from pathlib import Path
 
+from wx import ID_ANY
+from wx import EVT_CHOICE
 from wx import BORDER_THEME
 from wx import EVT_CHECKBOX
 from wx import EVT_RADIOBOX
-from wx import ID_ANY
-
-from wx import CheckBox
-from wx import CommandEvent
 from wx import RA_SPECIFY_COLS
+
+from wx import Choice
+from wx import CheckBox
 from wx import RadioBox
 from wx import Window
+from wx import CommandEvent
 
 from wx import NewIdRef as wxNewIdRef
-
 
 from wx.lib.sized_controls import SizedPanel
 from wx.lib.sized_controls import SizedStaticBox
@@ -30,10 +31,15 @@ from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
 
 from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
 from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
+
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+from umldiagrammer.preferences.ProjectTabPosition import ProjectTabPosition
 from umldiagrammer.preferences.ProjectHistoryDisplayType import ProjectHistoryDisplayType
+
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
+from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
 
 
 @dataclass
@@ -67,6 +73,8 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._projectHistoryPathPref: RadioBox          = cast(RadioBox, None)
         self._toolBarIconSizePref:    RadioBox          = cast(RadioBox, None)
         self._directorySelector:      DirectorySelector = cast(DirectorySelector, None)
+        self._toolBarPosition:        Choice            = cast(Choice, None)
+        self._projectTabPosition:     Choice            = cast(Choice, None)
 
         p: DiagrammerPreferences = self._preferences
         self._controlData = [
@@ -79,8 +87,10 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self._setControlValues()
 
-        self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged, self._projectHistoryPathPref)
-        self.Bind(EVT_RADIOBOX, self._toolBarIconSizePrefChanged,   self._toolBarIconSizePref)
+        self.Bind(EVT_RADIOBOX, self._onFileHistoryPathPrefChanged,     self._projectHistoryPathPref)
+        self.Bind(EVT_RADIOBOX, self._onToolBarIconSizePrefChanged,     self._toolBarIconSizePref)
+        self.Bind(EVT_CHOICE,   self._onToolBarPositionValueChanged,    self._toolBarPosition)
+        self.Bind(EVT_CHOICE,   self._onProjectTabPositionValueChanged, self._projectTabPosition)
 
     @property
     def name(self) -> str:
@@ -99,6 +109,8 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._layoutProjectHistoryDisplayPreferenceControl(rbPanel)
         self._layoutToolBarIconSize(rbPanel)
 
+        self._layoutDiagrammerElementsPositions(sizedPanel)
+
         self._fixPanelSize(panel=self)
 
     def _layoutTrueFalsePreferences(self, parentPanel: SizedPanel):
@@ -110,7 +122,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         trueFalsePanel: SizedStaticBox = SizedStaticBox(parentPanel, label='')
 
         for cd in self._controlData:
-            control: ControlData = cast(ControlData, cd)
+            control: ControlData = cd
             control.instanceVar = CheckBox(trueFalsePanel, id=control.wxId, label=control.label)
             control.instanceVar.SetValue(control.initialValue)
             parentPanel.Bind(EVT_CHECKBOX, self._onTrueFalsePreferenceChanged, control.instanceVar)
@@ -165,6 +177,30 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self._toolBarIconSizePref = rb
 
+    def _layoutDiagrammerElementsPositions(self, sizedPanel: SizedPanel):
+
+        positionPanel: SizedPanel = SizedPanel(parent=sizedPanel)
+        positionPanel.SetSizerType('horizontal')
+        positionPanel.SetSizerProps(expand=True, proportion=1)
+
+        toolBarPositions: List[str] = [s.value for s in ToolBarPosition]
+        del toolBarPositions[-1]        # Assumes last item is the "NOT_SET" marker
+
+        toolBarPositionSSB: SizedStaticBox = SizedStaticBox(positionPanel, label='Toolbar Position', style=BORDER_THEME)
+        toolBarPositionSSB.SetSizerProps(expand=True, proportion=1)
+
+        self._toolBarPosition = Choice(toolBarPositionSSB, choices=toolBarPositions)
+        self._toolBarPosition.SetSizerProps(expand=True, proportion=1)
+
+        projectTabPositions = [s.value for s in ProjectTabPosition]
+        del projectTabPositions[-1]     # Assumes last item is the "NOT_SET" marker
+
+        projectPositionSSB: SizedStaticBox = SizedStaticBox(positionPanel, label='Project Tab Position', style=BORDER_THEME)
+        projectPositionSSB.SetSizerProps(expand=True, proportion=1)
+
+        self._projectTabPosition = Choice(projectPositionSSB, choices=projectTabPositions)
+        self._projectTabPosition.SetSizerProps(expand=True, proportion=1)
+
     def _setControlValues(self):
         """
 
@@ -179,6 +215,14 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         iconSizeValue: ToolBarIconSize = self._preferences.toolBarIconSize
         iconSizeIdx:    int = self._toolBarIconSizePref.FindString(string=iconSizeValue.value)
         self._toolBarIconSizePref.SetSelection(iconSizeIdx)
+
+        toolbarPosition: ToolBarPosition = self._preferences.toolBarPosition
+        tbIdx:           int             = self._toolBarPosition.FindString(toolbarPosition.value)
+        self._toolBarPosition.SetSelection(tbIdx)
+
+        projectTabPosition: ProjectTabPosition = self._preferences.projectTabPosition
+        ptIdx:              int                = self._projectTabPosition.FindString(projectTabPosition.value)
+        self._projectTabPosition.SetSelection(ptIdx)
 
     def _onTrueFalsePreferenceChanged(self, event: CommandEvent):
 
@@ -212,7 +256,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         newPreference: ProjectHistoryDisplayType = ProjectHistoryDisplayType(newValue)
         self._preferences.fileHistoryDisplay = newPreference
 
-    def _toolBarIconSizePrefChanged(self, event: CommandEvent):
+    def _onToolBarIconSizePrefChanged(self, event: CommandEvent):
 
         newValue: str = event.GetString()
         self.logger.info(f'Tool Bar Icon Size Preference changed.  {newValue=}')
@@ -221,3 +265,14 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
     def _pathChangedCallback(self, newPath: Path):
         self._preferences.diagramsDirectory = str(newPath)
+
+    def _onToolBarPositionValueChanged(self, event: CommandEvent):
+        valueStr: str = event.GetString()
+
+        self._preferences.toolBarPosition = valueStr
+        self._restartNeededMessage()
+
+    def _onProjectTabPositionValueChanged(self, event: CommandEvent):
+        valueStr: str = event.GetString()
+
+        self._preferences.projectTabPosition = valueStr

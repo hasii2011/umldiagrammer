@@ -12,7 +12,7 @@ class ProjectTabPosition(Enum):
     BOTTOM  = 'Bottom'
     LEFT    = 'Left'
     RIGHT   = 'Right'
-    NOT_SET = -1
+    NOT_SET = 'Not Set'
 
     @classmethod
     def toWxNotebookPosition(cls, tabPosition: 'ProjectTabPosition') -> int:

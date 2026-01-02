@@ -48,7 +48,7 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
         KeyName('centerAppOnStartup'): ValueDescription(defaultValue='False',                      deserializer=SecureConversions.secureBoolean),
         KeyName('startupPosition'):    ValueDescription(defaultValue=DEFAULT_STARTUP_POSITION,     deserializer=Position.deSerialize),
         KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION,     deserializer=ToolBarPosition),
-        KeyName('projectTabPosition'): ValueDescription(defaultValue=DEFAULT_PROJECT_TAB_POSITION, deserializer=ProjectTabPosition, enumUseValue=True)
+        KeyName('projectTabPosition'): ValueDescription(defaultValue=DEFAULT_PROJECT_TAB_POSITION, deserializer=ProjectTabPosition)
     }
 )
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
@@ -67,7 +67,6 @@ DIAGRAMMER_SECTIONS: Sections = Sections(
 )
 
 class DiagrammerPreferences(DynamicConfiguration, metaclass=SingletonV3):
-
     def __init__(self):
 
         super().__init__(baseFileName='umlDiagrammer.ini', moduleName='umlDiagrammer', sections=DIAGRAMMER_SECTIONS)
