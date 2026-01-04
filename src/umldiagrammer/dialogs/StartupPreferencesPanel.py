@@ -37,7 +37,7 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         self._cbCenterAppOnStartup:   CheckBox          = cast(CheckBox, None)
         self._appPositionControls:    PositionControl   = cast(PositionControl, None)
         self._cbFullScreenOnStartup:  CheckBox          = cast(CheckBox, None)
-        self._appDimensionsContainer: DimensionsControl = cast(DimensionsControl, None)
+        self._appSizeControls: DimensionsControl = cast(DimensionsControl, None)
 
         self._layoutControls(parent)
 
@@ -49,8 +49,8 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         self._cbCenterAppOnStartup = CheckBox(self, label='Center on Startup')
         self._appPositionControls  = self._layoutAppPositionControls(sizedPanel=self)
 
-        self._cbFullScreenOnStartup  = CheckBox(self, label='Full Screen on Startup')
-        self._appDimensionsContainer = self._layoutAppSizeControls(sizedPanel=self)
+        self._cbFullScreenOnStartup = CheckBox(self, label='Full Screen on Startup')
+        self._appSizeControls       = self._layoutAppSizeControls(sizedPanel=self)
 
         self._setControlValues()
         parent.Bind(EVT_CHECKBOX, self._onCenterOnStartupChanged,    self._cbCenterAppOnStartup)
@@ -65,7 +65,7 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         appPositionControls: PositionControl = PositionControl(sizedPanel=sizedPanel, displayText='Startup Position',
                                                                minValue=0, maxValue=2048,
                                                                valueChangedCallback=self._appPositionChanged,
-                                                               setControlsSize=True)
+                                                               setControlsSize=False)
 
         appPositionControls.SetSizerProps(expand=True, proportion=1)
         return appPositionControls
@@ -75,7 +75,7 @@ class StartupPreferencesPanel(BasePreferencesPanel):
         appSizeControls: DimensionsControl = DimensionsControl(sizedPanel=sizedPanel, displayText="Startup Width/Height",
                                                                minValue=480, maxValue=4096,
                                                                valueChangedCallback=self._appSizeChanged,
-                                                               setControlsSize=True)
+                                                               setControlsSize=False)
 
         appSizeControls.SetSizerProps(expand=True, proportion=1)
         return appSizeControls
@@ -92,13 +92,13 @@ class StartupPreferencesPanel(BasePreferencesPanel):
             self._cbCenterAppOnStartup.SetValue(False)
 
         if self._preferences.fullScreen is True:
-            self._appDimensionsContainer.enableControls(False)
+            self._appSizeControls.enableControls(False)
             self._cbFullScreenOnStartup.SetValue(True)
         else:
-            self._appDimensionsContainer.enableControls(True)
+            self._appSizeControls.enableControls(True)
             self._cbFullScreenOnStartup.SetValue(False)
 
-        self._appDimensionsContainer.dimensions = self._preferences.startupSize
+        self._appSizeControls.dimensions = self._preferences.startupSize
         self._appPositionControls.position      = self._preferences.startupPosition
 
     def _enablePositionControls(self, enable: bool):
@@ -135,5 +135,6 @@ class StartupPreferencesPanel(BasePreferencesPanel):
     def _onFullScreenOnStartupChange(self, event: CommandEvent):
         newValue: bool = event.IsChecked()
         self._preferences.fullScreen = newValue
+        self._appSizeControls.enableControls(not newValue)
         if newValue is True:
             self._appPubSubEngine.sendMessage(MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID)

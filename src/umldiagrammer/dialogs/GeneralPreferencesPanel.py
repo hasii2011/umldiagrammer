@@ -106,10 +106,10 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         rbPanel.SetSizerProps(expand=True, proportion=2)
         rbPanel.SetSizerType('horizontal')
 
-        self._layoutProjectHistoryDisplayPreferenceControl(rbPanel)
         self._layoutToolBarIconSize(rbPanel)
 
         self._layoutDiagrammerElementsPositions(sizedPanel)
+        self._layoutProjectHistoryDisplayPreferenceControl(sizedPanel)
 
         self._fixPanelSize(panel=self)
 
@@ -138,7 +138,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._directorySelector = DirectorySelector(parent=dsPanel, pathChangedCallback=self._pathChangedCallback)
         self._directorySelector.SetSizerProps(expand=True, proportion=1)
 
-    def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedStaticBox):
+    def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedPanel):
 
         options: List[str] = [
             ProjectHistoryDisplayType.SHOW_NEVER.value,
