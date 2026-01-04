@@ -38,7 +38,7 @@ jobs:
             pip install codeallybasic==1.30.0
             pip install codeallyadvanced==2.3.0
             pip install umlmodel==3.4.0
-            pip install umlshapes==1.5.0
+            pip install umlshapes==1.5.2
             pip install umlio==0.6.0
             pip install umlextensions==0.3.1
             pip install buildlackey==2.0.0

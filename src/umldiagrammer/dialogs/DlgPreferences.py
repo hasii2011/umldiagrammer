@@ -24,6 +24,7 @@ from umlshapes.dialogs.preferences.DefaultValuesPanel import DefaultValuesPanel
 from umlshapes.dialogs.preferences.DiagramPreferencesPanel import DiagramPreferencesPanel
 
 from umldiagrammer.dialogs.GeneralPreferencesPanel import GeneralPreferencesPanel
+from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
@@ -84,13 +85,15 @@ class DlgPreferences(SizedDialog):
         book: Notebook = Notebook(sizedPanel, style=style)
         book.SetSizerProps(expand=True, proportion=1)
 
-        generalPreferences:     GeneralPreferencesPanel  = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
-        valuePreferences:       DefaultValuesPanel       = DefaultValuesPanel(parent=book)
-        diagramPreferences:     DiagramPreferencesPanel  = DiagramPreferencesPanel(parent=book)
+        generalPreferences:     GeneralPreferencesPanel = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
+        startupPreferences:     StartupPreferencesPanel = StartupPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
+        valuePreferences:       DefaultValuesPanel      = DefaultValuesPanel(parent=book)
+        diagramPreferences:     DiagramPreferencesPanel = DiagramPreferencesPanel(parent=book)
         # positioningPreferences: PositioningPreferencesPage   = PositioningPreferencesPage(book, eventEngine=self._eventEngine)
         # pluginPreferences:      PluginPreferencesPage        = PluginPreferencesPage(book)
         # #
-        book.AddPage(generalPreferences, text=generalPreferences.name, select=True)
+        book.AddPage(generalPreferences, text=generalPreferences.name, select=False)
+        book.AddPage(startupPreferences, text=startupPreferences.name, select=True)
         book.AddPage(valuePreferences,   text=valuePreferences.name,   select=False)
         book.AddPage(diagramPreferences, text=diagramPreferences.name, select=False)
         # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)

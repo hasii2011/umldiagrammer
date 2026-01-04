@@ -30,7 +30,6 @@ from wx.lib.sized_controls import SizedStaticBox
 from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
 
 from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
-from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 from umldiagrammer.preferences.ProjectTabPosition import ProjectTabPosition
@@ -99,7 +98,6 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
     def _layoutWindow(self, sizedPanel: SizedPanel):
 
         self._layoutTrueFalsePreferences(sizedPanel)
-        StartupPreferencesPanel(parent=sizedPanel, appPubSubEngine=self._appPubSubEngine)
         self._layoutDiagramsDirectory(sizedPanel)
 
         rbPanel: SizedStaticBox = SizedStaticBox(sizedPanel, label='', style=BORDER_THEME)

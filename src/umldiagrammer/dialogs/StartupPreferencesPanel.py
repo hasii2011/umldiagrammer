@@ -1,7 +1,6 @@
 
 from typing import cast
 
-from wx import BORDER_THEME
 from wx import EVT_CHECKBOX
 
 from wx import CheckBox
@@ -31,26 +30,20 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
-        super().__init__(parent, style=BORDER_THEME)
+        super().__init__(parent)
         self.SetSizerType('vertical')
 
         self._cbCenterAppOnStartup:   CheckBox          = cast(CheckBox, None)
         self._appPositionControls:    PositionControl   = cast(PositionControl, None)
         self._cbFullScreenOnStartup:  CheckBox          = cast(CheckBox, None)
-        self._appSizeControls: DimensionsControl = cast(DimensionsControl, None)
+        self._appSizeControls:        DimensionsControl = cast(DimensionsControl, None)
 
         self._layoutControls(parent)
 
-        # noinspection PyUnresolvedReferences
-        self.SetSizerProps(expand=True, proportion=3)
-
     def _layoutControls(self, parent):
 
-        self._cbCenterAppOnStartup = CheckBox(self, label='Center on Startup')
-        self._appPositionControls  = self._layoutAppPositionControls(sizedPanel=self)
-
-        self._cbFullScreenOnStartup = CheckBox(self, label='Full Screen on Startup')
-        self._appSizeControls       = self._layoutAppSizeControls(sizedPanel=self)
+        self._appPositionControls = self._layoutAppPositionControls(sizedPanel=self)
+        self._appSizeControls     = self._layoutAppSizeControls(sizedPanel=self)
 
         self._setControlValues()
         parent.Bind(EVT_CHECKBOX, self._onCenterOnStartupChanged,    self._cbCenterAppOnStartup)
@@ -58,26 +51,28 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
     @property
     def name(self) -> str:
-        return 'Positions'
+        return 'Startup'
 
     def _layoutAppPositionControls(self, sizedPanel: SizedPanel) -> PositionControl:
+
+        self._cbCenterAppOnStartup = CheckBox(sizedPanel, label='Center on Startup')
 
         appPositionControls: PositionControl = PositionControl(sizedPanel=sizedPanel, displayText='Startup Position',
                                                                minValue=0, maxValue=2048,
                                                                valueChangedCallback=self._appPositionChanged,
                                                                setControlsSize=False)
 
-        appPositionControls.SetSizerProps(expand=True, proportion=1)
         return appPositionControls
 
     def _layoutAppSizeControls(self, sizedPanel: SizedPanel) -> DimensionsControl:
+
+        self._cbFullScreenOnStartup = CheckBox(sizedPanel, label='Full Screen on Startup')
 
         appSizeControls: DimensionsControl = DimensionsControl(sizedPanel=sizedPanel, displayText="Startup Width/Height",
                                                                minValue=480, maxValue=4096,
                                                                valueChangedCallback=self._appSizeChanged,
                                                                setControlsSize=False)
 
-        appSizeControls.SetSizerProps(expand=True, proportion=1)
         return appSizeControls
 
     def _setControlValues(self):
