@@ -43,8 +43,8 @@ LOC_TOOLBAR_Y: int = 65
 
 LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=730, y=LOC_TOOLBAR_Y)
 
-LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=390, y=70)
-LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1379, y=333)
+LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=395, y=LOC_TOOLBAR_Y)
+LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=931, y=360)
 LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1740, y=755)
 
 MOVE_TO_DELAY: float = 1.5

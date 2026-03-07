@@ -48,3 +48,15 @@ uv run checkclass.py
 ```
 
 **Note:** These tests are highly dependent on screen resolution and window placement. The current tests were record on a screen size of width=2560, height=1440.  The coordinates in the scripts may need to be adjusted for your specific environment. The `trackmouse.py` utility can be used to find the correct coordinates.
+
+Additionally, these tests assume that the toolbar is on top
+
+The debug section in umlDiagrammer.ini uses the following values:
+
+```
+[Debug]
+inTestMode = True
+testPosition = 20,40
+testSize = 1247,842
+```
+

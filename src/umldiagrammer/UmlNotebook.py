@@ -9,6 +9,12 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlextensions.ExtensionsTypes import CreatedLinkCallback
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
+from umlshapes.commands.DeleteLinkCommand import DeleteLinkCommand
+from umlshapes.types.UmlPosition import UmlPosition
+from umlshapes.types.UmlPosition import UmlPositions
 from wx import ID_YES
 from wx import YES_NO
 from wx import ICON_QUESTION
@@ -23,6 +29,10 @@ from wx import CallLater
 
 from wx.lib.sized_controls import SizedPanel
 
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
+from umlextensions.ExtensionsTypes import ShapeBoundaries
+
+from umlshapes.frames.UmlFrame import Ltrb
 from umlshapes.frames.DiagramFrame import FrameId
 from umlshapes.frames.UmlFrame import UmlFrame
 
@@ -409,6 +419,70 @@ class UmlNotebook(Notebook):
                 eventHandler.OnDragLeft(draw=True, x=newPosition.x, y=newPosition.y)
                 eventHandler.OnDragLeft(draw=True, x=oldPosition.x, y=oldPosition.y)
 
+    def _getShapBoundariesListener(self, callback: ObjectBoundaryCallback):
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        ltrb:   Ltrb       = currentFrame.shapeBoundaries
+        bounds: ShapeBoundaries = ShapeBoundaries(
+            minX=ltrb.left,
+            minY=ltrb.top,
+            maxX=ltrb.right,
+            maxY=ltrb.bottom
+        )
+
+        callback(bounds)
+
+    def _deleteLinkListener(self, umlLink):
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        partialName:       str               = f'{type(umlLink)}'
+        deleteLinkCommand: DeleteLinkCommand = DeleteLinkCommand(
+            partialName=partialName,
+            umlLink=umlLink,
+            umlPubSubEngine=self._umlPubSubEngine
+        )
+        status = currentFrame.commandProcessor.Submit(deleteLinkCommand, storeIt=True)
+        self.logger.info(f'Delete Link {partialName=} {status=}')
+
+    def _createLinkListener(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
+
+        projectPanel: UmlProjectPanel = self._currentProjectPanel
+        currentFrame: UmlFrame        = projectPanel.currentFrame
+
+        partialName: str = f'{type(linkInformation.linkType)}'
+
+        path: UmlPositions = linkInformation.path
+
+        lastIdx:      int         = len(path) - 1  # noqa
+        fromPosition: UmlPosition = path[0]
+        toPosition:   UmlPosition = path[lastIdx]
+        path.remove(fromPosition)
+        path.remove(toPosition)
+
+        linkControlPositions: UmlPositions = UmlPositions([])
+        for cp in path:
+            linkControlPositions.append(cp)
+
+        createLinkCommand: CreateLinkCommand = CreateLinkCommand(
+            partialName=partialName,
+            sourceShape=linkInformation.sourceShape,
+            destinationShape=linkInformation.destinationShape,
+            linkType=linkInformation.linkType,
+            umlPubSubEngine=self._umlPubSubEngine,
+            linkSourcePosition=fromPosition,
+            linkDestinationPosition=toPosition,
+            linkControlPositions=linkControlPositions
+
+        )
+        status = currentFrame.commandProcessor.Submit(createLinkCommand, storeIt=True)
+        self.logger.info(f'Create Link {partialName=} {status=}')
+
+        callback(createLinkCommand.umlLink)
+
     def _subscribeToApplicationMessages(self):
         """
         The application wants some services
@@ -452,3 +526,7 @@ class UmlNotebook(Notebook):
         self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT, listener=self._extensionModifiedProjectListener)
         self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.REFRESH_FRAME,              listener=self._refreshFrameListener)
         self._extensionsPubSub.subscribe(messageType=ExtensionsMessageType.WIGGLE_SHAPES,              listener=self._wiggleShapesListener)
+
+        self._extensionsPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
+        self._extensionsPubSub.subscribe(ExtensionsMessageType.DELETE_LINK,             listener=self._deleteLinkListener)
+        self._extensionsPubSub.subscribe(ExtensionsMessageType.CREATE_LINK,             listener=self._createLinkListener)

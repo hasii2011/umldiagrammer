@@ -5,7 +5,9 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlextensions.ExtensionsManager import OutputExtensionMap
 from umlextensions.ExtensionsPubSub import ExtensionsPubSub
+from umlextensions.output.BaseOutputExtension import BaseOutputExtension
 from wx import EVT_MENU
 
 from wx import Menu
@@ -57,6 +59,11 @@ class ExtensionsMenuHandler(BaseMenuHandler):
         extensionsDetails: ExtensionDetails = self._extensionManager.doImport(wxId=cast(WindowId, wxId))
         self.logger.info(f'Import: {extensionsDetails=}')
 
+    def _onExport(self, event: CommandEvent):
+        wxId:          int           = event.GetId()
+        extensionsDetails: ExtensionDetails = self._extensionManager.doExport(wxId=cast(WindowId, wxId))
+        self.logger.info(f'Export: {extensionsDetails=}')
+
     def _onToolAction(self, event: CommandEvent):
         wxId:          int           = event.GetId()
         extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
@@ -95,7 +102,7 @@ class ExtensionsMenuHandler(BaseMenuHandler):
         inputExtensionsMap: InputExtensionMap = self._extensionManager.inputExtensionsMap
 
         for wxId in inputExtensionsMap.extensionIdMap.keys():
-            clazz:          type = inputExtensionsMap.extensionIdMap[wxId]
+            clazz:             type = inputExtensionsMap.extensionIdMap[wxId]
             extensionInstance: BaseInputExtension = clazz(None)
 
             pluginName: str = extensionInstance.inputFormat.formatName
@@ -106,6 +113,14 @@ class ExtensionsMenuHandler(BaseMenuHandler):
 
     def _initializeOutputMenu(self) -> Menu:
         menu: Menu = Menu()
+        outputExtensionsMap: OutputExtensionMap = self._extensionManager.outputExtensionsMap
+        for wxId in outputExtensionsMap.extensionIdMap.keys():
+            clazz:             type = outputExtensionsMap.extensionIdMap[wxId]
+            extensionInstance: BaseOutputExtension = clazz(None)
+            pluginName:        str = extensionInstance.outputFormat.formatName
+
+            menu = self._makeSubMenuEntry(subMenu=menu, wxId=wxId, pluginName=pluginName, callback=self._onExport)
+
         return menu
 
     def _initializeTool(self) -> Menu:

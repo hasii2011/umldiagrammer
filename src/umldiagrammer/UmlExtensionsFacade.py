@@ -4,16 +4,19 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from umlextensions.ExtensionsPubSub import ExtensionsMessageType
-from umlextensions.ExtensionsTypes import CreatedLinkCallback
-from umlextensions.ExtensionsTypes import FrameInformationCallback
-from umlextensions.ExtensionsTypes import IntegerList
-from umlextensions.ExtensionsTypes import LinkInformation
-from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import Points
+from umlextensions.ExtensionsTypes import IntegerList
+
 from umlextensions.ExtensionsTypes import Rectangle
 from umlextensions.ExtensionsTypes import Rectangles
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlextensions.ExtensionsTypes import CreatedLinkCallback
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
+from umlextensions.ExtensionsTypes import FrameInformationCallback
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
+
+from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlshapes.ShapeTypes import UmlLinkGenre
@@ -66,13 +69,13 @@ class UmlExtensionsFacade(IExtensionsFacade):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.WIGGLE_SHAPES)
 
     def getShapeBoundaries(self, callback: ObjectBoundaryCallback):
-        assert False, 'Not implemented'
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.GET_SHAPE_BOUNDARIES, callback=callback)
 
     def deleteLink(self, umlLink: UmlLinkGenre):
-        assert False, 'Not implemented'
+        self._extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.DELETE_LINK, umlLink=umlLink)
 
     def createLink(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
-        assert False, 'Not implemented'
+        self._extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.CREATE_LINK, linkInformation=linkInformation, callback=callback)
 
     def showOrthogonalRoutingPoints(self, show: bool, spots: Points):
         assert False, 'Not implemented'

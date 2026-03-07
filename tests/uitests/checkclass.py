@@ -31,7 +31,7 @@ GOLDEN_CLASS_XML: str = (
     "<?xml version='1.0' encoding='iso-8859-1'?>\n"
     '<UmlProject fileName="/private/tmp/UIClassTest.udt" version="14.0" codePath=".">\n'
     '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
-    '        <UmlClass id="" width="325" height="150" x="420" y="271">\n'
+    '        <UmlClass id="" width="325" height="150" x="444" y="247">\n'
     '            <ModelClass id="" name="ClassName1" displayMethods="True" displayParameters="Display Parameters" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="">\n'
     '                <ModelMethod name="MethodName" visibility="PUBLIC" returnType="">\n'
     '                    <SourceCode />\n'
@@ -73,8 +73,6 @@ LOC_RIGHT_CLICK_CLASS:       UmlPosition = UmlPosition(x=740, y=440)
 LOC_CLICK_PARAMETER_DISPLAY: UmlPosition = UmlPosition(x=797, y=517)
 
 LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=390, y=70)
-LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1379, y=333)
-LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1690, y=745)
 
 BASENAME:                   str = 'UIClassTest'
 CLASS_PROJECT_FILENAME:     Path = Path(f'/tmp/{BASENAME}.udt')

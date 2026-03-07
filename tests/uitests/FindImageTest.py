@@ -3,12 +3,11 @@
 # dependencies = ['pillow', 'pyautogui', 'umlshapes', 'opencv-python']
 # ///
 
-import logging
-from logging import basicConfig
-from logging import INFO
 from typing import Dict
 
-# from typing import reveal_type
+import logging
+from logging import INFO
+from logging import basicConfig
 
 from functools import cached_property
 
@@ -42,7 +41,7 @@ if __name__ == '__main__':
 
     setupLogging()
     logging.info(f'Remember.  The image size has to match')
-    # eveal_type(ToolBarIconLocator.aggregationLink)
+    # eval_type(ToolBarIconLocator.aggregationLink)
 
     #
     #  I find Python comprehensions, incomprehensible

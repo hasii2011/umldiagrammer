@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # /// script
-# dependencies = ["pyautogui"]
+# dependencies = ['pyautogui', 'pillow', 'umlshapes']
 # ///
 """
 From the command line and if you have `uv` installed
@@ -29,13 +29,13 @@ GOLDEN_COMPOSITION_XML: str = (
     "<?xml version='1.0' encoding='iso-8859-1'?>\n"
     '<UmlProject fileName="/private/tmp/CompositionTest.udt" version="14.0" codePath=".">\n'
     '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
-    '        <UmlClass id="" width="78" height="90" x="213" y="232">\n'
+    '        <UmlClass id="" width="78" height="90" x="237" y="208">\n'
     '            <ModelClass id="" name="Composer" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlClass id="" width="82" height="90" x="620" y="401">\n'
+    '        <UmlClass id="" width="82" height="90" x="644" y="377">\n'
     '            <ModelClass id="" name="Composed" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlLink id="" fromX="291" fromY="293" toX="620" toY="429" spline="False">\n'
+    '        <UmlLink id="" fromX="315" fromY="269" toX="644" toY="405" spline="False">\n'
     '            <AssociationName deltaX="0" deltaY="0" />\n'
     '            <SourceCardinality deltaX="0" deltaY="0" />\n'
     '            <DestinationCardinality deltaX="0" deltaY="0" />\n'

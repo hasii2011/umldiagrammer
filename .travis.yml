@@ -31,23 +31,19 @@ install:
   - echo $GLOBAL
   - PY_VERSION=${GLOBAL#* }
   - pyenv global ${PY_VERSION}
-  - pip install --upgrade pip
-  - pip install wheel==0.45.1
-  - pip install setuptools==80.9.0
-  - pip install twine==6.1.0
-  - pip install build==1.3.0
-  - pip install html-testRunner~=1.2.1
-  - pip install six==1.16.0
-  - pip install attrdict3
+  - pip install pip==26.0.1
+  - pip install wheel==0.44.0
+  - pip install setuptools==70.1.1
+  - pip install six==1.17.0
+  - pip install attrdict3==2.0.2
+  - pip install -v -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
   - pip install semantic-version==2.10.0
   - pip install codeallybasic==1.30.0
   - pip install umlmodel==3.4.0
   - pip install untangle==1.2.1
-  - URL=https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04
-  - pip install -U -f $URL wxPython
   - pip install codeallyadvanced==2.3.0
-  - pip install umlshapes==1.5.2
-  - pip install umlio==0.6.0
+  - pip install umlshapes==1.8.1
+  - pip install umlio==0.6.1
 
 # command to run tests
 script:
