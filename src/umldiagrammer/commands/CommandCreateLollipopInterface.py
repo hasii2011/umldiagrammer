@@ -118,7 +118,6 @@ class CommandCreateLollipopInterface(Command):
         umlLollipopInterface.umlFrame = requestingFrame
 
         eventHandler: UmlLollipopInterfaceEventHandler = UmlLollipopInterfaceEventHandler(lollipopInterface=umlLollipopInterface)
-        eventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
         umlLollipopInterface.SetEventHandler(eventHandler)
 
         # Update with our generated one

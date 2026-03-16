@@ -8,6 +8,7 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.exceptions.UnsupportedFileTypeException import UnsupportedFileTypeException
 from wx import OK
 from wx import EVT_MENU
 from wx import EVT_MENU_RANGE
@@ -190,9 +191,17 @@ class FileMenuHandler(BaseMenuHandler):
         fileName: str = self._fileHistory.GetHistoryFile(fileNum)
 
         self.logger.debug(f'{event=} - filename: {fileName}')
+        filePath: Path = Path(fileName)
+        suffix:   str  = filePath.suffix
         reader: Reader = Reader()
         try:
-            umlProject: UmlProject = reader.readProjectFile(fileName=Path(fileName))
+            if suffix == PROJECT_SUFFIX:
+                umlProject: UmlProject = reader.readProjectFile(fileName=filePath)
+            elif suffix == XML_SUFFIX:
+                umlProject = reader.readXmlFile(fileName=filePath)
+            else:
+                raise UnsupportedFileTypeException(message=f'Only {PROJECT_SUFFIX} or {XML_SUFFIX} file types supported')
+
             self._loadProject(umlProject)
         except FileNotFoundError:
             booBoo: MessageDialog = MessageDialog(parent=None, message='That project no longer exists', caption='Error', style=OK | ICON_ERROR)

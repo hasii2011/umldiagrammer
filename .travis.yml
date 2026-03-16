@@ -36,14 +36,14 @@ install:
   - pip install setuptools==70.1.1
   - pip install six==1.17.0
   - pip install attrdict3==2.0.2
-  - pip install -v -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
+  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
   - pip install semantic-version==2.10.0
   - pip install codeallybasic==1.30.0
   - pip install umlmodel==3.4.0
   - pip install untangle==1.2.1
   - pip install codeallyadvanced==2.3.0
-  - pip install umlshapes==1.8.1
-  - pip install umlio==0.6.1
+  - pip install umlshapes==1.9.1
+  - pip install umlio==0.6.2
 
 # command to run tests
 script:

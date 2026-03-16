@@ -401,14 +401,15 @@ class UmlDiagramManager(Simplebook):
         for umlLink in umlLinks:
             umlLink.umlFrame = diagramFrame
             if isinstance(umlLink, UmlInheritance):
-                umInheritance: UmlInheritance = umlLink
-                subClass  = umInheritance.subClass
-                baseClass = umInheritance.baseClass
+                umlInheritance: UmlInheritance = umlLink
+                subClass  = umlInheritance.subClass
+                baseClass = umlInheritance.baseClass
+                umlInheritance.umlPubSubEngine = self._umlPubSubEngine
 
-                subClass.addLink(umlLink=umInheritance, destinationClass=baseClass)
+                subClass.addLink(umlLink=umlInheritance, destinationClass=baseClass)
 
-                diagramFrame.umlDiagram.AddShape(umInheritance)
-                umInheritance.Show(True)
+                diagramFrame.umlDiagram.AddShape(umlInheritance)
+                umlInheritance.Show(True)
 
                 umlLinkEventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink, previousEventHandler=umlLink.GetEventHandler())
                 umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
@@ -431,6 +432,9 @@ class UmlDiagramManager(Simplebook):
 
                 source      = umlLink.sourceShape
                 destination = umlLink.destinationShape
+
+                umlLink.umlPubSubEngine = self._umlPubSubEngine
+
                 source.addLink(umlLink, destination)  # type: ignore
 
                 diagramFrame.umlDiagram.AddShape(umlLink)
@@ -463,7 +467,6 @@ class UmlDiagramManager(Simplebook):
             umlLollipopInterface.Show(True)
             lollipopEventHandler: UmlLollipopInterfaceEventHandler = UmlLollipopInterfaceEventHandler(lollipopInterface=umlLollipopInterface)
             lollipopEventHandler.umlPubSubEngine = self._umlPubSubEngine
-            lollipopEventHandler.SetPreviousHandler(umlLollipopInterface.GetEventHandler())
             umlLollipopInterface.SetEventHandler(lollipopEventHandler)
 
     def _layoutShape(self, umlShape: UmlShapeGenre, diagramFrame: ClassDiagramFrame | UseCaseDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
