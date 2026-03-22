@@ -6,27 +6,24 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from wx import EVT_ACTIVATE
-from wx import EVT_WINDOW_DESTROY
-from wx import ICON_ERROR
-from wx import ID_OK
+from wx import OK
 from wx import BOTH
 from wx import ID_FILE1
-from wx import OK
-from wx import STB_DEFAULT_STYLE
-from wx import DEFAULT_FRAME_STYLE
 from wx import EVT_CLOSE
-# from wx import FRAME_FLOAT_ON_PARENT
+from wx import ICON_ERROR
+from wx import EVT_ACTIVATE
+from wx import STB_DEFAULT_STYLE
+from wx import EVT_WINDOW_DESTROY
+from wx import DEFAULT_FRAME_STYLE
 
-from wx import MessageDialog
-from wx import ActivateEvent
 from wx import Point
-# from wx import ScreenDC
 from wx import Size
-from wx import ToolBar
 from wx import Menu
+from wx import ToolBar
 from wx import MenuBar
 from wx import CommandEvent
+from wx import ActivateEvent
+from wx import MessageDialog
 from wx import WindowDestroyEvent
 
 from wx import Yield as wxYield
@@ -37,18 +34,9 @@ from wx.lib.sized_controls import SizedPanel
 from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
 
-from umlmodel.Class import Class
-from umlmodel.Note import Note
-from umlmodel.Text import Text
-
-from umlshapes.dialogs.DlgEditNote import DlgEditNote
-from umlshapes.dialogs.DlgEditText import DlgEditText
-from umlshapes.dialogs.umlclass.DlgEditClass import DlgEditClass
-
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.frames.DiagramFrame import FrameId
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
@@ -69,7 +57,6 @@ from umldiagrammer.ProjectHistoryConfiguration import ProjectHistoryConfiguratio
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
-# from umldiagrammer.DiagrammerTypes import HACK_ADJUST_EXIT_HEIGHT
 
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
@@ -347,52 +334,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self._doToolSelect(toolId=toolId)
 
-    def _editClassListener(self, umlFrame: ClassDiagramFrame, modelClass: Class):
-        """
-        This handles the case when a new UML Class is created
-        TODO:  Does this really belong here
-
-        Args:
-            umlFrame:
-            modelClass:
-
-        """
-        self.logger.debug(f"Edit: {modelClass}")
-
-        with DlgEditClass(umlFrame, umlPubSubEngine=self._umlPubSubEngine, modelClass=modelClass) as dlg:
-            if dlg.ShowModal() == ID_OK:
-                umlFrame.Refresh()
-                umlFrame.frameModified = True
-
-    def _editNoteListener(self, umlFrame: ClassDiagramFrame, note: Note):
-        """
-        This handles the case when a new UML Note is created
-        TODO:  Does this really belong here
-
-        Args:
-            umlFrame:
-            note:
-        """
-        with DlgEditNote(umlFrame, note=note) as dlg:
-            if dlg.ShowModal() == ID_OK:
-                umlFrame.Refresh()
-                umlFrame.frameModified = True
-
-    def _editTextListener(self, umlFrame: ClassDiagramFrame, text: Text):
-        """
-        This handles the case when a new UML Text is created
-        TODO:  Does this really belong here
-
-        Args:
-            umlFrame:
-            text:
-
-        """
-        with DlgEditText(umlFrame, text=text) as dlg:
-            if dlg.ShowModal() == ID_OK:
-                umlFrame.Refresh()
-                umlFrame.frameModified = True
-
     def _openProjectListener(self, umlProject: UmlProject):
         self._displayProject(umlProject=umlProject)
         #
@@ -475,10 +416,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.UPDATE_APPLICATION_STATUS_MSG,  uniqueId=APPLICATION_FRAME_ID, listener=self._updateApplicationStatusListener)
         self._appPubSubEngine.subscribe(messageType=MessageType.OVERRIDE_PROGRAM_EXIT_POSITION, uniqueId=APPLICATION_FRAME_ID, listener=self._overrideProgramExitPositionListener)
-
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_CLASS, uniqueId=APPLICATION_FRAME_ID, listener=self._editClassListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_NOTE,  uniqueId=APPLICATION_FRAME_ID, listener=self._editNoteListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.EDIT_TEXT,  uniqueId=APPLICATION_FRAME_ID, listener=self._editTextListener)
 
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 

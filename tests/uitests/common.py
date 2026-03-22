@@ -47,7 +47,10 @@ LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=395, y=LOC_TOOLBAR_Y)
 LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=931, y=360)
 LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1740, y=755)
 
-MOVE_TO_DELAY: float = 1.5
+MOVE_TO_DELAY: float = 0.5
+
+BACKSPACES_CLEAR_CLASS_NAME: int   = 15
+PAUSE_AFTER_EACH_CALL:       float = 0.25
 
 def isAppRunning() -> bool:
     answer: bool = False

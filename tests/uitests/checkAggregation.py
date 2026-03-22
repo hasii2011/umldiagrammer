@@ -10,6 +10,7 @@ from pyautogui import press
 from pyautogui import click
 from pymsgbox import alert
 
+from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.common import displayAppropriateDialog
 from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
@@ -32,8 +33,8 @@ GOLDEN_AGGREGATION_XML: str = (
     '        <UmlLink id="" fromX="181" fromY="202" toX="712" toY="400" spline="False">\n'
     '            <AssociationName deltaX="0" deltaY="0" />\n'
     '            <SourceCardinality deltaX="0" deltaY="0" />\n'
-    '            <DestinationCardinality deltaX="0" deltaY="0" />\n'
-    '            <ModelLink name="" type="AGGREGATION" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="" destinationCardinalityValue="" />\n'
+    '            <DestinationCardinality deltaX="0" deltaY="30" />\n'
+    '            <ModelLink name="" type="AGGREGATION" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="src Card" destinationCardinalityValue="dst Card" />\n'
     '        </UmlLink>\n'
     '    </UMLDiagram>\n'
     '</UmlProject>'
@@ -48,38 +49,43 @@ pyautogui.PAUSE = 0.5
 AGGREGATION_FILENAME.unlink(missing_ok=True)
 DECOMPRESSED_AGGREGATION_PROJECT.unlink(missing_ok=True)
 
-if isAppRunning() is False:
-    alert(text='The diagrammer is not running', title='Hey, bonehead', button='OK')
-else:
-    makeAppActive()
+if __name__ == '__main__':
 
-    click(x=729, y=136)
-    click(x=730, y=70)
+    pyautogui.PAUSE = 0.5
+    pyautogui.FAILSAFE = True
 
-    click(x=333, y=264)
-    click(x=830, y=371)
-    press('backspace', presses=12)
-    write('Aggregator')
-    # Click Ok button on dialog
-    click(x=980, y=680)
-    click(x=733, y=72)
-    click(x=948, y=494)
-    click(x=841, y=365)
-    press('backspace', presses=12)
-    write('Aggregated')
-    click(x=972, y=681)
-    click(x=1055, y=65)
-    click(x=373, y=307)
-    click(x=989, y=539)
-    click(x=217, y=1226)
-    click(x=121, y=1229)
+    if isAppRunning() is False:
+        alert(text='The diagrammer is not running', title='Hey, bonehead', button='OK')
+    else:
+        makeAppActive()
 
-    invokeSaveAsProject(projectFileName=str(AGGREGATION_FILENAME))
+        click(x=729, y=136)
+        click(x=730, y=70)
 
-    success: bool = wasTestSuccessful(
-        projectFileName=AGGREGATION_FILENAME,
-        decompressedProjectFileName=DECOMPRESSED_AGGREGATION_PROJECT,
-        goldenXml=GOLDEN_AGGREGATION_XML
-    )
+        click(x=333, y=264)
+        click(x=830, y=371)
+        press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
+        write('Aggregator')
+        # Click Ok button on dialog
+        click(x=980, y=680)
+        click(x=733, y=72)
+        click(x=948, y=494)
+        click(x=841, y=365)
+        press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
+        write('Aggregated')
+        click(x=972, y=681)
+        click(x=1055, y=65)
+        click(x=373, y=307)
+        click(x=989, y=539)
+        click(x=217, y=1226)
+        click(x=121, y=1229)
 
-    displayAppropriateDialog(status=success)
+        invokeSaveAsProject(projectFileName=str(AGGREGATION_FILENAME))
+
+        success: bool = wasTestSuccessful(
+            projectFileName=AGGREGATION_FILENAME,
+            decompressedProjectFileName=DECOMPRESSED_AGGREGATION_PROJECT,
+            goldenXml=GOLDEN_AGGREGATION_XML
+        )
+
+        displayAppropriateDialog(status=success)

@@ -7,7 +7,7 @@ This directory contains a suite of UI automation tests for the UML Diagrammer ap
 The main test scripts are:
 
 - **`checkAggregation.py`**: This test automates the creation of a UML aggregation relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the aggregation.
-- **`checkclass.py`**: This test automates the creation of a UML class, including adding methods and fields. It verifies that the class is created with the correct properties and that the project file is saved correctly.
+- **`checkClass.py`**: This test automates the creation of a UML class, including adding methods and fields. It verifies that the class is created with the correct properties and that the project file is saved correctly.
 - **`checkComposition.py`**: This test automates the creation of a UML composition relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the composition.
 - **`checkInheritance.py`**: This test automates the creation of a UML inheritance relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the inheritance.
 
@@ -43,13 +43,20 @@ To run these tests, you need to have the UML Diagrammer application running. The
 
 # from the project root
 cd tests/uitests
-uv run checkclass.py
+uv run checkClass.py
 
 ```
 
-**Note:** These tests are highly dependent on screen resolution and window placement. The current tests were record on a screen size of width=2560, height=1440.  The coordinates in the scripts may need to be adjusted for your specific environment. The `trackmouse.py` utility can be used to find the correct coordinates.
+**Prerequisites**
 
-Additionally, these tests assume that the toolbar is on top
+These tests are highly dependent on screen resolution and window placement. 
+
+-   Screen size of width=2560, height=1440
+-   Tool bar icon size should be set to Medium 24
+-   The toolbar is on top
+-   tkinter (`brew instal python-tk`)
+
+The coordinates in the scripts may need to be adjusted for your specific environment. The `trackmouse.py` utility can be used to find the correct coordinates.
 
 The debug section in umlDiagrammer.ini uses the following values:
 

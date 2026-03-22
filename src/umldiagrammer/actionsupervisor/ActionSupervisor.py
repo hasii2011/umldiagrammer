@@ -31,16 +31,20 @@ from umlshapes.frames.DiagramFrame import FrameId
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
+from umlshapes.commands.CreateUmlNoteCommand import CreateUmlNoteCommand
+from umlshapes.commands.CreateUmlClassCommand import CreateUmlClassCommand
+from umlshapes.commands.CreateUmlTextCommand import CreateUmlTextCommand
+from umlshapes.commands.CreateUmlActorCommand import CreateUmlActorCommand
+from umlshapes.commands.CreateUmlUseCaseCommand import CreateUmlUseCaseCommand
+
 from umldiagrammer.UIAction import UIAction
 from umldiagrammer.UIIdentifiers import UIIdentifiers
 
 from umldiagrammer.DiagrammerTypes import UmlShapeGenre
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
-from umldiagrammer.commands.CommandCreateUmlClass import CommandCreateUmlClass
-from umldiagrammer.commands.CommandCreateUmlLink import CommandCreateUmlLink
-from umldiagrammer.commands.CommandCreateUmlNote import CommandCreateUmlNote
-from umldiagrammer.commands.CommandCreateUmlText import CommandCreateUmlText
+
 from umldiagrammer.commands.CommandCreateLollipopInterface import CommandCreateLollipopInterface
 
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
@@ -236,12 +240,39 @@ class ActionSupervisor(metaclass=SingletonV3):
             case UIAction.NEW_CLASS:
                 if self._isThisLegalClassDiagramAction(umlFrame=umlFrame) is True:
                     self.logger.info(f'Create Class on frame: {umlFrame.id} at {umlPosition=}')
-                    cmd = CommandCreateUmlClass(umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+
+                    cmd = CreateUmlClassCommand(
+                        umlFrame=umlFrame,
+                        umlPosition=umlPosition,
+                        umlPubSubEngine=self._umlPubSubEngine
+                    )
             case UIAction.NEW_NOTE:
                 if self._isThisLegalClassDiagramAction(umlFrame=umlFrame) is True:
-                    cmd = CommandCreateUmlNote(umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+                    cmd = CreateUmlNoteCommand(
+                        umlFrame=umlFrame,
+                        umlPosition=umlPosition,
+                        umlPubSubEngine=self._umlPubSubEngine
+                    )
             case UIAction.NEW_TEXT:
-                cmd = CommandCreateUmlText(umlFrame=umlFrame, umlPosition=umlPosition, appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
+                cmd = CreateUmlTextCommand(
+                    umlFrame=umlFrame,
+                    umlPosition=umlPosition,
+                    umlPubSubEngine=self._umlPubSubEngine
+                )
+            case UIAction.NEW_ACTOR:
+                if self._isThisLegalUseCaseDiagramAction(umlFrame=umlFrame) is True:
+                    cmd = CreateUmlActorCommand(
+                        umlFrame=umlFrame,
+                        umlPosition=umlPosition,
+                        umlPubSubEngine=self._umlPubSubEngine
+                    )
+            case UIAction.NEW_USECASE:
+                if self._isThisLegalUseCaseDiagramAction(umlFrame=umlFrame) is True:
+                    cmd = CreateUmlUseCaseCommand(
+                        umlFrame=umlFrame,
+                        umlPosition=umlPosition,
+                        umlPubSubEngine=self._umlPubSubEngine
+                    )
 
         if cmd is not None:
             self._resetToActionSelector()
@@ -363,8 +394,8 @@ class ActionSupervisor(metaclass=SingletonV3):
         if result.isValid is True:
             self._destination = umlShape
 
-            command:  CommandCreateUmlLink = self._createLinkCommand()
-            umlFrame: UmlFrame             = self._source.umlFrame
+            command:  CreateLinkCommand = self._createLinkCommand()
+            umlFrame: UmlFrame          = self._source.umlFrame
 
             umlFrame.commandProcessor.Submit(command=command, storeIt=True)
 
@@ -435,19 +466,18 @@ class ActionSupervisor(metaclass=SingletonV3):
     def _selectActionSelectorTool(self):
         self._selectTool(UIIdentifiers.ID_ARROW)
 
-    def _createLinkCommand(self) -> CommandCreateUmlLink:
+    def _createLinkCommand(self) -> CreateLinkCommand:
 
-        assert self._source is not None, 'Developer error: The link source is not set'
+        assert self._source is not None,      'Developer error: The link source is not set'
         assert self._destination is not None, 'Developer error: The link destination is not set'
+
         linkType: LinkType = UI_ACTION_TO_LINK_TYPE[self._currentAction]
 
-        umlFrame: UmlFrame = self._source.umlFrame
-
-        command: CommandCreateUmlLink = CommandCreateUmlLink(umlFrame=umlFrame,
-                                                             appPubSubEngine=self._appPubSubEngine,
-                                                             umlPubSubEngine=self._umlPubSubEngine,
-                                                             source=self._source,
-                                                             destination=self._destination,
-                                                             linkType=linkType
-                                                             )
+        command: CreateLinkCommand = CreateLinkCommand(
+            partialName=f'Create {linkType.name.capitalize()}-Link',
+            sourceShape=self._source,
+            destinationShape=self._destination,
+            linkType=linkType,
+            umlPubSubEngine=self._umlPubSubEngine
+        )
         return command

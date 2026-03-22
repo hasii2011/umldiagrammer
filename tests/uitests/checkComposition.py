@@ -16,6 +16,8 @@ from pyautogui import press
 from pyautogui import click
 from pymsgbox import alert
 
+from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
+from tests.uitests.common import PAUSE_AFTER_EACH_CALL
 from tests.uitests.common import displayAppropriateDialog
 from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
@@ -38,8 +40,8 @@ GOLDEN_COMPOSITION_XML: str = (
     '        <UmlLink id="" fromX="315" fromY="269" toX="644" toY="405" spline="False">\n'
     '            <AssociationName deltaX="0" deltaY="0" />\n'
     '            <SourceCardinality deltaX="0" deltaY="0" />\n'
-    '            <DestinationCardinality deltaX="0" deltaY="0" />\n'
-    '            <ModelLink name="" type="COMPOSITION" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="" destinationCardinalityValue="" />\n'
+    '            <DestinationCardinality deltaX="0" deltaY="30" />\n'
+    '            <ModelLink name="" type="COMPOSITION" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="src Card" destinationCardinalityValue="dst Card" />\n'
     '        </UmlLink>\n'
     '    </UMLDiagram>\n'
     '</UmlProject>'
@@ -49,12 +51,12 @@ COMPOSITION_XML_FILENAME:         str = f'{BASENAME}.xml'
 COMPOSITION_FILENAME:             Path = Path(f'/tmp/{BASENAME}.udt')
 DECOMPRESSED_COMPOSITION_PROJECT: Path = Path(f'/tmp/{COMPOSITION_XML_FILENAME}')
 
-pyautogui.PAUSE = 0.5
-
 COMPOSITION_FILENAME.unlink(missing_ok=True)
 DECOMPRESSED_COMPOSITION_PROJECT.unlink(missing_ok=True)
 
 if __name__ == '__main__':
+    pyautogui.PAUSE = PAUSE_AFTER_EACH_CALL
+    pyautogui.FAILSAFE = True
 
     if isAppRunning() is False:
         alert(text='The diagrammer is not running', title='Hey, bonehead', button='OK')
@@ -65,13 +67,13 @@ if __name__ == '__main__':
         click(x=729, y=70)
         click(x=473, y=331)
         click(x=826, y=366)
-        press('backspace', presses=13)
+        press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
         write('Composer')
         click(x=985, y=696)
         click(x=728, y=66)
         click(x=880, y=500)
         click(x=782, y=364)
-        press('backspace', presses=12)
+        press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
         write('Composed')
         click(x=982, y=681)
         click(x=1022, y=72)

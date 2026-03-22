@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# /// script
+# dependencies = ['pyautogui', 'pillow', 'umlshapes']
+# ///
 
 import pyautogui
 
@@ -117,6 +120,7 @@ def addPublicField():
 if __name__ == '__main__':
 
     pyautogui.PAUSE = 0.5
+    pyautogui.FAILSAFE = True
 
     umlPreferences: UmlPreferences = UmlPreferences()
 

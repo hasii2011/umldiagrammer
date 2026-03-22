@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# /// script
+# dependencies = ['pyautogui', 'pillow', 'umlshapes']
+# ///
 
 from pathlib import Path
 
@@ -13,6 +16,7 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
+from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.common import LOC_CLASS_TOOL_BAR
 from tests.uitests.common import LOC_TOOLBAR_Y
 from tests.uitests.common import DOUBLE_CLICK_INTERVAL
@@ -65,25 +69,24 @@ CHOOSE_BASECLASS: UmlPosition = UmlPosition(x=440, y=235)
 
 SUBCLASS_NAME:    str = 'SubClass'
 BASECLASS_NAME:   str = 'BaseClass'
-ADJUST_FOR_COUNT: int = 1
 
-def createBaseClass(eraseName: str):
+def createBaseClass():
     click(x=LOC_CLASS_TOOL_BAR.x,      y=LOC_CLASS_TOOL_BAR.y)
     click(x=LOC_CREATE_BASE_CLASS.x,   y=LOC_CREATE_BASE_CLASS.y)
 
     click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
-    press('backspace', presses=len(eraseName) + ADJUST_FOR_COUNT)
+    press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
     typewrite(BASECLASS_NAME, interval=TYPE_WRITE_INTERVAL)
 
     click(x=LOC_CLICK_BASE_CLASS_OK.x, y=LOC_CLICK_BASE_CLASS_OK.y)
 
 
-def createSubClass(eraseName: str):
+def createSubClass():
     click(x=LOC_CLASS_TOOL_BAR.x,          y=LOC_CLASS_TOOL_BAR.y)
     click(x=LOC_CREATE_SUB_CLASS.x,        y=LOC_CREATE_SUB_CLASS.y)
 
     click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
-    press('backspace', presses=len(eraseName) + ADJUST_FOR_COUNT)
+    press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
     typewrite(SUBCLASS_NAME, interval=TYPE_WRITE_INTERVAL)
 
     click(x=LOC_CLICK_SUBCLASS_CLASS_OK.x, y=LOC_CLICK_SUBCLASS_CLASS_OK.y)
@@ -92,10 +95,9 @@ def createSubClass(eraseName: str):
 if __name__ == '__main__':
 
     pyautogui.PAUSE = 0.5
+    pyautogui.FAILSAFE = True
 
     umlPreferences: UmlPreferences = UmlPreferences()
-
-    defaultClassName: str = umlPreferences.defaultClassName
 
     INHERITANCE_PROJECT_FILENAME.unlink(missing_ok=True)
     DECOMPRESSED_INHERITANCE_PROJECT.unlink(missing_ok=True)
@@ -105,8 +107,8 @@ if __name__ == '__main__':
     else:
         makeAppActive()
 
-        createBaseClass(defaultClassName)
-        createSubClass(defaultClassName)
+        createBaseClass()
+        createSubClass()
 
         click(x=LOC_INHERITANCE_TOOL_BAR.x, y=LOC_INHERITANCE_TOOL_BAR.y)
         click(x=CHOOSE_SUBCLASS.x, y=CHOOSE_SUBCLASS.y)
