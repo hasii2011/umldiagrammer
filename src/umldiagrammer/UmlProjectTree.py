@@ -30,11 +30,11 @@ from wx import TextEntryDialog
 from wx import NewIdRef as wxNewIdRef
 from wx import CallAfter as wxCallAfter
 
+from umlshapes.utils.IDUtil import IDUtil
+
 from umlio.IOTypes import UmlDocumentTitle
 from umlio.IOTypes import UmlProject
 from umlio.IOTypes import UmlDocument
-
-from umlshapes.UmlUtils import UmlUtils
 
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
@@ -98,7 +98,7 @@ class UmlProjectTree(TreeCtrl):
 
         """
         documentNode:    TreeItemId = self.AppendItem(self.root, umlDocument.documentTitle)
-        treeNodeTopicId: UniqueId   = UniqueId(UmlUtils.getID())  # TODO: We should not use UML Shape
+        treeNodeTopicId: UniqueId   = UniqueId(IDUtil.getID())  # TODO: We should not use UML Shape
 
         treeData: TreeNodeData = TreeNodeData(
             umlDocument=umlDocument,

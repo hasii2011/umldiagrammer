@@ -1,16 +1,17 @@
 
-from logging import Logger
-from logging import getLogger
 from typing import Dict
 from typing import cast
 
+from logging import Logger
+from logging import getLogger
+
 from pubsub import pub
 
-from wx import CommandEvent
 from wx import EVT_MENU
 from wx import ID_ABOUT
 
 from wx import Menu
+from wx import CommandEvent
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
@@ -66,8 +67,9 @@ class HelpMenuHandler(BaseMenuHandler):
         # self.logger.info(f'Snooped on topic: {opaqueTopicStr} {kwargs}')
         from pubsub.core import Topic
         topic: Topic = cast(Topic, opaqueTopicStr)
+        topicName: str = topic.getName()
 
-        if opaqueTopicStr in self._topicCount.keys():
-            self._topicCount[topic.getName()] += 1
+        if topicName in self._topicCount:
+            self._topicCount[topicName] += 1
         else:
-            self._topicCount[topic.getName()] = 1
+            self._topicCount[topicName] = 1

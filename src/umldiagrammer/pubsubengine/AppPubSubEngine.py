@@ -29,7 +29,7 @@ class AppPubSubEngine(IAppPubSubEngine, BasePubSubEngine):
         self._sendMessage(topic=self._toTopic(messageType, uniqueId), **kwargs)
 
     def debugSubscribeAllTopics(self, listener):
-        self._subscribe(pub.ALL_TOPICS, listener=listener)
+        self._subscribe(Topic(pub.ALL_TOPICS), listener=listener)
 
     def _toTopic(self, eventType: Enum, uniqueId: str) -> Topic:
         """
@@ -41,5 +41,5 @@ class AppPubSubEngine(IAppPubSubEngine, BasePubSubEngine):
         Returns:
 
         """
-        topic: Topic = Topic(f'{eventType.value}.{uniqueId}')
+        topic: Topic = Topic(f'{eventType.value}.{uniqueId}')       # noqa
         return topic

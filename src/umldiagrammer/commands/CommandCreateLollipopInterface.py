@@ -2,13 +2,12 @@
 from logging import Logger
 from logging import getLogger
 
-from umlmodel.Interface import Interface
-from umlmodel.Interface import Interfaces
-from umlmodel.ModelTypes import ClassName
 from wx import OK
 from wx import Command
 
-from umlshapes.UmlUtils import UmlUtils
+from umlmodel.Interface import Interface
+from umlmodel.Interface import Interfaces
+from umlmodel.ModelTypes import ClassName
 
 from umlshapes.UmlDiagram import UmlDiagram
 
@@ -28,6 +27,8 @@ from umlshapes.types.UmlPosition import UmlPosition
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.links.eventhandlers.UmlLollipopInterfaceEventHandler import UmlLollipopInterfaceEventHandler
+
+from umlshapes.utils.ShapeRelationshipUtils import ShapeRelationshipUtils
 
 from umldiagrammer.data.LollipopCreationData import LollipopCreationData
 
@@ -109,9 +110,9 @@ class CommandCreateLollipopInterface(Command):
         umlLollipopInterface: UmlLollipopInterface = UmlLollipopInterface(interface=interface)
         umlLollipopInterface.attachedTo            = requestingUmlClass
 
-        attachmentSide: AttachmentSide      = UmlUtils.attachmentSide(x=perimeterPoint.x, y=perimeterPoint.y, rectangle=requestingUmlClass.rectangle)
+        attachmentSide: AttachmentSide      = ShapeRelationshipUtils.attachmentSide(x=perimeterPoint.x, y=perimeterPoint.y, rectangle=requestingUmlClass.rectangle)
         umlLollipopInterface.attachmentSide = attachmentSide
-        umlLollipopInterface.lineCentum     = UmlUtils.computeLineCentum(attachmentSide=attachmentSide, umlPosition=perimeterPoint, rectangle=requestingUmlClass.rectangle)
+        umlLollipopInterface.lineCentum     = ShapeRelationshipUtils.computeLineCentum(attachmentSide=attachmentSide, umlPosition=perimeterPoint, rectangle=requestingUmlClass.rectangle)
 
         self.logger.debug(f'{umlLollipopInterface.attachmentSide=} {umlLollipopInterface.lineCentum=}')
 
