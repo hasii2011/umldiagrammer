@@ -1,7 +1,7 @@
 
 from typing import List
-from typing import NewType
 from typing import cast
+from typing import NewType
 
 from logging import Logger
 from logging import getLogger
@@ -15,6 +15,7 @@ from wx import EVT_ACTIVATE
 from wx import STB_DEFAULT_STYLE
 from wx import EVT_WINDOW_DESTROY
 from wx import DEFAULT_FRAME_STYLE
+from wx import FileHistoryMenuPathStyle
 
 from wx import Point
 from wx import Size
@@ -454,8 +455,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         Returns:  A FileHistory object
         """
-        projectHistory: ProjectHistory = ProjectHistory(idBase=ID_FILE1)
-        fhStyle:     int | None  = ProjectHistoryDisplayType.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
+        projectHistory: ProjectHistory           = ProjectHistory(idBase=ID_FILE1)
+        fhStyle:        FileHistoryMenuPathStyle = ProjectHistoryDisplayType.toWxMenuPathStyle(self._preferences.fileHistoryDisplay)
         projectHistory.SetMenuPathStyle(style=fhStyle)
 
         fileHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,

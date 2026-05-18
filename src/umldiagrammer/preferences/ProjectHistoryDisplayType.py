@@ -1,9 +1,7 @@
 
 from enum import Enum
 
-from wx import FH_PATH_SHOW_ALWAYS
-from wx import FH_PATH_SHOW_IF_DIFFERENT
-from wx import FH_PATH_SHOW_NEVER
+from wx import FileHistoryMenuPathStyle
 
 
 class ProjectHistoryDisplayType(Enum):
@@ -15,16 +13,16 @@ class ProjectHistoryDisplayType(Enum):
     SHOW_ALWAYS       = 'Always'
 
     @classmethod
-    def toWxMenuPathStyle(cls, value: 'ProjectHistoryDisplayType') -> int | None:
+    def toWxMenuPathStyle(cls, value: 'ProjectHistoryDisplayType') -> FileHistoryMenuPathStyle:
 
-        pathStyle: int = FH_PATH_SHOW_IF_DIFFERENT
+        pathStyle: FileHistoryMenuPathStyle = FileHistoryMenuPathStyle.FH_PATH_SHOW_IF_DIFFERENT
         match value:
             case ProjectHistoryDisplayType.SHOW_IF_DIFFERENT:
-                pathStyle = FH_PATH_SHOW_IF_DIFFERENT
+                pathStyle = FileHistoryMenuPathStyle.FH_PATH_SHOW_IF_DIFFERENT
             case ProjectHistoryDisplayType.SHOW_NEVER:
-                pathStyle = FH_PATH_SHOW_NEVER
+                pathStyle = FileHistoryMenuPathStyle.FH_PATH_SHOW_NEVER
             case ProjectHistoryDisplayType.SHOW_ALWAYS:
-                pathStyle = FH_PATH_SHOW_ALWAYS
+                pathStyle = FileHistoryMenuPathStyle.FH_PATH_SHOW_ALWAYS
             case _:
                 assert False, 'Unknown project history display type'
 

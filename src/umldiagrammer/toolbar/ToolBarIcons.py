@@ -1,12 +1,16 @@
 
 from typing import Dict
-from typing import NewType
 from typing import cast
+from typing import NewType
+
+from types import ModuleType
 
 from logging import Logger
 from logging import getLogger
 
-from enum import Enum
+from importlib import import_module
+
+from enum import StrEnum
 
 from wx import Bitmap
 from wx import BitmapBundle
@@ -14,11 +18,13 @@ from wx import BitmapBundle
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
+
+from umldiagrammer.toolbar.ToolBarTheme import ToolBarTheme
 from umldiagrammer.toolbar.ToolBarIconSize import ToolBarIconSize
 
 NO_BITMAP: Bitmap = cast(Bitmap, None)
 
-class IconName(Enum):
+class IconName(StrEnum):
     ACTOR       = 'Actor'
     CLASS       = 'Class'
     TEXT        = 'Text'
@@ -43,74 +49,75 @@ class IconName(Enum):
     NEW_SEQUENCE_DIAGRAM = 'NewSequenceDiagram'
     NEW_USECASE_DIAGRAM  = 'NewUseCaseDiagram'
 
+    DEFAULT_PREFERENCES = 'DefaultPreferences'          # Not a toolbar icon but
+    LOLLIPOP            = 'Lollipop'                    # in the Embbeded module
+
     SEQUENCE_DIAGRAM_INSTANCE = 'SequenceDiagramInstance'
     SEQUENCE_DIAGRAM_MESSAGE  = 'SequenceDiagramMessage'
 
 
 IconMap = NewType('IconMap', Dict[IconName, BitmapBundle])
 
+MODULE_NAME_EXTRA_LARGE: str = 'Embedded64'
+MODULE_NAME_LARGE:       str = 'Embedded32'
+MODULE_NAME_MEDIUM:      str = 'Embedded24'
+MODULE_NAME_SMALL:       str = 'Embedded16'
+
+
+class NoSuchModuleException(Exception):
+    pass
 
 class ToolBarIcons:
     def __init__(self):
         self.logger: Logger = getLogger(__name__)
 
         diagrammerPreferences: DiagrammerPreferences = DiagrammerPreferences()
+        self._iconMap:         IconMap               = IconMap({})
+        toolbarTheme:          ToolBarTheme          = diagrammerPreferences.toolbarTheme
+        toolBarIconSize:       ToolBarIconSize       = diagrammerPreferences.toolBarIconSize
 
-        self._iconMap: IconMap = IconMap({})
+        mapSizeToPackage:      Dict[ToolBarIconSize, str] = {
+            ToolBarIconSize.EXTRA_LARGE: MODULE_NAME_EXTRA_LARGE,
+            ToolBarIconSize.LARGE:       MODULE_NAME_LARGE,
+            ToolBarIconSize.MEDIUM:      MODULE_NAME_MEDIUM,
+            ToolBarIconSize.SMALL:       MODULE_NAME_SMALL
+        }
+        embeddedPackageName: str = mapSizeToPackage[toolBarIconSize]
 
-        if diagrammerPreferences.toolBarIconSize == ToolBarIconSize.SMALL:
-            self._loadSmallIcons()
-            self.logger.debug(f'Loaded the small icons')
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.MEDIUM:
-            self._loadMediumIcons()
-            self.logger.debug(f'Loaded the medium icons')
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.LARGE:
-            self._loadLargeIcons()
-            self.logger.debug(f'Loaded the large icons')
-        elif diagrammerPreferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
-            self._loadExtraLargeIcons()
-            self.logger.debug(f'Loaded the extra large icons')
+        self._loadIcons(
+            imagePackage=toolbarTheme.value,
+            embeddedPackageName=embeddedPackageName
+        )
 
     def getIcon(self, iconName: IconName) -> BitmapBundle:
         return BitmapBundle(self._iconMap[iconName])
 
-    def _loadSmallIcons(self):
-        import codeallyadvanced.resources.umldiagrammer.Embedded16
+    def _loadIcons(self, imagePackage: str, embeddedPackageName: str):
+        """
 
-        for variableName in dir(codeallyadvanced.resources.umldiagrammer.Embedded16):
+        Args:
+            imagePackage:           Specifies the theme
+            embeddedPackageName:    Specifies the size
+
+        """
+
+        moduleObj: ModuleType = self._importModule(imagePackage=imagePackage, embeddedPackageName=embeddedPackageName)
+
+        for variableName in dir(moduleObj):
             if not variableName.startswith("__"):
-                pyEmbeddedImage: PyEmbeddedImage = getattr(codeallyadvanced.resources.umldiagrammer.Embedded16, variableName)
+                # self.logger.info(f'{embedded=}')
+                pyEmbeddedImage: PyEmbeddedImage = getattr(moduleObj, variableName)
                 if isinstance(pyEmbeddedImage, PyEmbeddedImage):
                     bmp: Bitmap = pyEmbeddedImage.GetBitmap()
                     self._iconMap[IconName(variableName)] = bmp
 
-    def _loadLargeIcons(self):
-        import codeallyadvanced.resources.umldiagrammer.Embedded32
+    def _importModule(self, imagePackage: str, embeddedPackageName: str) -> ModuleType:
 
-        for variableName in dir(codeallyadvanced.resources.umldiagrammer.Embedded32):
-            if not variableName.startswith("__"):
-                pyEmbeddedImage: PyEmbeddedImage = getattr(codeallyadvanced.resources.umldiagrammer.Embedded32, variableName)
-                if isinstance(pyEmbeddedImage, PyEmbeddedImage):
-                    bmp: Bitmap = pyEmbeddedImage.GetBitmap()
-                    self._iconMap[IconName(variableName)] = bmp
+        moduleStr: str = f'{imagePackage}.{embeddedPackageName}'
+        try:
+            moduleObj: ModuleType = import_module(moduleStr)
+        except ImportError:
+            self.logger.error(f'Failed to import icon package: {moduleStr}')
+            raise NoSuchModuleException(f'Failed to import icon package: {moduleStr}')
 
-    def _loadMediumIcons(self):
-        import codeallyadvanced.resources.umldiagrammer.Embedded24
-
-        for variableName in dir(codeallyadvanced.resources.umldiagrammer.Embedded24):
-            if not variableName.startswith("__"):
-                pyEmbeddedImage: PyEmbeddedImage = getattr(codeallyadvanced.resources.umldiagrammer.Embedded24, variableName)
-                if isinstance(pyEmbeddedImage, PyEmbeddedImage):
-                    bmp: Bitmap = pyEmbeddedImage.GetBitmap()
-                    self._iconMap[IconName(variableName)] = bmp
-
-    def _loadExtraLargeIcons(self):
-
-        import codeallyadvanced.resources.umldiagrammer.Embedded64
-
-        for variableName in dir(codeallyadvanced.resources.umldiagrammer.Embedded64):
-            if not variableName.startswith("__"):
-                pyEmbeddedImage: PyEmbeddedImage = getattr(codeallyadvanced.resources.umldiagrammer.Embedded64, variableName)
-                if isinstance(pyEmbeddedImage, PyEmbeddedImage):
-                    bmp: Bitmap = pyEmbeddedImage.GetBitmap()
-                    self._iconMap[IconName(variableName)] = bmp
+        return moduleObj

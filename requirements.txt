@@ -22,9 +22,9 @@ wxPython==4.2.4
 Pypubsub==4.0.7
 semantic-version==2.10.0
 codeallybasic==1.30.1
-codeallyadvanced==2.4.2
+codeallyadvanced==2.5.5
 umlmodel==3.4.1
 
-umlshapes==2.3.2
+umlshapes==2.3.5
 umlio==0.7.1
-umlextensions==0.9.0
+umlextensions==0.9.1

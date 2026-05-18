@@ -5,6 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+import pubsub
 from pubsub import pub
 
 from wx import EVT_MENU
@@ -64,10 +65,11 @@ class HelpMenuHandler(BaseMenuHandler):
 
     # noinspection PyUnusedLocal
     def _snoop(self, opaqueTopicStr=pub.AUTO_TOPIC, **kwargs):
-        # self.logger.info(f'Snooped on topic: {opaqueTopicStr} {kwargs}')
-        from pubsub.core import Topic
+
+        from pubsub.core.topicobj import Topic
+
         topic: Topic = cast(Topic, opaqueTopicStr)
-        topicName: str = topic.getName()
+        topicName: str = topic.getName()            # type: ignore
 
         if topicName in self._topicCount:
             self._topicCount[topicName] += 1
