@@ -33,7 +33,7 @@ jobs:
             echo "***************************************************"
             pip install --upgrade pip
             pip install setuptools
-            pip instal twine
+            pip install twine
             pip install wheel
             pip install six==1.17.0
             pip install attrdict3
