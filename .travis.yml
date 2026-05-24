@@ -37,7 +37,7 @@ install:
   - pip install wheel
   - pip install six==1.17.0
   - pip install attrdict3==2.0.2
-  - pip install -v wxPython==4.2.5
+  - travis_wait pip install -vvv wxPython==4.2.5
   - pip install semantic-version==2.10.0
   - pip install codeallybasic==1.30.1
   - pip install umlmodel==3.4.1
