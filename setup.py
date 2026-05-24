@@ -1,17 +1,22 @@
 
-import pathlib
-import sys
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
+
+from sys import path
+
+from pathlib import Path
+
 from setuptools import setup, find_packages
 
 # The directory containing this file
-HERE = pathlib.Path(__file__).parent
+HERE = Path(__file__).parent
 
 # Add src to sys.path so we can import umldiagrammer for the version
 # without requiring PYTHONPATH to be set externally
-sys.path.insert(0, str(HERE / "src"))
+path.insert(0, str(HERE / "src"))
 
-from umldiagrammer import __version__       # noqa
+# noinspection PyPep8
+from umldiagrammer import __version__
 
 APP = ['src/umldiagrammer/UmlDiagrammer.py']
 DATA_FILES = [('umldiagrammer/resources', ['src/umldiagrammer/resources/loggingConfiguration.json'])]

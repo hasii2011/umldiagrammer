@@ -31,12 +31,13 @@ install:
   - echo $GLOBAL
   - PY_VERSION=${GLOBAL#* }
   - pyenv global ${PY_VERSION}
-  - pip install pip==26.0.1
-  - pip install wheel==0.44.0
-  - pip install setuptools==70.1.1
+  - pip install --upgrade pip
+  - pip install setuptools
+  - pip install twine
+  - pip install wheel
   - pip install six==1.17.0
   - pip install attrdict3==2.0.2
-  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
+  - pip install -v wxPython==4.2.5
   - pip install semantic-version==2.10.0
   - pip install codeallybasic==1.30.1
   - pip install umlmodel==3.4.1

@@ -2,7 +2,7 @@
 version: '2.1'
 
 orbs:
-  python: circleci/python@2.1.1
+  python: circleci/python@4.0.0
 
 workflows:
   main:
@@ -25,16 +25,19 @@ jobs:
       - run:
           name: Install library dependencies
           command: |
+            echo "***************************************************"
             sudo apt update
             sudo apt install libnotify-dev
             sudo apt install libgtk-3-dev
             sudo apt-get install -y  libsdl2-dev
-            pip install pip==26.0.1 
-            pip install wheel==0.44.0
-            pip install setuptools==70.1.1
+            echo "***************************************************"
+            pip install --upgrade pip
+            pip install setuptools
+            pip instal twine
+            pip install wheel
             pip install six==1.17.0
-            pip install attrdict3==2.0.2  
-            pip install -v -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
+            pip install attrdict3
+            pip install wxPython==4.2.5
             pip install semantic-version==2.10.0
             pip install codeallybasic==1.30.1
             pip install codeallyadvanced==2.5.5
