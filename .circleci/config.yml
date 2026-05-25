@@ -46,7 +46,7 @@ jobs:
             pip install umlio==0.7.1
             pip install umlextensions==0.9.1
             pip install buildlackey==2.0.0
-            pip install Pypubsub==4.0.3
+            pip install Pypubsub==4.0.7
       - save_cache:
           key: *deps1-cache
           paths:
