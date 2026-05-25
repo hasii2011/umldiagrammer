@@ -44,6 +44,9 @@ To run these tests, you need to have the UML Diagrammer application running. The
 # from the project root
 cd tests/uitests
 uv run checkClass.py
+uv run checkAggregation.py
+uv run checkComposition.py
+uv run checkInheritance.py
 
 ```
 

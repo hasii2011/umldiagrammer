@@ -18,6 +18,7 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.common import DOUBLE_CLICK_INTERVAL
 from tests.uitests.common import LOC_CLASS_TOOL_BAR
 from tests.uitests.common import TYPE_WRITE_INTERVAL
@@ -26,6 +27,8 @@ from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
 from tests.uitests.common import makeAppActive
 from tests.uitests.common import wasTestSuccessful
+
+WELL_KNOWN_CLASS_NAME = 'ClassName1'
 
 #
 # Removed the IDs
@@ -56,6 +59,8 @@ LOC_CREATE_CLASS:           UmlPosition = UmlPosition(x=680, y=370)
 LOC_CLICK_ADD_METHOD:       UmlPosition = UmlPosition(x=600, y=620)
 LOC_CLICK_ADD_PARAMETER:    UmlPosition = UmlPosition(x=600, y=565)
 LOC_CLICK_ADD_FIELD:        UmlPosition = UmlPosition(x=595, y=490)
+
+LOC_CLASS_NAME:             UmlPosition = UmlPosition(x=783, y=370)
 
 LOC_CLICK_PARAMETER_NAME:   UmlPosition = UmlPosition(x=645, y=395)
 LOC_CLICK_PARAMETER_TYPE:   UmlPosition = UmlPosition(x=729, y=398)
@@ -137,6 +142,9 @@ if __name__ == '__main__':
 
         click(x=LOC_CLASS_TOOL_BAR.x,   y=LOC_CLASS_TOOL_BAR.y)
         click(x=LOC_CREATE_CLASS.x,     y=LOC_CREATE_CLASS.y)
+        click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y)
+        press('backspace', BACKSPACES_CLEAR_CLASS_NAME)
+        typewrite(WELL_KNOWN_CLASS_NAME)
 
         click(x=LOC_CLICK_ADD_METHOD.x, y=LOC_CLICK_ADD_METHOD.y)
         addParameterMethod()
