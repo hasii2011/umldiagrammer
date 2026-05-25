@@ -31,6 +31,7 @@ install:
   - pip install setuptools==70.3.0
   - pip install twine
   - pip install wheel
+  - pip install Cython
   - pip install six==1.17.0
   - pip install attrdict3==2.0.2
   - travis_wait pip install -vvv --no-build-isolation wxPython==4.2.5
