@@ -31,6 +31,10 @@ jobs:
             sudo apt install libgtk-3-dev
             sudo apt-get install -y  libsdl2-dev
             echo "***************************************************"
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            . venv/bin/activate
             pip install --upgrade pip
             pip install setuptools==70.3.0
             pip install twine
@@ -54,7 +58,5 @@ jobs:
       - run:
             name: run tests
             command: | 
-              python3 -m venv venv
               . venv/bin/activate
-              pip install buildlackey
               unittests
