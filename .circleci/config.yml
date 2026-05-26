@@ -41,7 +41,7 @@ jobs:
             pip install wheel
             pip install six==1.17.0
             pip install attrdict3
-            pip install -vvv --build-constraint constraints.txt wxPython==4.2.5
+            pip install -vvv -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04 wxPython==4.2.5
             pip install semantic-version==2.10.0
             pip install codeallybasic==1.30.1
             pip install codeallyadvanced==2.5.5
