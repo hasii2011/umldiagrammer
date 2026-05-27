@@ -45,7 +45,7 @@ jobs:
             pip install umlmodel==3.4.1
             pip install six==1.17.0
             pip install attrdict3
-            pip install -vvv wxPython==4.2.5
+            pip install -vvv https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.5-cp313-cp313-linux_x86_64.whl
             pip install semantic-version==2.10.0
             pip install codeallyadvanced==2.5.5
             pip install umlshapes==2.3.8
