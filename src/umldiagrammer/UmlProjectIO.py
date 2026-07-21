@@ -71,7 +71,7 @@ class UmlProjectIO:
 
         fileName: Path = umlProject.fileName
         if fileName == DEFAULT_PROJECT_PATH:
-            self.doFileSaveAs(umlProject=umlProject)
+            self.saveAsProject(umlProject=umlProject)
         else:
             if fileName.suffix != PROJECT_SUFFIX:
                 if self._preferences.saveOnlyWritesCompressed is True:
@@ -82,11 +82,17 @@ class UmlProjectIO:
 
             writer: Writer = Writer()
             writer.writeFile(umlProject=umlProject, fileName=umlProject.fileName)
-            self.logger.info(f'Project Saved - {fileName=}')
 
-    def doFileSaveAs(self, umlProject: UmlProject) -> str:
+            self.logger.info(f'Project Saved - fileName: {str(fileName)}')
+
+            self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
+                                              uniqueId=NOTEBOOK_ID,
+                                              projectPath=umlProject.fileName
+                                              )
+
+    def saveAsProject(self, umlProject: UmlProject) -> str:
         """
-        Actually do the file save as
+
         May return a blank file name if the user cancelled out of the file selection or
         tried to rename to a current project in the diagrammer
 
@@ -109,12 +115,13 @@ class UmlProjectIO:
                         dlg.ShowModal()
                     specifiedFileName = ''
                 else:
-                    self.saveAsProject(umlProject, specifiedFileName)
+                    self._saveAsProject(umlProject, specifiedFileName)
 
         return specifiedFileName
 
-    def saveAsProject(self, umlProject: UmlProject, specifiedFileName: str):
+    def _saveAsProject(self, umlProject: UmlProject, specifiedFileName: str):
         """
+        Actually do the file save as
 
         Args:
             umlProject:

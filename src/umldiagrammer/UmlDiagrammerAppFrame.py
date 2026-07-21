@@ -6,11 +6,9 @@ from typing import NewType
 from logging import Logger
 from logging import getLogger
 
-from wx import OK
 from wx import BOTH
 from wx import ID_FILE1
 from wx import EVT_CLOSE
-from wx import ICON_ERROR
 from wx import EVT_ACTIVATE
 from wx import STB_DEFAULT_STYLE
 from wx import EVT_WINDOW_DESTROY
@@ -24,7 +22,6 @@ from wx import ToolBar
 from wx import MenuBar
 from wx import CommandEvent
 from wx import ActivateEvent
-from wx import MessageDialog
 from wx import WindowDestroyEvent
 
 from wx import Yield as wxYield
@@ -60,7 +57,6 @@ from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.DiagrammerTypes import FrameIdMap
 
 from umldiagrammer.ActionMap import ActionMap
-from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.UIAction import UIAction
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
@@ -106,11 +102,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         # Show full screen ?
         if self._preferences.fullScreen is True:
-
-            # dc:   ScreenDC = ScreenDC()
-            # appSize: Size  = dc.GetSize()
-
-            # appSize.height -= HACK_ADJUST_EXIT_HEIGHT     This does not seem to be needed anymore since I change the frame style
 
             super().__init__(parent=None, title='UML Diagrammer')
             self.Maximize(True)
@@ -352,15 +343,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
 
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
-            umlProjectIO.doFileSaveAs(umlProject=projectDossier.umlProject)
+            umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
+            self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
         else:
             if projectDossier.modified is True:
                 umlProjectIO.saveProject(umlProject=umlProject)
-
-                self._appPubSubEngine.sendMessage(messageType=MessageType.CURRENT_PROJECT_SAVED,
-                                                  uniqueId=NOTEBOOK_ID,
-                                                  projectPath=umlProject.fileName
-                                                  )
             else:
                 self.SetStatusText(text='No save needed, project not modified')
 
@@ -369,7 +356,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
 
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
-            projectName: str = umlProjectIO.doFileSaveAs(umlProject=umlProject)
+            projectName: str = umlProjectIO.saveAsProject(umlProject=umlProject)
         else:
             umlProjectIO.saveProject(umlProject=umlProject)
             projectName = str(umlProject.fileName)
@@ -382,13 +369,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         projectDossier: ProjectDossier = self._umlNotebook.currentProject
 
-        if projectDossier.umlProject is None:
-            booBoo: MessageDialog = MessageDialog(parent=None, message='No UML documents to save !', caption='Error', style=OK | ICON_ERROR)
-            booBoo.ShowModal()
-        else:
-            umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-            umlProjectIO.doFileSaveAs(umlProject=projectDossier.umlProject)
-            self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
+        assert projectDossier.umlProject is not None, 'This is a developer error'
+
+        umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
+        umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
+        self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.debug(f'{message=}')
@@ -502,9 +487,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
         """
         self.logger.info(f'Displaying: {umlProject.fileName}')
 
+        #
+        # On start up we load an empty project and thier will be no notebook
+        # Lazy UI creation
+        # noinspection PyUnreachableCode
         if self._umlNotebook is None:
-            # Lazy UI creation
-
             sizedPanel: SizedPanel = self.GetContentsPane()
             self._umlNotebook = UmlNotebook(sizedPanel,
                                             appPubSubEngine=self._appPubSubEngine,
