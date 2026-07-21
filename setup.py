@@ -50,7 +50,7 @@ PY2APP_OPTIONS: Dict[str, Any] = {
                 'CFBundleTypeExtensions': ['udt', 'xml']
             }
         ],
-        'LSMinimumSystemVersion': '12',
+        'LSMinimumSystemVersion': '26.5',
         'LSEnvironment': {
             'APP_MODE': 'True',
             'PYTHONOPTIMIZE': '1',

@@ -285,14 +285,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._doToolSelect(toolId=event.GetId())
         wxYield()
 
-    # noinspection PyUnusedLocal
-    def _onWindowDestroy(self, event: WindowDestroyEvent):
+    def _onWindowDestroy(self, _event: WindowDestroyEvent):
         """
         TODO: Maybe this belongs in the Close handler
         A little extra cleanup is required for the FileHistory control;
         Take time to persist the file history
         Args:
-            event:
+            _event:
         """
         #
         # On OS X this gets stored in ~/Library/Preferences

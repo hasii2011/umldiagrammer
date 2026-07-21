@@ -1,19 +1,26 @@
-wheel==0.44.0
+wheel==0.47.0
+
 # https://github.com/ronaldoussoren/py2app/issues/538#issuecomment-3193389958
 # Don't upgrade past this version as 70.x.x does not work
+#
+# Well the above was fix in py2app 0.28.10 (Leaving comment here for reference for my other py2app applications)
+# https://github.com/ronaldoussoren/py2app/issues/564
+#
 # setuptools==70.1.1
-setuptools==70.3.0
+setuptools==83.0.0
+# setuptools==70.3.0
 
 # the following necessary when building the
 # application with py2App
-chardet==5.2.0
+# chardet==5.2.0
 
-py2app==0.28.9
+# py2app==0.28.9
+py2app==0.28.10
 
-mypy==1.19.1
+mypy==2.3.0
 html-testRunner~=1.2.1
 pyautogui==0.9.54
-pillow==12.0.0
+pillow==12.2.0
 PyMsgBox==2.0.1
 # So Circle CI works
 buildlackey==2.0.0
@@ -21,10 +28,11 @@ buildlackey==2.0.0
 wxPython==4.2.5
 Pypubsub==4.0.7
 semantic-version==2.10.0
-codeallybasic==1.30.1
-codeallyadvanced==2.5.5
-umlmodel==3.4.1
 
-umlshapes==2.3.8
+codeallybasic==1.40.0
+codeallyadvanced==2.5.5
+
+umlmodel==3.4.1
+umlshapes==2.3.10
 umlio==0.7.2
 umlextensions==0.9.1
