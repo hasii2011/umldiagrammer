@@ -243,10 +243,6 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
         self._changed = True
 
-    # noinspection PyUnusedLocal
-    def _onResetTips(self, event: CommandEvent):
-        self._preferences.currentTip = 0
-
     def _onFileHistoryPathPrefChanged(self, event: CommandEvent):
 
         newValue: str = event.GetString()
@@ -262,15 +258,15 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._preferences.toolBarIconSize = newPreference
 
     def _pathChangedCallback(self, newPath: Path):
-        self._preferences.diagramsDirectory = str(newPath)
+        self._preferences.diagramsDirectory = newPath
 
     def _onToolBarPositionValueChanged(self, event: CommandEvent):
         valueStr: str = event.GetString()
 
-        self._preferences.toolBarPosition = valueStr
+        self._preferences.toolBarPosition = ToolBarPosition(valueStr)
         self._restartNeededMessage()
 
     def _onProjectTabPositionValueChanged(self, event: CommandEvent):
         valueStr: str = event.GetString()
 
-        self._preferences.projectTabPosition = valueStr
+        self._preferences.projectTabPosition = ProjectTabPosition(valueStr)

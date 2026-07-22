@@ -1,3 +1,4 @@
+from pathlib import Path
 
 from codeallybasic.Position import Position
 from codeallybasic.Dimensions import Dimensions
@@ -33,15 +34,18 @@ DEFAULT_PROJECT_TAB_POSITION: str = ProjectTabPosition.TOP.value
 
 SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('loadLastOpenedProject'):   ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
-        KeyName('autoResizeShapesOnEdit'):  ValueDescription(defaultValue='True',  deserializer=SecureConversions.secureBoolean),
-        KeyName('diagramsDirectory'):       ValueDescription(defaultValue=''),
+        KeyName('loadLastOpenedProject'):   ValueDescription(defaultValue='False',  deserializer=SecureConversions.secureBoolean),
+        KeyName('autoResizeShapesOnEdit'):  ValueDescription(defaultValue='True',   deserializer=SecureConversions.secureBoolean),
+        KeyName('diagramsDirectory'):       ValueDescription(defaultValue=Path(''), deserializer=Path),
 
         KeyName('toolBarIconSize'):         ValueDescription(defaultValue=DEFAULT_TB_ICON_SIZE,    deserializer=ToolBarIconSize.deSerialize, enumUseValue=True),
         KeyName('toolbarTheme'):            ValueDescription(defaultValue=DEFAULT_TOOLBAR_THEME,   deserializer=ToolBarTheme,                enumUseValue=True),
         KeyName('fileHistoryDisplay'): ValueDescription(defaultValue=DEFAULT_FILE_HISTORY_DISPLAY, deserializer=ProjectHistoryDisplayType,   enumUseValue=True),
 
         KeyName('saveOnlyWritesCompressed'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
+
+        KeyName('displayProjectExtension'): ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+
     }
 )
 

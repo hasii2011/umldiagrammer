@@ -41,6 +41,8 @@ from umlio.IOTypes import PROJECT_SUFFIX
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umldiagrammer.dialogs.DlgEditProjectHistory import DlgEditProjectHistory
+
 from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 
@@ -101,12 +103,13 @@ class FileMenuHandler(BaseMenuHandler):
         sizedFrame.Bind(EVT_MENU, self.newUseCaseDiagram,  id=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM)
         sizedFrame.Bind(EVT_MENU, self.newSequenceDiagram, id=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM)
 
-        sizedFrame.Bind(EVT_MENU, self.openXmlFile,    id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
-        sizedFrame.Bind(EVT_MENU, self.fileSave,       id=ID_SAVE)
-        sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,  id=ID_SAVEAS)
-        sizedFrame.Bind(EVT_MENU, self._closeProject,  id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
-        sizedFrame.Bind(EVT_MENU, self._deleteDiagram, id=UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM)
-        sizedFrame.Bind(EVT_MENU, self._onPreferences, id=ID_PREFERENCES)
+        sizedFrame.Bind(EVT_MENU, self.openXmlFile,        id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
+        sizedFrame.Bind(EVT_MENU, self.fileSave,           id=ID_SAVE)
+        sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,      id=ID_SAVEAS)
+        sizedFrame.Bind(EVT_MENU, self._closeProject,      id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
+        sizedFrame.Bind(EVT_MENU, self._deleteDiagram,     id=UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM)
+        sizedFrame.Bind(EVT_MENU, self._manageFileHistory, id=UIIdentifiers.ID_MENU_FILE_MANAGE_FILE_HISTORY)
+        sizedFrame.Bind(EVT_MENU, self._onPreferences,     id=ID_PREFERENCES)
 
         sizedFrame.Bind(EVT_MENU_RANGE, self._onOpenRecent, id=ID_FILE1, id2=ID_FILE9)
 
@@ -116,8 +119,7 @@ class FileMenuHandler(BaseMenuHandler):
     # noinspection PyTypeChecker
     fileHistory = property(fget=None, fset=_setFileHistory)
 
-    # noinspection PyUnusedLocal
-    def openProject(self, event: CommandEvent):
+    def openProject(self, _event: CommandEvent):
         selectedFile: str = FileSelector("Choose a project file to load", wildcard=PROJECT_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
             reader: Reader = Reader()
@@ -125,32 +127,26 @@ class FileMenuHandler(BaseMenuHandler):
             umlProject: UmlProject = reader.readProjectFile(fileName=Path(selectedFile))
             self._loadProject(umlProject)
 
-    # noinspection PyUnusedLocal
-    def newProject(self, event: CommandEvent):
+    def newProject(self, _event: CommandEvent):
         """
         Create an empty project
         """
         umlProject:  UmlProject  = UmlProject.emptyProject()
         self._loadProject(umlProject=umlProject)
 
-    # noinspection PyUnusedLocal
-    def newClassDiagram(self, event: CommandEvent):
+    def newClassDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.CLASS_DOCUMENT)
 
-    # noinspection PyUnusedLocal
-    def newUseCaseDiagram(self, event: CommandEvent):
+    def newUseCaseDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.USE_CASE_DOCUMENT)
 
-    # noinspection PyUnusedLocal
-    def newSequenceDiagram(self, event: CommandEvent):
+    def newSequenceDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.SEQUENCE_DOCUMENT)
 
-    # noinspection PyUnusedLocal
-    def fileSave(self, event: CommandEvent):
+    def fileSave(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
-    # noinspection PyUnusedLocal
-    def openXmlFile(self, event: CommandEvent):
+    def openXmlFile(self, _event: CommandEvent):
 
         selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
@@ -159,23 +155,24 @@ class FileMenuHandler(BaseMenuHandler):
             self.logger.debug(f'{umlProject=}')
             self._loadProject(umlProject)
 
-    # noinspection PyUnusedLocal
-    def _onFileSaveAs(self, event: CommandEvent):
+    def _onFileSaveAs(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_AS_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
-    # noinspection PyUnusedLocal
-    def _closeProject(self, event: CommandEvent):
+    def _closeProject(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CLOSE_PROJECT, uniqueId=NOTEBOOK_ID)
 
-    # noinspection PyUnusedLocal
-    def _deleteDiagram(self, event: CommandEvent):
+    def _deleteDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.DELETE_DIAGRAM, uniqueId=NOTEBOOK_ID)
+
+    def _manageFileHistory(self, _event: CommandEvent):
+
+        with DlgEditProjectHistory(parent=None, fileHistory=self._fileHistory) as dlg:
+            dlg.ShowModal()
 
     def _loadProject(self, umlProject: UmlProject):
         self._appPubSubEngine.sendMessage(messageType=MessageType.OPEN_PROJECT, uniqueId=APPLICATION_FRAME_ID, umlProject=umlProject)
 
-    # noinspection PyUnusedLocal
-    def _onPreferences(self, event: CommandEvent):
+    def _onPreferences(self, _event: CommandEvent):
 
         with DlgPreferences(parent=self._sizedFrame, appPubSubEngine=self._appPubSubEngine) as dlg:
             dlg.ShowModal()
@@ -190,7 +187,7 @@ class FileMenuHandler(BaseMenuHandler):
         fileNum:  int = event.GetId() - ID_FILE1
         fileName: str = self._fileHistory.GetHistoryFile(fileNum)
 
-        self.logger.debug(f'{event=} - filename: {fileName}')
+        self.logger.debug(f'filename: {fileName}')
         filePath: Path = Path(fileName)
         suffix:   str  = filePath.suffix
         reader: Reader = Reader()
