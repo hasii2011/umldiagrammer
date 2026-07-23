@@ -60,10 +60,15 @@ class UmlDiagrammer(App):
 
         self.SetTopWindow(self._wxFrame)
 
-        if self._preferences.loadLastOpenedProject is True:
-            self._wxFrame.loadLastOpenedProject()
+        if self._preferences.debugOpenFiles:
+            from wx import CallAfter as wxCallAfter
+
+            wxCallAfter(self.MacOpenFiles, [self._preferences.debugOpenFilePath])
         else:
-            self._wxFrame.loadEmptyProject()
+            if self._preferences.loadLastOpenedProject is True:
+                self._wxFrame.loadLastOpenedProject()
+            else:
+                self._wxFrame.loadEmptyProject()
 
         return True
 
@@ -77,7 +82,6 @@ class UmlDiagrammer(App):
         self.logger.info(f'MacOpenFiles: {fileNames=}')
         #
         appFrame: UmlDiagrammerAppFrame = self._wxFrame
-        self.logger.debug(f'MacOpenFiles: {appFrame=}')
         #
         for fileName in fileNames:
             appFrame.loadProjectByFilename(fileName)

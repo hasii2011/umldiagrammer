@@ -60,7 +60,7 @@ PY2APP_OPTIONS: Dict[str, Any] = {
 }
 
 setup(
-    name='umldiagrammer',
+    name='UmlDiagrammer',
     version=__version__,
     app=APP,
     data_files=DATA_FILES,

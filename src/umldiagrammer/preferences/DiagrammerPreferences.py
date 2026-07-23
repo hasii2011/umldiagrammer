@@ -32,11 +32,14 @@ DEFAULT_TOOLBAR_THEME:        str = ToolBarTheme.MINIMALIST_GLPYH.value
 
 DEFAULT_PROJECT_TAB_POSITION: str = ProjectTabPosition.TOP.value
 
+DEFAULT_OPEN_FILE_PATH:     Path = Path('/Users/humberto.a.sanchez.ii/UmlDiagramProjects/OpenFileEventTest.udt')
+DEFAULT_DIAGRAMS_DIRECTORY: Path = Path('/tmp')
+
 SECTION_GENERAL: ValueDescriptions = ValueDescriptions(
     {
         KeyName('loadLastOpenedProject'):   ValueDescription(defaultValue='False',  deserializer=SecureConversions.secureBoolean),
         KeyName('autoResizeShapesOnEdit'):  ValueDescription(defaultValue='True',   deserializer=SecureConversions.secureBoolean),
-        KeyName('diagramsDirectory'):       ValueDescription(defaultValue=Path(''), deserializer=Path),
+        KeyName('diagramsDirectory'):       ValueDescription(defaultValue=str(DEFAULT_DIAGRAMS_DIRECTORY), deserializer=Path),
 
         KeyName('toolBarIconSize'):         ValueDescription(defaultValue=DEFAULT_TB_ICON_SIZE,    deserializer=ToolBarIconSize.deSerialize, enumUseValue=True),
         KeyName('toolbarTheme'):            ValueDescription(defaultValue=DEFAULT_TOOLBAR_THEME,   deserializer=ToolBarTheme,                enumUseValue=True),
@@ -61,9 +64,12 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
 )
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('inTestMode'):   ValueDescription(defaultValue='False',       deserializer=SecureConversions.secureBoolean),
-        KeyName('testPosition'): ValueDescription(defaultValue=TEST_POSITION, deserializer=Position.deSerialize),
-        KeyName('testSize'):     ValueDescription(defaultValue=TEST_SIZE,     deserializer=Dimensions.deSerialize),
+        KeyName('inTestMode'):     ValueDescription(defaultValue='False',                deserializer=SecureConversions.secureBoolean),
+        KeyName('testPosition'):   ValueDescription(defaultValue=TEST_POSITION,          deserializer=Position.deSerialize),
+        KeyName('testSize'):       ValueDescription(defaultValue=TEST_SIZE,              deserializer=Dimensions.deSerialize),
+        KeyName('debugOpenFiles'): ValueDescription(defaultValue='False',                deserializer=SecureConversions.secureBoolean),
+        KeyName('debugOpenFilePath'):   ValueDescription(defaultValue=str(DEFAULT_OPEN_FILE_PATH), deserializer=Path),
+
     }
 )
 DIAGRAMMER_SECTIONS: Sections = Sections(

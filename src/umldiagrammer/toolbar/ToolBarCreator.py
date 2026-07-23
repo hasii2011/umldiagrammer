@@ -63,7 +63,6 @@ class ToolBarCreator:
         # Manually create my own tool bar so that the icons sizes are honored
         #
         self._toolBar: ToolBar = ToolBar(parent=appFrame, style=wxToolBarPosition)
-
         #
         # Set the icon size before realizing the tool bar
         #
@@ -111,9 +110,11 @@ class ToolBarCreator:
 
     def disableToolBar(self):
         self._enableToolBar(enable=False)
+        self.logger.info('TooBar disabled')
 
     def enableToolBar(self):
         self._enableToolBar(enable=True)
+        self.logger.info('TooBar enabled')
 
     def _createMenuTools(self):
 

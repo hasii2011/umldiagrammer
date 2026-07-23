@@ -28,3 +28,5 @@ class DiagrammerPreferences:
     inTestMode: bool
     testPosition: Position
     testSize: Dimensions
+    debugOpenFiles: bool
+    debugOpenFilePath: Path
