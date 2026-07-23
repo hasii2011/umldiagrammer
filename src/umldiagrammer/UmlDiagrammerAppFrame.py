@@ -508,10 +508,11 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                         )
 
         self._umlNotebook.addProject(projectPanel=projectPanel)
-        # Close the default project SECOND
-        # Now, the notebook has 2 pages before this call, and drops to 1 page.
-        # It never hits 0, so the toolbar never disables!
-        self._umlNotebook.closeDefaultProject()
+        #
+        # The notebook has 'n' pages before this call
+        # Close the default project SECOND, but ONLY if we aren't currently loading it!
+        if umlProject.fileName != DEFAULT_PROJECT_PATH:
+            self._umlNotebook.closeDefaultProject()
 
         frameIdMap: FrameIdMap = projectPanel.frameIdMap
 
