@@ -1,6 +1,7 @@
 
 from typing import List
 from typing import NewType
+from typing import Optional
 from typing import cast
 from typing import Callable
 
@@ -9,12 +10,6 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlextensions.ExtensionsTypes import CreatedLinkCallback
-from umlextensions.ExtensionsTypes import LinkInformation
-from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
-from umlshapes.commands.DeleteLinkCommand import DeleteLinkCommand
-from umlshapes.types.UmlPosition import UmlPosition
-from umlshapes.types.UmlPosition import UmlPositions
 from wx import ID_YES
 from wx import YES_NO
 from wx import ICON_QUESTION
@@ -38,6 +33,16 @@ from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlshapes.pubsubengine.UmlMessageType import UmlMessageType
+
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlextensions.ExtensionsTypes import CreatedLinkCallback
+
+from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
+from umlshapes.commands.DeleteLinkCommand import DeleteLinkCommand
+
+from umlshapes.types.UmlPosition import UmlPosition
+from umlshapes.types.UmlPosition import UmlPositions
+
 
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import DEFAULT_PROJECT_PATH
@@ -112,7 +117,8 @@ class UmlNotebook(Notebook):
     def currentProject(self) -> ProjectDossier:
         from umlio.IOTypes import UmlProject
 
-        projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
+        projectPanel: Optional[UmlProjectPanel] = cast(UmlProjectPanel, self.GetCurrentPage())
+
         if projectPanel is None:
             return ProjectDossier(umlProject=cast(UmlProject, None), modified=False)
         else:
@@ -163,13 +169,12 @@ class UmlNotebook(Notebook):
             if projectPanel.umlProjectModified is True:
                 self._closeProject(projectPanel=projectPanel)
 
-    # noinspection PyUnusedLocal
-    def _onNewProjectDisplayed(self, event: BookCtrlEvent):
+    def _onNewProjectDisplayed(self, _event: BookCtrlEvent):
         """
         This fires when we add new projects.  Thus, we wind up sending the ACTIVE_DOCUMENT_CHANGED
 
         Args:
-            event:
+            _event:
         """
         projectPanel: UmlProjectPanel = cast(UmlProjectPanel, self.GetCurrentPage())
         frameId:      FrameId         = projectPanel.currentUmlFrameId
@@ -181,13 +186,12 @@ class UmlNotebook(Notebook):
                                           activeFrameId=frameId
                                           )
 
-    # noinspection PyUnusedLocal
-    def _frameModifiedListener(self, modifiedFrameId: FrameId):
+    def _frameModifiedListener(self, _modifiedFrameId: FrameId):
         """
         Will only be issued when developer modifies current project
 
         Args:
-            modifiedFrameId:
+            _modifiedFrameId:
         """
         self._indicateCurrentProjectModified()
 
@@ -293,7 +297,16 @@ class UmlNotebook(Notebook):
             projectPanel.umlProjectModified = True
 
     def _closeProject(self, projectPanel: UmlProjectPanel):
+        """
+        Close the project named in the project panel
 
+        Args:
+            projectPanel:  The named project panel
+
+        """
+        #
+        # ask if we should save it first as it has changes
+        #
         if projectPanel.umlProjectModified is True:
 
             message: str = f'Project: {projectPanel.umlProject.fileName.stem} is modified.  Save it before closing?'
@@ -301,14 +314,27 @@ class UmlNotebook(Notebook):
             ans: int = askDialog.ShowModal()
             if ans == ID_YES:
                 umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-                umlProjectIO.saveProject(umlProject=self.currentProject.umlProject)
+                umlProjectIO.saveProject(umlProject=projectPanel.umlProject)
 
-        projectName: str = str(self.currentProject.umlProject.fileName)
-        pageIdx:     int = self.GetSelection()
-        self.DeletePage(pageIdx)
-        self.logger.info(f'Project closed: {projectName}')
-        if self.GetPageCount() == 0:
-            self._appPubSubEngine.sendMessage(MessageType.NO_OPEN_PROJECTS, APPLICATION_FRAME_ID)
+        projectName: str = str(projectPanel.umlProject.fileName)
+        #
+        #  Find it in the notebook
+        #
+        pageIdx: int = -1
+        for idx in range(self.GetPageCount()):
+            if self.GetPage(idx) == projectPanel:
+                pageIdx = idx
+                break
+        #
+        # If we found it close it
+        #
+        if pageIdx != -1:
+            self.DeletePage(pageIdx)
+            self.logger.info(f'Project closed: {projectName}')
+            if self.GetPageCount() == 0:
+                self._appPubSubEngine.sendMessage(MessageType.NO_OPEN_PROJECTS, APPLICATION_FRAME_ID)
+        else:
+            self.logger.warning(f'Developer error closing non-existing project: {projectPanel.umlProject.fileName}')
 
     def _deleteDiagramListener(self):
         """
@@ -453,7 +479,7 @@ class UmlNotebook(Notebook):
         projectPanel: UmlProjectPanel = self._currentProjectPanel
         currentFrame: UmlFrame        = projectPanel.currentFrame
 
-        partialName: str = f'{type(linkInformation.linkType)}'
+        partialName: str = f'{type(linkInformation.linkType.value)}'
 
         path: UmlPositions = linkInformation.path
 

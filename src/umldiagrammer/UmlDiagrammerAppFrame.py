@@ -158,8 +158,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self.Show(True)
 
         self.logger.debug(f'{self._tb.GetToolSize()=}')
-        self.Bind(EVT_ACTIVATE, self._onActivate)
-        self.Bind(EVT_CLOSE,    self.Close)
+        self.Bind(EVT_ACTIVATE,       self._onActivate)
+        self.Bind(EVT_CLOSE,          self.Close)
         self.Bind(EVT_WINDOW_DESTROY, self._onWindowDestroy)
 
         uiMenuCreator.helpMenuHandler.setupPubSubTracing()
@@ -206,6 +206,24 @@ class UmlDiagrammerAppFrame(SizedFrame):
         DIAGRAMMER_IN_TEST_MODE.unlink(missing_ok=True)
 
         return True
+
+    def _onWindowDestroy(self, _event: WindowDestroyEvent):
+        """
+        TODO: Maybe this belongs in the Close handler
+        A little extra cleanup is required for the FileHistory control;
+        Take time to persist the file history
+        Args:
+            _event:
+        """
+        #
+        # On OS X this gets stored in ~/Library/Preferences
+        # Nothing I did to the FileHistoryConfiguration object seemed to change that
+        projectHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,
+                                                                                               vendorName=VENDOR_NAME,
+                                                                                               localFilename=PROJECT_HISTORY_BASE_FILENAME)
+
+        self._projectHistory.Save(projectHistoryConfiguration)
+
 
     def loadProjectByFilename(self, fileName: str):
         """
@@ -275,23 +293,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._doToolSelect(toolId=event.GetId())
         wxYield()
-
-    def _onWindowDestroy(self, _event: WindowDestroyEvent):
-        """
-        TODO: Maybe this belongs in the Close handler
-        A little extra cleanup is required for the FileHistory control;
-        Take time to persist the file history
-        Args:
-            _event:
-        """
-        #
-        # On OS X this gets stored in ~/Library/Preferences
-        # Nothing I did to the FileHistoryConfiguration object seemed to change that
-        projectHistoryConfiguration: ProjectHistoryConfiguration = ProjectHistoryConfiguration(appName=APPLICATION_NAME,
-                                                                                               vendorName=VENDOR_NAME,
-                                                                                               localFilename=PROJECT_HISTORY_BASE_FILENAME)
-
-        self._projectHistory.Save(projectHistoryConfiguration)
 
     def _onActivate(self, event: ActivateEvent):
         """
