@@ -8,20 +8,20 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.exceptions.UnsupportedFileTypeException import UnsupportedFileTypeException
 from wx import OK
+from wx import ID_EXIT
 from wx import EVT_MENU
-from wx import EVT_MENU_RANGE
-from wx import FD_CHANGE_DIR
-from wx import FD_FILE_MUST_EXIST
 from wx import FD_OPEN
-from wx import ICON_ERROR
 from wx import ID_FILE1
 from wx import ID_FILE9
 from wx import ID_OPEN
-from wx import ID_PREFERENCES
 from wx import ID_SAVE
 from wx import ID_SAVEAS
+from wx import ICON_ERROR
+from wx import FD_CHANGE_DIR
+from wx import ID_PREFERENCES
+from wx import EVT_MENU_RANGE
+from wx import FD_FILE_MUST_EXIST
 
 from wx import FileSelector
 from wx import CommandEvent
@@ -38,6 +38,8 @@ from umlio.IOTypes import UmlProject
 from umlio.IOTypes import UmlDocumentType
 from umlio.IOTypes import XML_SUFFIX
 from umlio.IOTypes import PROJECT_SUFFIX
+
+from umlio.exceptions.UnsupportedFileTypeException import UnsupportedFileTypeException
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
@@ -67,8 +69,10 @@ class FileMenuHandler(BaseMenuHandler):
     """
     In general the file menu handler can do the operations.  However, some are global in that
     the outer application frame controls the UI and this it must process some of these
-    requests
+    requests.
+
     The public methods are used for the tool bar creator
+
     From the docs:
     The toolbar class emits menu commands in the same way that a frame menu bar does, so you can use
     one EVT_MENU() macro for both a menu item and a toolbar button.
@@ -97,19 +101,21 @@ class FileMenuHandler(BaseMenuHandler):
         self._notebook:    Notebook    = cast(Notebook, None)
         self._fileHistory: FileHistory = cast(FileHistory, None)    # Must be injected
 
-        sizedFrame.Bind(EVT_MENU, self.openProject,        id=ID_OPEN)
-        sizedFrame.Bind(EVT_MENU, self.newProject,         id=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT)
-        sizedFrame.Bind(EVT_MENU, self.newClassDiagram,    id=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM)
-        sizedFrame.Bind(EVT_MENU, self.newUseCaseDiagram,  id=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM)
-        sizedFrame.Bind(EVT_MENU, self.newSequenceDiagram, id=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM)
+        sizedFrame.Bind(EVT_MENU, self.onOpenProject, id=ID_OPEN)
+        sizedFrame.Bind(EVT_MENU, self.onNewProject, id=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT)
+        sizedFrame.Bind(EVT_MENU, self.onNewClassDiagram, id=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM)
+        sizedFrame.Bind(EVT_MENU, self.onNewUseCaseDiagram, id=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM)
+        sizedFrame.Bind(EVT_MENU, self.onNewSequenceDiagram, id=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM)
 
-        sizedFrame.Bind(EVT_MENU, self.openXmlFile,        id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
-        sizedFrame.Bind(EVT_MENU, self.fileSave,           id=ID_SAVE)
-        sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,      id=ID_SAVEAS)
-        sizedFrame.Bind(EVT_MENU, self._closeProject,      id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
-        sizedFrame.Bind(EVT_MENU, self._deleteDiagram,     id=UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM)
-        sizedFrame.Bind(EVT_MENU, self._manageFileHistory, id=UIIdentifiers.ID_MENU_FILE_MANAGE_FILE_HISTORY)
-        sizedFrame.Bind(EVT_MENU, self._onPreferences,     id=ID_PREFERENCES)
+        sizedFrame.Bind(EVT_MENU, self._onOpenXmlFile,       id=UIIdentifiers.ID_FILE_MENU_OPEN_XML_PROJECT)
+        sizedFrame.Bind(EVT_MENU, self.onFileSave, id=ID_SAVE)
+        sizedFrame.Bind(EVT_MENU, self._onFileSaveAs,        id=ID_SAVEAS)
+        sizedFrame.Bind(EVT_MENU, self._onCloseProject,      id=UIIdentifiers.ID_MENU_FILE_PROJECT_CLOSE)
+        sizedFrame.Bind(EVT_MENU, self._onDeleteDiagram,     id=UIIdentifiers.ID_MENU_FILE_DELETE_DIAGRAM)
+        sizedFrame.Bind(EVT_MENU, self._onManageFileHistory, id=UIIdentifiers.ID_MENU_FILE_MANAGE_FILE_HISTORY)
+        sizedFrame.Bind(EVT_MENU, self._onPreferences,       id=ID_PREFERENCES)
+
+        sizedFrame.Bind(EVT_MENU, self._onExit,            id=ID_EXIT)
 
         sizedFrame.Bind(EVT_MENU_RANGE, self._onOpenRecent, id=ID_FILE1, id2=ID_FILE9)
 
@@ -119,7 +125,7 @@ class FileMenuHandler(BaseMenuHandler):
     # noinspection PyTypeChecker
     fileHistory = property(fget=None, fset=_setFileHistory)
 
-    def openProject(self, _event: CommandEvent):
+    def onOpenProject(self, _event: CommandEvent):
         selectedFile: str = FileSelector("Choose a project file to load", wildcard=PROJECT_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
             reader: Reader = Reader()
@@ -127,26 +133,26 @@ class FileMenuHandler(BaseMenuHandler):
             umlProject: UmlProject = reader.readProjectFile(fileName=Path(selectedFile))
             self._loadProject(umlProject)
 
-    def newProject(self, _event: CommandEvent):
+    def onNewProject(self, _event: CommandEvent):
         """
         Create an empty project
         """
         umlProject:  UmlProject  = UmlProject.emptyProject()
         self._loadProject(umlProject=umlProject)
 
-    def newClassDiagram(self, _event: CommandEvent):
+    def onNewClassDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.CLASS_DOCUMENT)
 
-    def newUseCaseDiagram(self, _event: CommandEvent):
+    def onNewUseCaseDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.USE_CASE_DOCUMENT)
 
-    def newSequenceDiagram(self, _event: CommandEvent):
+    def onNewSequenceDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CREATE_NEW_DIAGRAM, uniqueId=NOTEBOOK_ID, documentType=UmlDocumentType.SEQUENCE_DOCUMENT)
 
-    def fileSave(self, _event: CommandEvent):
+    def onFileSave(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
-    def openXmlFile(self, _event: CommandEvent):
+    def _onOpenXmlFile(self, _event: CommandEvent):
 
         selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
@@ -158,13 +164,16 @@ class FileMenuHandler(BaseMenuHandler):
     def _onFileSaveAs(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.SAVE_AS_PROJECT, uniqueId=APPLICATION_FRAME_ID)
 
-    def _closeProject(self, _event: CommandEvent):
+    def _onCloseProject(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.CLOSE_PROJECT, uniqueId=NOTEBOOK_ID)
 
-    def _deleteDiagram(self, _event: CommandEvent):
+    def _onExit(self, _event: CommandEvent):
+        self._sizedFrame.Close()
+
+    def _onDeleteDiagram(self, _event: CommandEvent):
         self._appPubSubEngine.sendMessage(messageType=MessageType.DELETE_DIAGRAM, uniqueId=NOTEBOOK_ID)
 
-    def _manageFileHistory(self, _event: CommandEvent):
+    def _onManageFileHistory(self, _event: CommandEvent):
 
         with DlgEditProjectHistory(parent=None, fileHistory=self._fileHistory) as dlg:
             dlg.ShowModal()

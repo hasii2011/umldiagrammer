@@ -7,18 +7,17 @@ from logging import getLogger
 
 from pathlib import Path
 
-from wx import FD_OVERWRITE_PROMPT
+from wx import OK
 from wx import FD_SAVE
 from wx import ICON_ERROR
-from wx import ID_OK
-from wx import OK
+from wx import FD_OVERWRITE_PROMPT
 
-from wx import FileDialog
+from wx import FileSelector
 from wx import MessageDialog
 
-from umlio.IOTypes import DEFAULT_PROJECT_PATH
-from umlio.IOTypes import PROJECT_SUFFIX
 from umlio.IOTypes import UmlProject
+from umlio.IOTypes import PROJECT_SUFFIX
+from umlio.IOTypes import DEFAULT_PROJECT_PATH
 
 from umlio.Reader import Reader
 from umlio.Writer import Writer
@@ -27,8 +26,8 @@ from umldiagrammer.DiagrammerTypes import NOTEBOOK_ID
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
-from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
+from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 
 NO_SAVE_AS_FILENAME = cast(str, None)
 
@@ -101,21 +100,29 @@ class UmlProjectIO:
 
         Returns:   The name of the newly created project
         """
-        specifiedFileName: str = ''
-        with (FileDialog(None,
-                         defaultDir=self._preferences.diagramsDirectory,
-                         wildcard=f'UML Diagrammer File ({PROJECT_SUFFIX}|{PROJECT_SUFFIX}',
-                         style=FD_SAVE | FD_OVERWRITE_PROMPT)
-              as fDialog):
-            if fDialog.ShowModal() == ID_OK:
-                specifiedFileName = fDialog.GetPath()
-                if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
-                    eMsg: str = f'Error ! This project `{Path(specifiedFileName).stem}` is currently open.  Please choose another name!'
-                    with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
-                        dlg.ShowModal()
-                    specifiedFileName = ''
-                else:
-                    self._saveAsProject(umlProject, specifiedFileName)
+
+        defaultDir:        str = str(self._preferences.diagramsDirectory)
+        wildCard:          str = f'UML Diagrammer File (*{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
+        defaultFile:       str = umlProject.fileName.name
+        defaultExtension:  str  = PROJECT_SUFFIX.lstrip('.')
+
+        specifiedFileName: str = FileSelector(
+            message='Save Project As',
+            default_path=defaultDir,
+            default_filename=defaultFile,
+            default_extension=defaultExtension,
+            wildcard=wildCard,
+            flags=FD_SAVE | FD_OVERWRITE_PROMPT
+        )
+
+        if specifiedFileName != '':
+            if self._isProjectAlreadyOpen(fileName=specifiedFileName) is True:
+                eMsg: str = f'Error ! This project `{Path(specifiedFileName).stem}` is currently open.  Please choose another name!'
+                with MessageDialog(None, eMsg, "Save change, filename error", OK | ICON_ERROR) as dlg:
+                    dlg.ShowModal()
+                specifiedFileName = ''
+            else:
+                self._saveAsProject(umlProject, specifiedFileName)
 
         return specifiedFileName
 

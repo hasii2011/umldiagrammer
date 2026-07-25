@@ -224,7 +224,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._projectHistory.Save(projectHistoryConfiguration)
 
-
     def loadProjectByFilename(self, fileName: str):
         """
         Used by the App when MAC OS passes file names
@@ -307,7 +306,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         if self._tipsAlreadyDisplayed is True:
             pass
         else:
-            self.logger.debug(f'Displaying Tips is not yet implemented')
+            self.logger.debug(f'Displaying Tips is not yet implemented.  And may never be!!')
             #     # Display tips frame
             #     prefs: DiagrammerPreferences = DiagrammerPreferences()
             #     self.logger.debug(f'Show tips on startup: {self._prefs.showTipsOnStartup=}')
@@ -316,6 +315,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
             #         tipsFrame: DlgTipsV2 = DlgTipsV2(self)
             #         tipsFrame.Show(show=True)
             self._tipsAlreadyDisplayed = True
+        event.Skip()    # Allow native wx activation processing to continue cleanly!
 
     def _selectToolListener(self, toolId: int):
         """

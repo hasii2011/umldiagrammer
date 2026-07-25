@@ -186,12 +186,12 @@ class UmlNotebook(Notebook):
                                           activeFrameId=frameId
                                           )
 
-    def _frameModifiedListener(self, _modifiedFrameId: FrameId):
+    def _frameModifiedListener(self, modifiedFrameId: FrameId):
         """
         Will only be issued when developer modifies current project
 
         Args:
-            _modifiedFrameId:
+            modifiedFrameId:
         """
         self._indicateCurrentProjectModified()
 
@@ -282,7 +282,6 @@ class UmlNotebook(Notebook):
 
     def _indicateCurrentProjectModified(self):
 
-        # if self._currentProjectPanel.umlProjectModified is False:
         idx:              int = self.GetSelection()
         projectTitle:     str = self.GetPageText(idx)
         if projectTitle.endswith(MODIFIED_INDICATOR):
@@ -303,6 +302,10 @@ class UmlNotebook(Notebook):
         Args:
             projectPanel:  The named project panel
 
+        TODO: refactor ths method around the comments I made
+        ._askIfWeShouldSave()
+        ._findCorrectPageIdx()
+        ._removeProjectPanel()
         """
         #
         # ask if we should save it first as it has changes

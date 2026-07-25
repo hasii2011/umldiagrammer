@@ -126,7 +126,7 @@ class ToolBarCreator:
             caption='New Project',
             tooltip='Create a new project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.newProject,
+            actionCallback=self._fileMenuHandler.onNewProject,
             wxID=UIIdentifiers.ID_FILE_MENU_NEW_PROJECT,
             )
 
@@ -136,7 +136,7 @@ class ToolBarCreator:
             caption='Open Project',
             tooltip='Open diagrammer project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.openProject,
+            actionCallback=self._fileMenuHandler.onOpenProject,
             wxID=UIIdentifiers.ID_FILE_MENU_OPEN_PROJECT
         )
         self._toolSaveProject = ToolDefinition(
@@ -145,7 +145,7 @@ class ToolBarCreator:
             caption='Save Project',
             tooltip='Save diagrammer project',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.fileSave,
+            actionCallback=self._fileMenuHandler.onFileSave,
             wxID=UIIdentifiers.ID_MENU_FILE_PROJECT_SAVE
         )
 
@@ -155,7 +155,7 @@ class ToolBarCreator:
             caption='New Class Diagram',
             tooltip='Create an empty class diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.newClassDiagram,
+            actionCallback=self._fileMenuHandler.onNewClassDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM
         )
 
@@ -165,7 +165,7 @@ class ToolBarCreator:
             caption='New Use Case Diagram',
             tooltip='Create a use case diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.newUseCaseDiagram,
+            actionCallback=self._fileMenuHandler.onNewUseCaseDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM
         )
 
@@ -175,7 +175,7 @@ class ToolBarCreator:
             caption='New Class Diagram',
             tooltip='Create an sequence diagram',
             toolGroup=ToolGroup.Menu,
-            actionCallback=self._fileMenuHandler.newSequenceDiagram,
+            actionCallback=self._fileMenuHandler.onNewSequenceDiagram,
             wxID=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM
         )
 
