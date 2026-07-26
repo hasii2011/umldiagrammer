@@ -186,9 +186,11 @@ class UmlNotebook(Notebook):
                                           activeFrameId=frameId
                                           )
 
-    def _frameModifiedListener(self, modifiedFrameId: FrameId):
+    def _frameModifiedListener(self, modifiedFrameId: FrameId):     # noqa
         """
         Will only be issued when developer modifies current project
+
+        I am assuming only the current frame can be modified.
 
         Args:
             modifiedFrameId:
