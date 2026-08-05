@@ -9,7 +9,7 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 # Introduction
-
+The UML Diagrammer is mainly a class diagram creator and editor.  It specializes in importing Python code and auto creating class diagrams.   In order to support large systems it includes several auto layout and auto line routing capabilities.  These are provided by its robust extensions system.
 
 ___
 
