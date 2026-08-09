@@ -7,32 +7,36 @@ wheel==0.47.0
 # https://github.com/ronaldoussoren/py2app/issues/564
 #
 # setuptools==70.1.1
-setuptools==70.3.0
-# setuptools==83.0.0
+# setuptools==70.3.0
+setuptools==84.0.0
 
-# the following necessary when building the
-# application with py2App
-# chardet==5.2.0
-
-# py2app==0.28.9
 py2app==0.28.10
 
 mypy==2.3.0
 html-testRunner~=1.2.1
+#
+#   GUI Test requirements
+#
 pyautogui==0.9.54
-pillow==12.2.0
+pillow==12.3.0
 PyMsgBox==2.0.1
-# So Circle CI works
-buildlackey==2.0.0
+opencv-python==5.0.0.93
+types-PyScreeze==1.0.1.20260518-*
+#
+#   GUI Test requirements
+#
 
-wxPython==4.2.4
+# So Circle CI works
+buildlackey==2.1.0
+
+wxPython==4.3.1
 Pypubsub==4.0.7
 semantic-version==2.10.0
 
 codeallybasic==1.40.0
 codeallyadvanced==2.5.5
 
-umlmodel==3.4.1
+umlmodel==3.4.3
 umlshapes==2.3.11
 umlio==0.7.3
 umlextensions==0.9.1

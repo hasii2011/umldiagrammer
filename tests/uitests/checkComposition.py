@@ -17,6 +17,7 @@ from pyautogui import click
 from pymsgbox import alert
 
 from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
+from tests.uitests.common import LOC_TOOLBAR_Y
 from tests.uitests.common import PAUSE_AFTER_EACH_CALL
 from tests.uitests.common import displayAppropriateDialog
 from tests.uitests.common import invokeSaveAsProject
@@ -31,13 +32,13 @@ GOLDEN_COMPOSITION_XML: str = (
     "<?xml version='1.0' encoding='iso-8859-1'?>\n"
     '<UmlProject fileName="/private/tmp/CompositionTest.udt" version="14.0" codePath=".">\n'
     '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
-    '        <UmlClass id="" width="78" height="90" x="237" y="208">\n'
+    '        <UmlClass id="" width="78" height="90" x="539" y="242">\n'
     '            <ModelClass id="" name="Composer" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlClass id="" width="82" height="90" x="644" y="377">\n'
+    '        <UmlClass id="" width="82" height="90" x="764" y="502">\n'
     '            <ModelClass id="" name="Composed" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlLink id="" fromX="315" fromY="269" toX="644" toY="405" spline="False">\n'
+    '        <UmlLink id="" fromX="617" fromY="332" toX="766" toY="502" spline="False">\n'
     '            <AssociationName deltaX="0" deltaY="0" />\n'
     '            <SourceCardinality deltaX="0" deltaY="0" />\n'
     '            <DestinationCardinality deltaX="0" deltaY="30" />\n'
@@ -63,25 +64,27 @@ if __name__ == '__main__':
     else:
         makeAppActive()
 
-        click(x=770, y=323)
-        click(x=729, y=70)
-        click(x=473, y=331)
-        click(x=826, y=366)
+        click(x=730, y=LOC_TOOLBAR_Y)       # Click Create New class
+        click(x=775, y=365)                 # Click in class name
+        # click(x=473, y=331)
+        # click(x=826, y=366)
         press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
         write('Composer')
-        click(x=985, y=696)
-        click(x=728, y=66)
-        click(x=880, y=500)
-        click(x=782, y=364)
+        click(x=935, y=690)                 # Cick Ok button
+        click(x=730, y=LOC_TOOLBAR_Y)       # Click Create New class
+
+        click(x=1000, y=625)
+        click(x=775, y=365)                 # Click in class name
         press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
         write('Composed')
-        click(x=982, y=681)
-        click(x=1022, y=72)
-        click(x=510, y=371)
-        click(x=911, y=543)
+        click(x=935, y=690)                 # Cick Ok button
 
+        click(x=1020, y=LOC_TOOLBAR_Y)      # Click Composition
+        click(x=810, y=390)                 # Click on Composer
+        click(x=1040, y=650)                # Click on Composed
+        #
         invokeSaveAsProject(projectFileName=str(COMPOSITION_FILENAME))
-
+        #
         success: bool = wasTestSuccessful(
             projectFileName=COMPOSITION_FILENAME,
             decompressedProjectFileName=DECOMPRESSED_COMPOSITION_PROJECT,

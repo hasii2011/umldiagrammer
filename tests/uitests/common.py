@@ -10,7 +10,9 @@ from re import sub as regExSub
 
 from difflib import unified_diff
 
+# noinspection PyPackageRequirements
 from PIL import ImageGrab
+# noinspection PyPackageRequirements
 from PIL.Image import Image
 
 from pyautogui import moveTo
@@ -44,10 +46,10 @@ LOC_TOOLBAR_Y: int = 65
 LOC_CLASS_TOOL_BAR:         UmlPosition = UmlPosition(x=730, y=LOC_TOOLBAR_Y)
 
 LOC_CLICK_SAVE_PROJECT:      UmlPosition = UmlPosition(x=395, y=LOC_TOOLBAR_Y)
-LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=931, y=360)
+LOC_CLICK_SAVE_AS_NAME:      UmlPosition = UmlPosition(x=1420, y=350)
 LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1740, y=755)
 
-MOVE_TO_DELAY: float = 0.5
+MOVE_TO_DELAY: float = 0.9
 
 BACKSPACES_CLEAR_CLASS_NAME: int   = 15
 PAUSE_AFTER_EACH_CALL:       float = 0.25
@@ -62,7 +64,7 @@ def isAppRunning() -> bool:
 
 def makeAppActive():
     # Make UML Diagrammer Active
-    moveTo(250, 110, duration=MOVE_TO_DELAY)
+    moveTo(260, 135, duration=MOVE_TO_DELAY)
     click()
 
 def pullDownViewMenu():
@@ -111,13 +113,12 @@ def invokeSaveAsProject(projectFileName: str):
 
     click(x=LOC_CLICK_SAVE_PROJECT.x, y=LOC_CLICK_SAVE_PROJECT.y)
     moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=MOVE_TO_DELAY)
-
-    click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
-
-    press('backspace', presses=len('untitled'))
+    # click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
+    #
+    press('backspace', presses=len('NewProject.udt'))
     typewrite(projectFileName, interval=TYPE_WRITE_INTERVAL)
     press('enter')
-
+    #
     moveTo(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y, duration=MOVE_TO_DELAY)
     click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
 

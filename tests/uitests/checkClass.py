@@ -75,7 +75,7 @@ LOC_CLICK_FIELD_VALUE:      UmlPosition = UmlPosition(x=905, y=395)
 LOC_CLICK_FIELD_OK:         UmlPosition = UmlPosition(x=915, y=455)
 
 LOC_CLICK_METHOD_OK:        UmlPosition = UmlPosition(x=950, y=605)
-LOC_CLICK_CLASS_OK:         UmlPosition = UmlPosition(x=980, y=685)
+LOC_CLICK_CLASS_OK:         UmlPosition = UmlPosition(x=935, y=685)
 
 LOC_RIGHT_CLICK_CLASS:       UmlPosition = UmlPosition(x=740, y=440)
 LOC_CLICK_PARAMETER_DISPLAY: UmlPosition = UmlPosition(x=797, y=517)
@@ -149,10 +149,10 @@ if __name__ == '__main__':
         click(x=LOC_CLICK_ADD_METHOD.x, y=LOC_CLICK_ADD_METHOD.y)
         addParameterMethod()
         click(x=LOC_CLICK_METHOD_OK.x,    y=LOC_CLICK_METHOD_OK.y)
-
+        #
         addPublicField()
         click(x=LOC_CLICK_CLASS_OK.x,     y=LOC_CLICK_CLASS_OK.y)
-
+        #
         click(x=LOC_RIGHT_CLICK_CLASS.x,       y=LOC_RIGHT_CLICK_CLASS.y, button='right')
         click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
 

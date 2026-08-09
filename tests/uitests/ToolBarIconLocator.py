@@ -7,7 +7,8 @@ from pathlib import Path
 
 from dataclasses import dataclass
 
-from pyautogui import Point
+# noinspection PyPackageRequirements
+from pyscreeze import Point
 from pyautogui import locateCenterOnScreen
 
 from codeallybasic.ResourceManager import ResourceManager
@@ -29,7 +30,7 @@ RESOURCE_PATH: str = 'tests/uitests/resources/toolbaricons'
 
 class ToolBarIconLocator:
     """
-    TODO:   Create a decorator that detects the empty cache and fills it
+     @cached_property implement Python's descriptor protocol.
     """
     def __init__(self, confidence: float = LOCATE_CONFIDENCE):
         """
@@ -106,7 +107,15 @@ class ToolBarIconLocator:
         Returns:  The location on the screen where that image is
         """
 
-        path: Path  = self._resourcePath / bareFileName
-        pt:   Point = locateCenterOnScreen(str(path), confidence=self._confidence)
+        path:        Path         = self._resourcePath / bareFileName
+        targetPoint: Point | None = locateCenterOnScreen(
+            str(path),
+            confidence=self._confidence,
+            grayscale=True,
+            region=(0, 0, 775, 1450)
+        )
 
-        return Location(x=pt.x, y=pt.y)
+        if targetPoint is not None:
+            return Location(x=int(targetPoint.x), y=int(targetPoint.y))
+
+        return LOCATION_NOT_SET

@@ -58,8 +58,8 @@ SECTION_STARTUP: ValueDescriptions = ValueDescriptions (
         KeyName('startupSize'):        ValueDescription(defaultValue=DEFAULT_STARTUP_SIZE,         deserializer=Dimensions.deSerialize),
         KeyName('centerAppOnStartup'): ValueDescription(defaultValue='False',                      deserializer=SecureConversions.secureBoolean),
         KeyName('startupPosition'):    ValueDescription(defaultValue=DEFAULT_STARTUP_POSITION,     deserializer=Position.deSerialize),
-        KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION,     deserializer=ToolBarPosition),
-        KeyName('projectTabPosition'): ValueDescription(defaultValue=DEFAULT_PROJECT_TAB_POSITION, deserializer=ProjectTabPosition)
+        KeyName('toolBarPosition'):    ValueDescription(defaultValue=DEFAULT_TOOLBAR_POSITION,     deserializer=ToolBarPosition, enumUseValue=True),
+        KeyName('projectTabPosition'): ValueDescription(defaultValue=DEFAULT_PROJECT_TAB_POSITION, deserializer=ProjectTabPosition, enumUseValue=True)
     }
 )
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(

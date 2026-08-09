@@ -11,6 +11,7 @@ from logging import basicConfig
 
 from functools import cached_property
 
+from pyautogui import size
 from pyautogui import ImageNotFoundException
 
 from tests.uitests.ToolBarIconLocator import Location
@@ -41,7 +42,7 @@ if __name__ == '__main__':
 
     setupLogging()
     logging.info(f'Remember.  The image size has to match')
-    # eval_type(ToolBarIconLocator.aggregationLink)
+    logging.info(f'Screen size{size()}')
 
     #
     #  I find Python comprehensions, incomprehensible
@@ -58,10 +59,8 @@ if __name__ == '__main__':
     for propName, prop in cachedProperties.items():
 
         try:
+            # Explicitly invoke the cached_property descriptor on the iconLocator object.
             pt: Location = prop.__get__(iconLocator)
             logging.info(f'{propName} - ({pt.x},{pt.y})')
         except ImageNotFoundException:
             logging.error(f'Where the heck is the image for {propName}')
-
-    cachedLocation: Location = ToolBarIconLocator.aggregationLink.__get__(iconLocator)
-    logging.info(f'Cached Location: ({cachedLocation.x},{cachedLocation.y})')
