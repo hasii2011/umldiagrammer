@@ -6,61 +6,31 @@
 from typing import Dict
 
 import logging
-from logging import INFO
-from logging import basicConfig
-
-from functools import cached_property
 
 from pyautogui import size
 from pyautogui import ImageNotFoundException
 
 from tests.uitests.ToolBarIconLocator import Location
 from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
-
-BEST_FORMAT:   str = '%(asctime)s.%(msecs)03d %(levelname)-5s %(name)-4s - %(message)s'
-SIMPLE_FORMAT: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s'
-TEST_FORMAT:   str = '%(levelname)s: %(module)s: %(message)s'
-
-def setupLogging():
-    basicConfig(
-        level=INFO,
-        format=TEST_FORMAT
-    )
-
+from tests.uitests.common import setupLogging
 
 if __name__ == '__main__':
-    """
-    How to get and store property references for later invocation was done with the 
-    help of Gemini 0.22.5,  Gemini 1.5 Flash model
-    
-     1. To store the property object: Use ClassName.property_name.
-     2. To invoke the stored property later: Use stored_property_object.__get__(instance).
-
-    mypy does not seem to think the list contains properties
-    I feel so dirty
-    """
-
     setupLogging()
     logging.info(f'Remember.  The image size has to match')
     logging.info(f'Screen size{size()}')
 
-    #
-    #  I find Python comprehensions, incomprehensible
-    #
-    cachedProperties: Dict[str, cached_property] = {}
+    iconProperties: Dict[str, property] = {}
     for attributeName in dir(ToolBarIconLocator):
         potentialProperty = getattr(ToolBarIconLocator, attributeName)
-        if isinstance(potentialProperty, cached_property):
-            cachedProperties[attributeName] = potentialProperty
+        if isinstance(potentialProperty, property):
+            iconProperties[attributeName] = potentialProperty
 
-    logging.debug(f"The cached properties are: {cachedProperties}")
+    logging.debug(f'The icon properties are: {iconProperties}')
 
     iconLocator: ToolBarIconLocator = ToolBarIconLocator()
-    for propName, prop in cachedProperties.items():
-
+    for propName in iconProperties.keys():
         try:
-            # Explicitly invoke the cached_property descriptor on the iconLocator object.
-            pt: Location = prop.__get__(iconLocator)
-            logging.info(f'{propName} - ({pt.x},{pt.y})')
+            targetLocation: Location = getattr(iconLocator, propName)
+            logging.info(f'{propName} - ({targetLocation.x},{targetLocation.y})')
         except ImageNotFoundException:
             logging.error(f'Where the heck is the image for {propName}')

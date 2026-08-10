@@ -1,36 +1,21 @@
 
-from typing import cast
-
-from functools import cached_property
-
-from pathlib import Path
-
-from dataclasses import dataclass
-
-# noinspection PyPackageRequirements
-from pyscreeze import Point
-from pyautogui import locateCenterOnScreen
+from logging import Logger
+from logging import getLogger
 
 from codeallybasic.ResourceManager import ResourceManager
 
-
-@dataclass
-class Location:
-    x: int = 0
-    y: int = 0
-
-
-LOCATION_NOT_SET:  Location = cast(Location, None)
-LOCATE_CONFIDENCE: float    = 0.9
+from tests.uitests.BaseLocator import Location
+from tests.uitests.BaseLocator import BaseLocator
+from tests.uitests.BaseLocator import LOCATE_CONFIDENCE
 
 # noinspection SpellCheckingInspection
 PACKAGE_NAME:  str = 'tests.uitests.resources.toolbaricons'
 # noinspection SpellCheckingInspection
 RESOURCE_PATH: str = 'tests/uitests/resources/toolbaricons'
 
-class ToolBarIconLocator:
+class ToolBarIconLocator(BaseLocator):
     """
-     @cached_property implement Python's descriptor protocol.
+    Locates toolbar icon images on screen.
     """
     def __init__(self, confidence: float = LOCATE_CONFIDENCE):
         """
@@ -38,84 +23,65 @@ class ToolBarIconLocator:
         Args:
             confidence:  The confidence level for the look ups
         """
-        self._confidence: float = confidence
+        resourcePath = ResourceManager.computeResourcePath(resourcePath=RESOURCE_PATH, packageName=PACKAGE_NAME)
 
-        self._resourcePath: Path = ResourceManager.computeResourcePath(resourcePath=RESOURCE_PATH, packageName=PACKAGE_NAME)
+        super().__init__(confidence=confidence, resourcePath=resourcePath)
+        self.logger: Logger = getLogger(__name__)
 
-    @cached_property
+        self.logger.info(f'Location Confidence: {self._confidence}')
+
+    @property
     def aggregationLink(self) -> Location:
         return self._locate(bareFileName='AggregationLink.png')
 
-    @cached_property
+    @property
     def associationLink(self) -> Location:
         return self._locate(bareFileName='AssociationLink.png')
 
-    @cached_property
+    @property
     def compositionLink(self) -> Location:
         return self._locate(bareFileName='CompositionLink.png')
 
-    @cached_property
+    @property
     def inheritanceLink(self) -> Location:
         return self._locate(bareFileName='InheritanceLink.png')
 
-    @cached_property
+    @property
     def interfaceLink(self) -> Location:
         return self._locate(bareFileName='InterfaceLink.png')
 
-    @cached_property
+    @property
     def newActor(self) -> Location:
         return self._locate(bareFileName='NewActor.png')
 
-    @cached_property
+    @property
     def newClass(self) -> Location:
         return self._locate(bareFileName='NewClass.png')
 
-    @cached_property
+    @property
     def newClassDiagram(self) -> Location:
         return self._locate(bareFileName='NewClassDiagram.png')
 
-    @cached_property
+    @property
     def newNote(self) -> Location:
         return self._locate(bareFileName='NewNote.png')
 
-    @cached_property
+    @property
     def newText(self) -> Location:
         return self._locate(bareFileName='NewText.png')
 
-    @cached_property
+    @property
     def newUseCase(self) -> Location:
         return self._locate(bareFileName='NewUseCase.png')
 
-    @cached_property
+    @property
     def newUseCaseDiagram(self) -> Location:
         return self._locate(bareFileName='NewUseCaseDiagram.png')
 
-    @cached_property
+    @property
     def noteLink(self) -> Location:
         return self._locate(bareFileName='NoteLink.png')
 
-    @cached_property
+    @property
     def saveProject(self) -> Location:
         return self._locate(bareFileName='SaveProject.png')
-
-    def _locate(self, bareFileName: str) -> Location:
-        """
-        Finds the image location on the screen
-        Args:
-            bareFileName:   The file name of the image
-
-        Returns:  The location on the screen where that image is
-        """
-
-        path:        Path         = self._resourcePath / bareFileName
-        targetPoint: Point | None = locateCenterOnScreen(
-            str(path),
-            confidence=self._confidence,
-            grayscale=True,
-            region=(0, 0, 775, 1450)
-        )
-
-        if targetPoint is not None:
-            return Location(x=int(targetPoint.x), y=int(targetPoint.y))
-
-        return LOCATION_NOT_SET

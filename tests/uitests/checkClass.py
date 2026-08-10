@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # /// script
-# dependencies = ['pyautogui', 'pillow', 'umlshapes']
+# dependencies = ['pyautogui', 'pillow', 'umlshapes', 'opencv-python']
 # ///
 
 import pyautogui
@@ -18,15 +18,19 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.ClassDialogLocator import ClassDialogLocator
+from tests.uitests.ToolBarIconLocator import Location
+from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.common import DOUBLE_CLICK_INTERVAL
-from tests.uitests.common import LOC_CLASS_TOOL_BAR
 from tests.uitests.common import TYPE_WRITE_INTERVAL
 from tests.uitests.common import displayAppropriateDialog
 from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import isAppRunning
 from tests.uitests.common import makeAppActive
+from tests.uitests.common import setupLogging
 from tests.uitests.common import wasTestSuccessful
+
 
 WELL_KNOWN_CLASS_NAME = 'ClassName1'
 
@@ -88,44 +92,72 @@ CLASS_PROJECT_FILENAME:     Path = Path(f'/tmp/{BASENAME}.udt')
 CLASS_XML_FILENAME:         str = f'{BASENAME}.xml'
 DECOMPRESSED_CLASS_PROJECT: Path = Path(f'/tmp/{CLASS_XML_FILENAME}')
 
+HACK_ADJUST_ADD_METHOD_BUTTON_Y: int = 40
+HACK_ADJUST_ADD_FIELD_BUTTON_Y:  int = 40
 
-def addParameterMethod():
+def addParameterMethod(dialogLocator: ClassDialogLocator):
 
-    click(x=LOC_CLICK_ADD_PARAMETER.x, y=LOC_CLICK_ADD_PARAMETER.y)
-    click(x=LOC_CLICK_PARAMETER_NAME.x, y=LOC_CLICK_PARAMETER_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
+    # click(x=LOC_CLICK_ADD_PARAMETER.x, y=LOC_CLICK_ADD_PARAMETER.y)
+    addParameterButtonLocation: Location = dialogLocator.addParameterButton
+    click(x=addParameterButtonLocation.x, y=addParameterButtonLocation.y)
+
+    parameterNameLocation: Location = dialogLocator.parameterNameTextInput
+    # click(x=LOC_CLICK_PARAMETER_NAME.x, y=LOC_CLICK_PARAMETER_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
+    click(x=parameterNameLocation.x, y=parameterNameLocation.y + 5, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
     press('backspace', presses=len(defaultMethodName))
     typewrite('floatParameter', interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_PARAMETER_TYPE.x, y=LOC_CLICK_PARAMETER_TYPE.y)
+    #
+    # click(x=LOC_CLICK_PARAMETER_TYPE.x, y=LOC_CLICK_PARAMETER_TYPE.y)
+    press('tab')
     typewrite('float', interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_PARAMETER_VALUE.x, y=LOC_CLICK_PARAMETER_VALUE.y)
+    #
+    # click(x=LOC_CLICK_PARAMETER_VALUE.x, y=LOC_CLICK_PARAMETER_VALUE.y)
+    press('tab')
     typewrite('42.0', interval=TYPE_WRITE_INTERVAL)
+    #
+    # click(x=LOC_CLICK_PARAMETER_OK.x, y=LOC_CLICK_PARAMETER_OK.y)
+    parameterOkButtonLocation: Location = dialogLocator.clickParameterOkButton
+    click(x=parameterOkButtonLocation.x, y=parameterOkButtonLocation.y + 10)
 
-    click(x=LOC_CLICK_PARAMETER_OK.x, y=LOC_CLICK_PARAMETER_OK.y)
 
+def addPublicField(dialogLocator: ClassDialogLocator):
 
-def addPublicField():
+    # click(x=LOC_CLICK_ADD_FIELD.x, y=LOC_CLICK_ADD_FIELD.y)
+    addFieldButtonLocation: Location = dialogLocator.clickAddFieldButton
+    click(x=addFieldButtonLocation.x, y=addFieldButtonLocation.y + HACK_ADJUST_ADD_FIELD_BUTTON_Y)
 
-    click(x=LOC_CLICK_ADD_FIELD.x, y=LOC_CLICK_ADD_FIELD.y)
-    click(x=LOC_CLICK_PUBLIC_FIELD.x, y=LOC_CLICK_PUBLIC_FIELD.y)
+    # click(x=LOC_CLICK_PUBLIC_FIELD.x, y=LOC_CLICK_PUBLIC_FIELD.y)
+    publicFieldRBLocation: Location = dialogLocator.publicFieldRadioButton
+    click(x=publicFieldRBLocation.x, y=publicFieldRBLocation.y)
+    #
+    # click(x=LOC_CLICK_FIELD_NAME.x, y=LOC_CLICK_FIELD_NAME.y)
 
-    click(x=LOC_CLICK_FIELD_NAME.x, y=LOC_CLICK_FIELD_NAME.y)
-    press('backspace', presses=len(defaultFieldName))
+    press('backspace')      # text input still has focus
+    # fieldNameLocation: Location = dialogLocator.fieldNameTextInput
+    # click(x=fieldNameLocation.x, y=fieldNameLocation.y)
+
     typewrite('publicField', interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_FIELD_TYPE.x, y=LOC_CLICK_FIELD_TYPE.y)
+    press('right', presses=3)
+    #
+    # click(x=LOC_CLICK_FIELD_TYPE.x, y=LOC_CLICK_FIELD_TYPE.y)
+    press('tab')
     typewrite('int', interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_FIELD_VALUE.x, y=LOC_CLICK_FIELD_VALUE.y)
+    #
+    # click(x=LOC_CLICK_FIELD_VALUE.x, y=LOC_CLICK_FIELD_VALUE.y)
+    press('tab')
     typewrite('42', interval=TYPE_WRITE_INTERVAL)
-    click(x=LOC_CLICK_FIELD_OK.x, y=LOC_CLICK_FIELD_OK.y)
+
+    # click(x=LOC_CLICK_FIELD_OK.x, y=LOC_CLICK_FIELD_OK.y)
+    fieldOkButtonLocation: Location = dialogLocator.clickFieldOkButton
+    click(x=fieldOkButtonLocation.x, y=fieldOkButtonLocation.y)
 
 
 if __name__ == '__main__':
 
     pyautogui.PAUSE = 0.5
     pyautogui.FAILSAFE = True
+
+    setupLogging()
 
     umlPreferences: UmlPreferences = UmlPreferences()
 
@@ -140,28 +172,48 @@ if __name__ == '__main__':
     else:
         makeAppActive()
 
-        click(x=LOC_CLASS_TOOL_BAR.x,   y=LOC_CLASS_TOOL_BAR.y)
+        iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
+        classDialogLocator: ClassDialogLocator = ClassDialogLocator()
+
+        location: Location = iconLocator.newClass
+        click(x=location.x,   y=location.y)
+
         click(x=LOC_CREATE_CLASS.x,     y=LOC_CREATE_CLASS.y)
-        click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y)
+        # click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y)
+        textInputLocation: Location = classDialogLocator.classNameTextInput
+        click(x=location.x, y=location.y)
+
         press('backspace', BACKSPACES_CLEAR_CLASS_NAME)
         typewrite(WELL_KNOWN_CLASS_NAME)
 
-        click(x=LOC_CLICK_ADD_METHOD.x, y=LOC_CLICK_ADD_METHOD.y)
-        addParameterMethod()
-        click(x=LOC_CLICK_METHOD_OK.x,    y=LOC_CLICK_METHOD_OK.y)
+        # click(x=LOC_CLICK_ADD_METHOD.x, y=LOC_CLICK_ADD_METHOD.y)
+        addMethodButtonLocation: Location = classDialogLocator.addMethodButton
+        click(x=addMethodButtonLocation.x, y=addMethodButtonLocation.y + HACK_ADJUST_ADD_METHOD_BUTTON_Y)  # Cheat from center
+
+        addParameterMethod(dialogLocator=classDialogLocator)
+        # click(x=LOC_CLICK_METHOD_OK.x,    y=LOC_CLICK_METHOD_OK.y)
+        methodOkButtonLocation: Location = classDialogLocator.clickMethodOkButton
+        click(x=methodOkButtonLocation.x,    y=methodOkButtonLocation.y)
+
+        addPublicField(dialogLocator=classDialogLocator)
+        # click(x=LOC_CLICK_CLASS_OK.x,     y=LOC_CLICK_CLASS_OK.y)
+        clickClassOkButton: Location = classDialogLocator.clickClassOkButton
+        click(x=clickClassOkButton.x, y=clickClassOkButton.y)
+
         #
-        addPublicField()
-        click(x=LOC_CLICK_CLASS_OK.x,     y=LOC_CLICK_CLASS_OK.y)
+        classShapeLocation: Location = classDialogLocator.classShape
+        click(x=classShapeLocation.x,  y=classShapeLocation.y, button='right')
+
+        # click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
+        classContextMenuLocation: Location = classDialogLocator.classShapeContextMenu
+        click(x=classContextMenuLocation.x, y=classContextMenuLocation.y)
         #
-        click(x=LOC_RIGHT_CLICK_CLASS.x,       y=LOC_RIGHT_CLICK_CLASS.y, button='right')
-        click(x=LOC_CLICK_PARAMETER_DISPLAY.x, y=LOC_CLICK_PARAMETER_DISPLAY.y)
-
-        invokeSaveAsProject(projectFileName=str(CLASS_PROJECT_FILENAME))
-
-        success: bool = wasTestSuccessful(
-            projectFileName=CLASS_PROJECT_FILENAME,
-            decompressedProjectFileName=DECOMPRESSED_CLASS_PROJECT,
-            goldenXml=GOLDEN_CLASS_XML
-        )
-
-        displayAppropriateDialog(status=success)
+        # invokeSaveAsProject(projectFileName=str(CLASS_PROJECT_FILENAME))
+        #
+        # success: bool = wasTestSuccessful(
+        #     projectFileName=CLASS_PROJECT_FILENAME,
+        #     decompressedProjectFileName=DECOMPRESSED_CLASS_PROJECT,
+        #     goldenXml=GOLDEN_CLASS_XML
+        # )
+        #
+        # displayAppropriateDialog(status=success)

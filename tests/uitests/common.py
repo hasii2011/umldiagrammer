@@ -1,6 +1,9 @@
 
 from typing import List
 
+from logging import INFO
+from logging import basicConfig
+
 import zlib
 
 from pathlib import Path
@@ -54,6 +57,17 @@ MOVE_TO_DELAY: float = 0.9
 BACKSPACES_CLEAR_CLASS_NAME: int   = 15
 PAUSE_AFTER_EACH_CALL:       float = 0.25
 
+BEST_FORMAT:   str = '%(asctime)s.%(msecs)03d %(levelname)-5s %(name)-4s - %(message)s'
+SIMPLE_FORMAT: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s'
+TEST_FORMAT:   str = '%(levelname)s: %(module)s: %(message)s'
+
+
+def setupLogging():
+    basicConfig(
+        level=INFO,
+        format=TEST_FORMAT
+    )
+
 def isAppRunning() -> bool:
     answer: bool = False
 
@@ -64,7 +78,7 @@ def isAppRunning() -> bool:
 
 def makeAppActive():
     # Make UML Diagrammer Active
-    moveTo(260, 135, duration=MOVE_TO_DELAY)
+    moveTo(350, 175, duration=MOVE_TO_DELAY)
     click()
 
 def pullDownViewMenu():

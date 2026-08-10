@@ -92,8 +92,8 @@ class DlgPreferences(SizedDialog):
         # positioningPreferences: PositioningPreferencesPage   = PositioningPreferencesPage(book, eventEngine=self._eventEngine)
         # pluginPreferences:      PluginPreferencesPage        = PluginPreferencesPage(book)
         # #
-        book.AddPage(generalPreferences, text=generalPreferences.name, select=False)
-        book.AddPage(startupPreferences, text=startupPreferences.name, select=True)
+        book.AddPage(generalPreferences, text=generalPreferences.name, select=True)
+        book.AddPage(startupPreferences, text=startupPreferences.name, select=False)
         book.AddPage(valuePreferences,   text=valuePreferences.name,   select=False)
         book.AddPage(diagramPreferences, text=diagramPreferences.name, select=False)
         # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)
