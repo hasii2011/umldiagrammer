@@ -20,13 +20,18 @@ from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
+from tests.uitests.Common import displayAppropriateDialog
+from tests.uitests.Common import wasTestSuccessful
+from tests.uitests.SaveAsProject import SaveAsProject
+
 from tests.uitests.locators.ClassDialogLocator import ClassDialogLocator
 from tests.uitests.locators.ToolBarIconLocator import Location
 from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
+
 from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
 from tests.uitests.Common import TYPE_WRITE_INTERVAL
-from tests.uitests.Common import invokeSaveAsProject
 from tests.uitests.Common import isAppRunning
 from tests.uitests.Common import makeAppActive
 from tests.uitests.Common import setupLogging
@@ -38,9 +43,9 @@ WELL_KNOWN_CLASS_NAME = 'ClassName1'
 #
 GOLDEN_CLASS_XML: str = (
     "<?xml version='1.0' encoding='iso-8859-1'?>\n"
-    '<UmlProject fileName="/private/tmp/UIClassTest.udt" version="14.0" codePath=".">\n'
+    '<UmlProject fileName="/private/tmp/uiclasstest.udt" version="14.0" codePath=".">\n'
     '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
-    '        <UmlClass id="" width="325" height="150" x="444" y="247">\n'
+    '        <UmlClass id="" width="325" height="150" x="404" y="267">\n'
     '            <ModelClass id="" name="ClassName1" displayMethods="True" displayParameters="Display Parameters" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="">\n'
     '                <ModelMethod name="MethodName" visibility="PUBLIC" returnType="">\n'
     '                    <SourceCode />\n'
@@ -58,9 +63,7 @@ MATCH_STARTS_WITH_ID: str = f'id={MATCH_BETWEEN_QUOTES}'
 EMPTY_ID:             str = ''
 
 
-LOC_CREATE_CLASS:       UmlPosition = UmlPosition(x=680, y=370)
-LOC_CLASS_NAME:         UmlPosition = UmlPosition(x=783, y=370)
-LOC_CLICK_SAVE_PROJECT: UmlPosition = UmlPosition(x=390, y=70)
+LOC_WHERE_CLASS_IS_CREATED:       UmlPosition = UmlPosition(x=680, y=370)
 
 BASENAME:                   str = 'uiclasstest'
 CLASS_PROJECT_FILENAME:     Path = Path(f'{osSep}tmp{osSep}{BASENAME}.udt')
@@ -116,7 +119,7 @@ def addPublicField(dialogLocator: ClassDialogLocator):
 
 if __name__ == '__main__':
 
-    pyautogui.PAUSE = 0.5
+    pyautogui.PAUSE    = PAUSE_AFTER_EACH_CALL
     pyautogui.FAILSAFE = True
 
     setupLogging()
@@ -140,7 +143,7 @@ if __name__ == '__main__':
         location: Location = iconLocator.newClass
         click(x=location.x,   y=location.y)
 
-        click(x=LOC_CREATE_CLASS.x,     y=LOC_CREATE_CLASS.y)
+        click(x=LOC_WHERE_CLASS_IS_CREATED.x, y=LOC_WHERE_CLASS_IS_CREATED.y)
 
         textInputLocation: Location = classDialogLocator.classNameTextInput
         click(x=location.x, y=location.y)
@@ -167,12 +170,13 @@ if __name__ == '__main__':
         classContextMenuLocation: Location = classDialogLocator.classShapeContextMenu
         click(x=classContextMenuLocation.x, y=classContextMenuLocation.y)
         #
-        invokeSaveAsProject(projectFileName=str(CLASS_PROJECT_FILENAME))
+        saveAsProject: SaveAsProject = SaveAsProject()
+        saveAsProject.execute(projectFileName=str(CLASS_PROJECT_FILENAME))
         #
-        # success: bool = wasTestSuccessful(
-        #     projectFileName=CLASS_PROJECT_FILENAME,
-        #     decompressedProjectFileName=DECOMPRESSED_CLASS_PROJECT,
-        #     goldenXml=GOLDEN_CLASS_XML
-        # )
-        #
-        # displayAppropriateDialog(status=success)
+        success: bool = wasTestSuccessful(
+            projectFileName=CLASS_PROJECT_FILENAME,
+            decompressedProjectFileName=DECOMPRESSED_CLASS_PROJECT,
+            goldenXml=GOLDEN_CLASS_XML
+        )
+
+        displayAppropriateDialog(status=success)

@@ -60,7 +60,7 @@ LOC_CLICK_SAVE_BUTTON:       UmlPosition = UmlPosition(x=1740, y=755)
 MOVE_TO_DELAY: float = 0.9
 
 BACKSPACES_CLEAR_CLASS_NAME: int   = 15
-PAUSE_AFTER_EACH_CALL:       float = 0.25
+PAUSE_AFTER_EACH_CALL:       float = 0.50
 
 BEST_FORMAT:   str = '%(asctime)s.%(msecs)03d %(levelname)-5s %(name)-4s - %(message)s'
 SIMPLE_FORMAT: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s: %(message)s'
