@@ -32,7 +32,7 @@ Each of these test scripts performs the following steps:
 
 ## Utility Scripts
 
-- **`FixIDRegExTest.py`**: A small utility script for testing and debugging the regular expression used to remove unique IDs from the generated XML files during the comparison process.
+- **`gists/FixIDRegExTest.py`**: A small utility script for testing and debugging the regular expression used to remove unique IDs from the generated XML files during the comparison process.
 - **`trackmouse.py`**: A simple script that prints the current mouse coordinates to the console. This is useful for finding the screen coordinates needed for the `pyautogui` test scripts.
 
 ## Running the Tests
