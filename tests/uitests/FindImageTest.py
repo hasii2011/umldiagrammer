@@ -12,7 +12,7 @@ from pyautogui import ImageNotFoundException
 
 from tests.uitests.ToolBarIconLocator import Location
 from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
-from tests.uitests.common import setupLogging
+from tests.uitests.Common import setupLogging
 
 if __name__ == '__main__':
     setupLogging()

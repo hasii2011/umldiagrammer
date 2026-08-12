@@ -22,7 +22,7 @@ Each of these test scripts performs the following steps:
 
 ## Common Library
 
-- **`common.py`**: This file contains a library of helper functions used by the test scripts. These functions encapsulate common tasks such as:
+- **`Common.py`**: This file contains a library of helper functions used by the test scripts. These functions encapsulate common tasks such as:
     - Checking if the application is running.
     - Activating the application window.
     - Saving a project.

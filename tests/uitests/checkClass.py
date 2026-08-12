@@ -23,15 +23,15 @@ from umlshapes.types.UmlPosition import UmlPosition
 from tests.uitests.ClassDialogLocator import ClassDialogLocator
 from tests.uitests.ToolBarIconLocator import Location
 from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
-from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
-from tests.uitests.common import DOUBLE_CLICK_INTERVAL
-from tests.uitests.common import TYPE_WRITE_INTERVAL
-from tests.uitests.common import displayAppropriateDialog
-from tests.uitests.common import invokeSaveAsProject
-from tests.uitests.common import isAppRunning
-from tests.uitests.common import makeAppActive
-from tests.uitests.common import setupLogging
-from tests.uitests.common import wasTestSuccessful
+from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
+from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
+from tests.uitests.Common import TYPE_WRITE_INTERVAL
+from tests.uitests.Common import displayAppropriateDialog
+from tests.uitests.Common import invokeSaveAsProject
+from tests.uitests.Common import isAppRunning
+from tests.uitests.Common import makeAppActive
+from tests.uitests.Common import setupLogging
+from tests.uitests.Common import wasTestSuccessful
 
 
 WELL_KNOWN_CLASS_NAME = 'ClassName1'

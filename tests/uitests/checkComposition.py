@@ -16,14 +16,14 @@ from pyautogui import press
 from pyautogui import click
 from pymsgbox import alert
 
-from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
-from tests.uitests.common import LOC_TOOLBAR_Y
-from tests.uitests.common import PAUSE_AFTER_EACH_CALL
-from tests.uitests.common import displayAppropriateDialog
-from tests.uitests.common import invokeSaveAsProject
-from tests.uitests.common import isAppRunning
-from tests.uitests.common import makeAppActive
-from tests.uitests.common import wasTestSuccessful
+from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
+from tests.uitests.Common import LOC_TOOLBAR_Y
+from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
+from tests.uitests.Common import displayAppropriateDialog
+from tests.uitests.Common import invokeSaveAsProject
+from tests.uitests.Common import isAppRunning
+from tests.uitests.Common import makeAppActive
+from tests.uitests.Common import wasTestSuccessful
 
 #
 # Removed the IDs;  Also, removed the ModelLink name

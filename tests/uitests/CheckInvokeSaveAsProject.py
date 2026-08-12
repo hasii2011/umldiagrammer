@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pyautogui
 
-from tests.uitests.common import invokeSaveAsProject
-from tests.uitests.common import setupLogging
+from tests.uitests.Common import invokeSaveAsProject
+from tests.uitests.Common import setupLogging
 
 BASENAME:                   str = 'uiclasstest'
 CLASS_PROJECT_FILENAME:     Path = Path(f'{osSep}tmp{osSep}{BASENAME}.udt')

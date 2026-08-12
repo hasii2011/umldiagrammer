@@ -16,17 +16,17 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from tests.uitests.common import BACKSPACES_CLEAR_CLASS_NAME
-from tests.uitests.common import LOC_CLASS_TOOL_BAR
-from tests.uitests.common import LOC_TOOLBAR_Y
-from tests.uitests.common import DOUBLE_CLICK_INTERVAL
-from tests.uitests.common import TYPE_WRITE_INTERVAL
-from tests.uitests.common import displayAppropriateDialog
+from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
+from tests.uitests.Common import LOC_CLASS_TOOL_BAR
+from tests.uitests.Common import LOC_TOOLBAR_Y
+from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
+from tests.uitests.Common import TYPE_WRITE_INTERVAL
+from tests.uitests.Common import displayAppropriateDialog
 
-from tests.uitests.common import invokeSaveAsProject
-from tests.uitests.common import isAppRunning
-from tests.uitests.common import makeAppActive
-from tests.uitests.common import wasTestSuccessful
+from tests.uitests.Common import invokeSaveAsProject
+from tests.uitests.Common import isAppRunning
+from tests.uitests.Common import makeAppActive
+from tests.uitests.Common import wasTestSuccessful
 
 #
 # Removed the IDs

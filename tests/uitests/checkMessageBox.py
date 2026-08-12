@@ -3,6 +3,6 @@
 # dependencies = ['pyautogui', 'pillow', 'umlshapes']
 # ///
 
-from tests.uitests.common import displayAppropriateDialog
+from tests.uitests.Common import displayAppropriateDialog
 
 displayAppropriateDialog(status=True)

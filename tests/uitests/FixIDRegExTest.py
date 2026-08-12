@@ -10,8 +10,8 @@ from pathlib import Path
 from re import findall
 from re import sub as regExSub
 
-from tests.uitests.common import EMPTY_ID
-from tests.uitests.common import ID_NAME_MATCH
+from tests.uitests.Common import EMPTY_ID
+from tests.uitests.Common import ID_NAME_MATCH
 
 
 def runComparison(xmlToFix: str, patternToMatch: str) -> str:
