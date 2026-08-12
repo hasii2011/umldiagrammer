@@ -4,9 +4,9 @@ from logging import getLogger
 
 from codeallybasic.ResourceManager import ResourceManager
 
-from tests.uitests.BaseLocator import BaseLocator
+from tests.uitests.locators.BaseLocator import BaseLocator
 
-from tests.uitests.BaseLocator import Location
+from tests.uitests.locators.BaseLocator import Location
 
 # noinspection SpellCheckingInspection
 PACKAGE_NAME:  str = 'tests.uitests.resources.common'

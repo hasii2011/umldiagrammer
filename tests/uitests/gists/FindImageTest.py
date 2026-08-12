@@ -10,8 +10,8 @@ import logging
 from pyautogui import size
 from pyautogui import ImageNotFoundException
 
-from tests.uitests.ToolBarIconLocator import Location
-from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
+from tests.uitests.locators.ToolBarIconLocator import Location
+from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.Common import setupLogging
 
 if __name__ == '__main__':

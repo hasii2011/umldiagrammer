@@ -29,9 +29,9 @@ from pyautogui import press
 from pymsgbox import alert
 from umlshapes.types.UmlPosition import UmlPosition
 
-from tests.uitests.BaseLocator import Location
-from tests.uitests.CommonImageLocator import CommonImageLocator
-from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
+from tests.uitests.locators.BaseLocator import Location
+from tests.uitests.locators.CommonImageLocator import CommonImageLocator
+from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
 
 #

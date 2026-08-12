@@ -6,10 +6,10 @@ This directory contains a suite of UI automation tests for the UML Diagrammer ap
 
 The main test scripts are:
 
-- **`checkAggregation.py`**: This test automates the creation of a UML aggregation relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the aggregation.
+- **`CheckAggregation.py`**: This test automates the creation of a UML aggregation relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the aggregation.
 - **`checkClass.py`**: This test automates the creation of a UML class, including adding methods and fields. It verifies that the class is created with the correct properties and that the project file is saved correctly.
-- **`checkComposition.py`**: This test automates the creation of a UML composition relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the composition.
-- **`checkInheritance.py`**: This test automates the creation of a UML inheritance relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the inheritance.
+- **`CheckComposition.py`**: This test automates the creation of a UML composition relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the composition.
+- **`CheckInheritance.py`**: This test automates the creation of a UML inheritance relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the inheritance.
 
 Each of these test scripts performs the following steps:
 1. Checks if the UML Diagrammer application is running.
@@ -33,7 +33,7 @@ Each of these test scripts performs the following steps:
 ## Utility Scripts
 
 - **`gists/FixIDRegExTest.py`**: A small utility script for testing and debugging the regular expression used to remove unique IDs from the generated XML files during the comparison process.
-- **`trackmouse.py`**: A simple script that prints the current mouse coordinates to the console. This is useful for finding the screen coordinates needed for the `pyautogui` test scripts.
+- **`TrackMouse.py`**: A simple script that prints the current mouse coordinates to the console. This is useful for finding the screen coordinates needed for the `pyautogui` test scripts.
 
 ## Running the Tests
 
@@ -59,7 +59,7 @@ These tests are highly dependent on screen resolution and window placement.
 -   The toolbar is on top
 -   tkinter (`brew instal python-tk`)
 
-The coordinates in the scripts may need to be adjusted for your specific environment. The `trackmouse.py` utility can be used to find the correct coordinates.
+The coordinates in the scripts may need to be adjusted for your specific environment. The `TrackMouse.py` utility can be used to find the correct coordinates.
 
 The debug section in umlDiagrammer.ini uses the following values:
 

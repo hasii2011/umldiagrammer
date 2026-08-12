@@ -6,9 +6,9 @@ from pathlib import Path
 
 from codeallybasic.ResourceManager import ResourceManager
 
-from tests.uitests.BaseLocator import BaseLocator
-from tests.uitests.BaseLocator import LOCATE_CONFIDENCE
-from tests.uitests.BaseLocator import Location
+from tests.uitests.locators.BaseLocator import BaseLocator
+from tests.uitests.locators.BaseLocator import LOCATE_CONFIDENCE
+from tests.uitests.locators.BaseLocator import Location
 
 # noinspection SpellCheckingInspection
 PACKAGE_NAME:  str = 'tests.uitests.resources.checkclassimages'
