@@ -65,7 +65,7 @@ LOC_CREATE_CLASS:       UmlPosition = UmlPosition(x=680, y=370)
 LOC_CLASS_NAME:         UmlPosition = UmlPosition(x=783, y=370)
 LOC_CLICK_SAVE_PROJECT: UmlPosition = UmlPosition(x=390, y=70)
 
-BASENAME:                   str = 'UIClassTest'
+BASENAME:                   str = 'uiclasstest'
 CLASS_PROJECT_FILENAME:     Path = Path(f'{osSep}tmp{osSep}{BASENAME}.udt')
 
 CLASS_XML_FILENAME:         str = f'{BASENAME}.xml'

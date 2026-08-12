@@ -11,7 +11,7 @@ import pyautogui
 from tests.uitests.common import invokeSaveAsProject
 from tests.uitests.common import setupLogging
 
-BASENAME:                   str = 'UIClassTest'
+BASENAME:                   str = 'uiclasstest'
 CLASS_PROJECT_FILENAME:     Path = Path(f'{osSep}tmp{osSep}{BASENAME}.udt')
 
 if __name__ == '__main__':

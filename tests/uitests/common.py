@@ -20,15 +20,13 @@ from PIL import ImageGrab
 # noinspection PyPackageRequirements
 from PIL.Image import Image
 from pyautogui import hotkey
+from pyautogui import keyUp
 
 from pyautogui import moveTo
 from pyautogui import click
 from pyautogui import press
 
 from pymsgbox import alert
-
-from pyperclip import copy as copyToClipboard
-
 from umlshapes.types.UmlPosition import UmlPosition
 
 from tests.uitests.BaseLocator import Location
@@ -144,13 +142,20 @@ def invokeSaveAsProject(projectFileName: str):
     """
     print(f'{projectFileName=}')
 
+    # Force release any stuck modifiers from previous typing steps
+    keyUp('shift')
+    keyUp('command')
+    keyUp('option')
+    keyUp('ctrl')
+
     iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
     commonImageLocator: CommonImageLocator = CommonImageLocator()
 
     location: Location = iconLocator.saveProject
     click(x=location.x, y=location.y)
 
-    sleep(1.0)  # wait for the Save dialog to fully appear
+    print(f'Wait 2.0 seconds for Save dialog to apppear')
+    sleep(2.0)  # wait for the Save dialog to fully appear
 
     textInputLocation: Location = commonImageLocator.saveAsProjectNameTextInput
     click(x=textInputLocation.x, y=textInputLocation.y)
@@ -159,16 +164,16 @@ def invokeSaveAsProject(projectFileName: str):
     # Invoke the Go to Folder dialog
     hotkey('command', 'shift', 'g')
     sleep(0.8)
-    # Assumes text input has focus, so delete all existing text
-    press('backspace')
-    #
-    # Paste the file name into the go to folder
-    #
-    copyToClipboard(projectFileName)
-    sleep(0.3)
-    hotkey('command', 'v')
-    sleep(0.3)
 
+    # DO NOT click the text box. It natively has perfect focus.
+    # DO NOT backspace. The text is natively highlighted.
+
+    # PyAutoGUI's keyboard emulation is fatally corrupted by this point in checkClass.py.
+    # Bypass it entirely and use macOS native AppleScript to type the string.
+    import subprocess
+    applescript = f'tell application "System Events" to keystroke "{projectFileName}"'
+    subprocess.run(['osascript', '-e', applescript])
+    sleep(0.3)
     # Confirm Go to Folder dialog
     press('return')
     sleep(1.2)

@@ -23,7 +23,7 @@ pillow==12.3.0
 PyMsgBox==2.0.1
 opencv-python==5.0.0.93
 types-PyScreeze==1.0.1.20260518
-types-pyperclip==1.11
+types-pyperclip==1.11.0.20260508
 #
 #   GUI Test requirements
 #
