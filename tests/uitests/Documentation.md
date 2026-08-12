@@ -7,7 +7,7 @@ This directory contains a suite of UI automation tests for the UML Diagrammer ap
 The main test scripts are:
 
 - **`CheckAggregation.py`**: This test automates the creation of a UML aggregation relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the aggregation.
-- **`checkClass.py`**: This test automates the creation of a UML class, including adding methods and fields. It verifies that the class is created with the correct properties and that the project file is saved correctly.
+- **`CheckClass.py`**: This test automates the creation of a UML class, including adding methods and fields. It verifies that the class is created with the correct properties and that the project file is saved correctly.
 - **`CheckComposition.py`**: This test automates the creation of a UML composition relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the composition.
 - **`CheckInheritance.py`**: This test automates the creation of a UML inheritance relationship between two classes. It verifies that the resulting project file contains the correct XML structure for the inheritance.
 
@@ -43,10 +43,10 @@ To run these tests, you need to have the UML Diagrammer application running. The
 
 # from the project root
 cd tests/uitests
-uv run checkClass.py
-uv run checkAggregation.py
-uv run checkComposition.py
-uv run checkInheritance.py
+uv run CheckClass.py
+uv run CheckAggregation.py
+uv run CheckComposition.py
+uv run CheckInheritance.py
 
 ```
 
