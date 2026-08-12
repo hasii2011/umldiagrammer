@@ -1,4 +1,4 @@
-wheel==0.47.0
+wheel==0.48.0
 
 # https://github.com/ronaldoussoren/py2app/issues/538#issuecomment-3193389958
 # Don't upgrade past this version as 70.x.x does not work
@@ -18,10 +18,12 @@ html-testRunner~=1.2.1
 #   GUI Test requirements
 #
 pyautogui==0.9.54
+pyperclip==1.11.0
 pillow==12.3.0
 PyMsgBox==2.0.1
 opencv-python==5.0.0.93
 types-PyScreeze==1.0.1.20260518
+types-pyperclip==1.11
 #
 #   GUI Test requirements
 #

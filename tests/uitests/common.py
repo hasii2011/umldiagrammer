@@ -6,6 +6,8 @@ from logging import basicConfig
 
 import zlib
 
+from time import sleep
+
 from pathlib import Path
 
 from re import findall
@@ -17,16 +19,21 @@ from difflib import unified_diff
 from PIL import ImageGrab
 # noinspection PyPackageRequirements
 from PIL.Image import Image
+from pyautogui import hotkey
 
 from pyautogui import moveTo
 from pyautogui import click
 from pyautogui import press
-from pyautogui import typewrite
 
 from pymsgbox import alert
 
+from pyperclip import copy as copyToClipboard
+
 from umlshapes.types.UmlPosition import UmlPosition
 
+from tests.uitests.BaseLocator import Location
+from tests.uitests.CommonImageLocator import CommonImageLocator
+from tests.uitests.ToolBarIconLocator import ToolBarIconLocator
 from umldiagrammer.DiagrammerTypes import DIAGRAMMER_IN_TEST_MODE
 
 #
@@ -124,17 +131,49 @@ def decompress(inputFileName: Path, outputFileName: Path):
         print(f'Error:  {e}')
 
 def invokeSaveAsProject(projectFileName: str):
+    """
+    According to Claude Sonnet 4.6
 
-    click(x=LOC_CLICK_SAVE_PROJECT.x, y=LOC_CLICK_SAVE_PROJECT.y)
-    moveTo(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y, duration=MOVE_TO_DELAY)
-    # click(x=LOC_CLICK_SAVE_AS_NAME.x, y=LOC_CLICK_SAVE_AS_NAME.y)
+    Also, typewrite() does not support all characters — notably /, ., and
+    uppercase letters via shift — it can misfire key
+    combos that trigger system shortcuts.
+
+    Args:
+        projectFileName:
+
+    """
+    print(f'{projectFileName=}')
+
+    iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
+    commonImageLocator: CommonImageLocator = CommonImageLocator()
+
+    location: Location = iconLocator.saveProject
+    click(x=location.x, y=location.y)
+
+    sleep(1.0)  # wait for the Save dialog to fully appear
+
+    textInputLocation: Location = commonImageLocator.saveAsProjectNameTextInput
+    click(x=textInputLocation.x, y=textInputLocation.y)
+    sleep(0.3)      # Wait for focus to settle
+
+    # Invoke the Go to Folder dialog
+    hotkey('command', 'shift', 'g')
+    sleep(0.8)
+    # Assumes text input has focus, so delete all existing text
+    press('backspace')
     #
-    press('backspace', presses=len('NewProject.udt'))
-    typewrite(projectFileName, interval=TYPE_WRITE_INTERVAL)
-    press('enter')
+    # Paste the file name into the go to folder
     #
-    moveTo(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y, duration=MOVE_TO_DELAY)
-    click(x=LOC_CLICK_SAVE_BUTTON.x, y=LOC_CLICK_SAVE_BUTTON.y)
+    copyToClipboard(projectFileName)
+    sleep(0.3)
+    hotkey('command', 'v')
+    sleep(0.3)
+
+    # Confirm Go to Folder dialog
+    press('return')
+    sleep(1.2)
+    # Confirm the Save dialog
+    press('return')
 
 def runComparison(xmlToFix: str, patternToMatch: str) -> str:
     """
