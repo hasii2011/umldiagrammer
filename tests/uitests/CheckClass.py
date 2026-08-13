@@ -22,6 +22,7 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
 from tests.uitests.Common import displayAppropriateDialog
+from tests.uitests.Common import renameClass
 from tests.uitests.Common import wasTestSuccessful
 from tests.uitests.SaveAsProject import SaveAsProject
 
@@ -29,7 +30,6 @@ from tests.uitests.locators.ClassDialogLocator import ClassDialogLocator
 from tests.uitests.locators.ToolBarIconLocator import Location
 from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 
-from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
 from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
 from tests.uitests.Common import TYPE_WRITE_INTERVAL
 from tests.uitests.Common import isAppRunning
@@ -74,13 +74,21 @@ DECOMPRESSED_CLASS_PROJECT: Path = Path(f'/tmp/{CLASS_XML_FILENAME}')
 HACK_ADJUST_ADD_METHOD_BUTTON_Y: int = 40
 HACK_ADJUST_ADD_FIELD_BUTTON_Y:  int = 40
 
+HACK_ADJUST_PARAMETER_TEXT_INPUT_X:  int = 5
+HACK_ADJUST_PARAMETER_TEXT_INPUT_Y:  int = 5
+
 def addParameterMethod(dialogLocator: ClassDialogLocator):
 
     addParameterButtonLocation: Location = dialogLocator.addParameterButton
     click(x=addParameterButtonLocation.x, y=addParameterButtonLocation.y)
 
     parameterNameLocation: Location = dialogLocator.parameterNameTextInput
-    click(x=parameterNameLocation.x, y=parameterNameLocation.y + 5, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
+    click(
+        x=parameterNameLocation.x + HACK_ADJUST_PARAMETER_TEXT_INPUT_X,
+        y=parameterNameLocation.y + HACK_ADJUST_PARAMETER_TEXT_INPUT_Y,
+        clicks=2,
+        interval=DOUBLE_CLICK_INTERVAL
+    )
     press('backspace', presses=len(defaultMethodName))
     typewrite('floatParameter', interval=TYPE_WRITE_INTERVAL)
 
@@ -145,11 +153,7 @@ if __name__ == '__main__':
 
         click(x=LOC_WHERE_CLASS_IS_CREATED.x, y=LOC_WHERE_CLASS_IS_CREATED.y)
 
-        textInputLocation: Location = classDialogLocator.classNameTextInput
-        click(x=textInputLocation.x, y=textInputLocation.y)
-
-        press('backspace', BACKSPACES_CLEAR_CLASS_NAME)
-        typewrite(WELL_KNOWN_CLASS_NAME)
+        renameClass(newClassName=WELL_KNOWN_CLASS_NAME, locator=classDialogLocator)
 
         addMethodButtonLocation: Location = classDialogLocator.addMethodButton
         click(x=addMethodButtonLocation.x, y=addMethodButtonLocation.y + HACK_ADJUST_ADD_METHOD_BUTTON_Y)  # Cheat from center
