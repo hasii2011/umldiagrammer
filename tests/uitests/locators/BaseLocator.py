@@ -45,7 +45,7 @@ class BaseLocator:
             targetPoint: Point | None = locateCenterOnScreen(
                 str(path),
                 confidence=self._confidence,
-                grayscale=True
+                grayscale=False
             )
 
             if targetPoint is not None:

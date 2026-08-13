@@ -146,7 +146,7 @@ if __name__ == '__main__':
         click(x=LOC_WHERE_CLASS_IS_CREATED.x, y=LOC_WHERE_CLASS_IS_CREATED.y)
 
         textInputLocation: Location = classDialogLocator.classNameTextInput
-        click(x=location.x, y=location.y)
+        click(x=textInputLocation.x, y=textInputLocation.y)
 
         press('backspace', BACKSPACES_CLEAR_CLASS_NAME)
         typewrite(WELL_KNOWN_CLASS_NAME)
