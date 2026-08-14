@@ -11,17 +11,17 @@ from pymsgbox import alert
 from umlshapes.types.UmlPosition import UmlPosition
 
 from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
+from tests.uitests.Common import createClassPair
 from tests.uitests.Common import displayAppropriateDialog
 
 from tests.uitests.Common import isAppRunning
 from tests.uitests.Common import makeAppActive
-from tests.uitests.Common import renameClass
+
 from tests.uitests.Common import wasTestSuccessful
 
 from tests.uitests.SaveAsProject import SaveAsProject
 
 from tests.uitests.locators.BaseLocator import Location
-from tests.uitests.locators.ClassDialogLocator import ClassDialogLocator
 from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.locators.UmlClassLocator import UmlClassLocator
 
@@ -68,26 +68,17 @@ if __name__ == '__main__':
         AGGREGATION_FILENAME.unlink(missing_ok=True)
         DECOMPRESSED_AGGREGATION_PROJECT.unlink(missing_ok=True)
 
-        iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
-        classDialogLocator: ClassDialogLocator = ClassDialogLocator()
-        umlClassLocator:    UmlClassLocator    = UmlClassLocator()
-
-        newClassIconLocation: Location = iconLocator.newClass
-
-        # Create the aggregator; Make name more different so locator can tell
-        click(x=newClassIconLocation.x, y=newClassIconLocation.y)
-        click(x=LOC_WHERE_AGGREGATOR_IS_CREATED.x, y=LOC_WHERE_AGGREGATOR_IS_CREATED.y)
-        renameClass(newClassName='TheAggregator', locator=classDialogLocator)
-
-        clickClassOkButton: Location = classDialogLocator.clickClassOkButton
-        click(x=clickClassOkButton.x, y=clickClassOkButton.y)
-
-        # Create the Aggregated
-        click(x=newClassIconLocation.x, y=newClassIconLocation.y)
-        click(x=LOC_WHERE_AGGREGATED_IS_CREATED.x, y=LOC_WHERE_AGGREGATED_IS_CREATED.y)
-        renameClass(newClassName='Aggregated', locator=classDialogLocator)
-        click(x=clickClassOkButton.x, y=clickClassOkButton.y)
-
+        iconLocator:     ToolBarIconLocator = ToolBarIconLocator()
+        umlClassLocator: UmlClassLocator    = UmlClassLocator()
+        createClassPair(
+            class1Location=LOC_WHERE_AGGREGATOR_IS_CREATED,
+            class1Name='TheAggregator',
+            class2Location=LOC_WHERE_AGGREGATED_IS_CREATED,
+            class2Name='Aggregated'
+        )
+        #
+        # Click on the Aggregation Link Icon
+        #
         newAggregationLinkLocation: Location = iconLocator.aggregationLink
         click(x=newAggregationLinkLocation.x, y=newAggregationLinkLocation.y)
 

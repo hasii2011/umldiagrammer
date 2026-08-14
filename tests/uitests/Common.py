@@ -260,3 +260,23 @@ def renameClass(newClassName: str, locator: ClassDialogLocator):
 
     press(keys='backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
     typewrite(newClassName)
+
+def createClassPair(class1Location: UmlPosition, class2Location: UmlPosition, class1Name: str, class2Name: str):
+
+    createUmlClass(classLocation=class1Location, className=class1Name)
+    createUmlClass(classLocation=class2Location, className=class2Name)
+
+def createUmlClass(classLocation: UmlPosition, className: str):
+
+    iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
+    classDialogLocator: ClassDialogLocator = ClassDialogLocator()
+
+    newClassIconLocation: Location = iconLocator.newClass
+
+    click(x=newClassIconLocation.x, y=newClassIconLocation.y)
+    click(x=classLocation.x, y=classLocation.y)
+
+    renameClass(newClassName=className, locator=classDialogLocator)
+
+    clickClassOkButton: Location = classDialogLocator.clickClassOkButton
+    click(x=clickClassOkButton.x, y=clickClassOkButton.y)

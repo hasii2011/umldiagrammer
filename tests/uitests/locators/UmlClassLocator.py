@@ -36,3 +36,11 @@ class UmlClassLocator(BaseLocator):
     @property
     def aggregated(self) -> Location:
         return self._locate('Aggregated.png')
+
+    @property
+    def composer(self) -> Location:
+        return self._locate('Composer.png')
+
+    @property
+    def composed(self) -> Location:
+        return self._locate('Composed.png')
