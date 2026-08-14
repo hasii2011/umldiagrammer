@@ -44,3 +44,11 @@ class UmlClassLocator(BaseLocator):
     @property
     def composed(self) -> Location:
         return self._locate('Composed.png')
+
+    @property
+    def baseClass(self) -> Location:
+        return self._locate('BaseClass.png')
+
+    @property
+    def subClass(self) -> Location:
+        return self._locate('SubClass.png')

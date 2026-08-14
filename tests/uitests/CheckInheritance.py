@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # /// script
-# dependencies = ['pyautogui', 'pillow', 'umlshapes']
+# dependencies = ['pyautogui', 'pillow', 'umlshapes', 'opencv-python']
 # ///
 
 from pathlib import Path
 
 import pyautogui
 from pyautogui import click
-from pyautogui import press
-from pyautogui import typewrite
 
 from pymsgbox import alert
 
@@ -16,85 +14,55 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
-from tests.uitests.Common import BACKSPACES_CLEAR_CLASS_NAME
-from tests.uitests.Common import LOC_CLASS_TOOL_BAR
-from tests.uitests.Common import LOC_TOOLBAR_Y
-from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
-from tests.uitests.Common import TYPE_WRITE_INTERVAL
+
+from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
+from tests.uitests.Common import createClassPair
 from tests.uitests.Common import displayAppropriateDialog
 
-from tests.uitests.Common import invokeSaveAsProject
 from tests.uitests.Common import isAppRunning
 from tests.uitests.Common import makeAppActive
 from tests.uitests.Common import wasTestSuccessful
+from tests.uitests.SaveAsProject import SaveAsProject
+from tests.uitests.locators.BaseLocator import Location
+from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
+from tests.uitests.locators.UmlClassLocator import UmlClassLocator
 
 #
 # Removed the IDs
 #
 GOLDEN_INHERITANCE_XML: str = (
     "<?xml version='1.0' encoding='iso-8859-1'?>\n"
-    '<UmlProject fileName="/private/tmp/UIInheritanceTest.udt" version="14.0" codePath=".">\n'
+    '<UmlProject fileName="/private/tmp/inheritancetest.udt" version="14.0" codePath=".">\n'
     '    <UMLDiagram documentType="Class Document" title="Class Diagram" scrollPositionX="0" scrollPositionY="0" pixelsPerUnitX="20" pixelsPerUnitY="20">\n'
-    '        <UmlClass id="" width="80" height="90" x="164" y="77">\n'
-    '            <ModelClass id="" name="BaseClass" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
+    '        <UmlClass id="" width="110" height="90" x="124" y="97">\n'
+    '            <ModelClass id="" name="TheBaseClass" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlClass id="" width="72" height="90" x="664" y="377">\n'
+    '        <UmlClass id="" width="72" height="90" x="624" y="397">\n'
     '            <ModelClass id="" name="SubClass" displayMethods="True" displayParameters="Unspecified" displayConstructor="Unspecified" displayDunderMethods="Unspecified" displayFields="True" displayStereotype="True" fileName="" description="" />\n'
     '        </UmlClass>\n'
-    '        <UmlLink id="" fromX="664" fromY="400" toX="244" toY="146" spline="False">\n'
+    '        <UmlLink id="" fromX="624" fromY="420" toX="234" toY="176" spline="False">\n'
     '            <ModelLink name="" type="INHERITANCE" sourceId="" destinationId="" bidirectional="False" sourceCardinalityValue="" destinationCardinalityValue="" />\n'
     '        </UmlLink>\n'
     '    </UMLDiagram>\n'
     '</UmlProject>'
 )
 
-BASENAME:                     str  = 'UIInheritanceTest'
+BASENAME:                     str  = 'inheritancetest'
 INHERITANCE_PROJECT_FILENAME: Path = Path(f'/tmp/{BASENAME}.udt')
 
 INHERITANCE_XML_FILENAME:         str = f'{BASENAME}.xml'
 DECOMPRESSED_INHERITANCE_PROJECT: Path = Path(f'/tmp/{INHERITANCE_XML_FILENAME}')
 
-LOC_INHERITANCE_TOOL_BAR: UmlPosition = UmlPosition(x=935, y=LOC_TOOLBAR_Y)
+LOC_CREATE_BASE_CLASS: UmlPosition = UmlPosition(x=400, y=200)
+LOC_CREATE_SUB_CLASS:  UmlPosition = UmlPosition(x=900, y=500)
 
-LOC_CREATE_BASE_CLASS:   UmlPosition = UmlPosition(x=400, y=200)
-LOC_CLICK_BASE_CLASS_OK: UmlPosition = UmlPosition(x=980, y=690)
-
-LOC_CREATE_SUB_CLASS:        UmlPosition = UmlPosition(x=900, y=500)
-LOC_CLICK_SUBCLASS_CLASS_OK: UmlPosition = LOC_CLICK_BASE_CLASS_OK
-
-LOC_CLASS_NAME:  UmlPosition = UmlPosition(x=770, y=365)
-
-CHOOSE_SUBCLASS:  UmlPosition = UmlPosition(x=935, y=540)
-CHOOSE_BASECLASS: UmlPosition = UmlPosition(x=440, y=235)
 
 SUBCLASS_NAME:    str = 'SubClass'
-BASECLASS_NAME:   str = 'BaseClass'
-
-def createBaseClass():
-    click(x=LOC_CLASS_TOOL_BAR.x,      y=LOC_CLASS_TOOL_BAR.y)
-    click(x=LOC_CREATE_BASE_CLASS.x,   y=LOC_CREATE_BASE_CLASS.y)
-
-    click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
-    press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
-    typewrite(BASECLASS_NAME, interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_BASE_CLASS_OK.x, y=LOC_CLICK_BASE_CLASS_OK.y)
-
-
-def createSubClass():
-    click(x=LOC_CLASS_TOOL_BAR.x,          y=LOC_CLASS_TOOL_BAR.y)
-    click(x=LOC_CREATE_SUB_CLASS.x,        y=LOC_CREATE_SUB_CLASS.y)
-
-    click(x=LOC_CLASS_NAME.x, y=LOC_CLASS_NAME.y, clicks=2, interval=DOUBLE_CLICK_INTERVAL)
-    press('backspace', presses=BACKSPACES_CLEAR_CLASS_NAME)
-    typewrite(SUBCLASS_NAME, interval=TYPE_WRITE_INTERVAL)
-
-    click(x=LOC_CLICK_SUBCLASS_CLASS_OK.x, y=LOC_CLICK_SUBCLASS_CLASS_OK.y)
-
+BASECLASS_NAME:   str = 'TheBaseClass'
 
 if __name__ == '__main__':
 
-    pyautogui.PAUSE = 0.5
+    pyautogui.PAUSE   = PAUSE_AFTER_EACH_CALL
     pyautogui.FAILSAFE = True
 
     umlPreferences: UmlPreferences = UmlPreferences()
@@ -107,14 +75,35 @@ if __name__ == '__main__':
     else:
         makeAppActive()
 
-        createBaseClass()
-        createSubClass()
+        INHERITANCE_PROJECT_FILENAME.unlink(missing_ok=True)
+        DECOMPRESSED_INHERITANCE_PROJECT.unlink(missing_ok=True)
 
-        click(x=LOC_INHERITANCE_TOOL_BAR.x, y=LOC_INHERITANCE_TOOL_BAR.y)
-        click(x=CHOOSE_SUBCLASS.x, y=CHOOSE_SUBCLASS.y)
-        click(x=CHOOSE_BASECLASS.x, y=CHOOSE_BASECLASS.y)
+        iconLocator:     ToolBarIconLocator = ToolBarIconLocator()
+        umlClassLocator: UmlClassLocator    = UmlClassLocator()
 
-        invokeSaveAsProject(projectFileName=str(INHERITANCE_PROJECT_FILENAME))
+        createClassPair(
+            class1Location=LOC_CREATE_BASE_CLASS,
+            class1Name=BASECLASS_NAME,
+            class2Location=LOC_CREATE_SUB_CLASS,
+            class2Name=SUBCLASS_NAME
+        )
+
+        #
+        # Click on the Inheritance Link Icon
+        #
+        newInheritanceLinkLocation: Location = iconLocator.inheritanceLink
+        click(x=newInheritanceLinkLocation.x, y=newInheritanceLinkLocation.y)
+
+        subClassLocation: Location = umlClassLocator.subClass
+        click(x=subClassLocation.x, y=subClassLocation.y)
+        print(f'{subClassLocation=}')
+
+        baseClassLocation: Location = umlClassLocator.baseClass
+        click(x=baseClassLocation.x, y=baseClassLocation.y)
+        print(f'{baseClassLocation=}')
+
+        saveAsProject: SaveAsProject = SaveAsProject()
+        saveAsProject.execute(projectFileName=str(INHERITANCE_PROJECT_FILENAME))
 
         success: bool = wasTestSuccessful(
             projectFileName=INHERITANCE_PROJECT_FILENAME,
