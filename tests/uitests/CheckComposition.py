@@ -24,9 +24,9 @@ from tests.uitests.Common import makeAppActive
 from tests.uitests.Common import wasTestSuccessful
 
 from tests.uitests.SaveAsProject import SaveAsProject
+from tests.uitests.ToolBarClicker import ToolBarClicker
 
 from tests.uitests.locators.BaseLocator import Location
-from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.locators.UmlClassLocator import UmlClassLocator
 
 #
@@ -71,7 +71,6 @@ if __name__ == '__main__':
         COMPOSITION_FILENAME.unlink(missing_ok=True)
         DECOMPRESSED_COMPOSITION_PROJECT.unlink(missing_ok=True)
 
-        iconLocator:     ToolBarIconLocator = ToolBarIconLocator()
         umlClassLocator: UmlClassLocator    = UmlClassLocator()
 
         createClassPair(
@@ -80,11 +79,8 @@ if __name__ == '__main__':
             class2Location=LOC_WHERE_COMPOSED_IS_CREATED,
             class2Name='Composed'
         )
-        #
-        # Click on the Composition Link Icon
-        #
-        newCompositionLinkLocation: Location = iconLocator.compositionLink
-        click(x=newCompositionLinkLocation.x, y=newCompositionLinkLocation.y)
+        toolBarClicker: ToolBarClicker = ToolBarClicker()
+        toolBarClicker.clickComposition()
 
         composerLocation: Location = umlClassLocator.composer
         click(x=composerLocation.x, y=composerLocation.y)

@@ -8,6 +8,7 @@ import pyautogui
 
 from pyautogui import click
 from pymsgbox import alert
+
 from umlshapes.types.UmlPosition import UmlPosition
 
 from tests.uitests.Common import PAUSE_AFTER_EACH_CALL
@@ -21,8 +22,8 @@ from tests.uitests.Common import wasTestSuccessful
 
 from tests.uitests.SaveAsProject import SaveAsProject
 
+from tests.uitests.ToolBarClicker import ToolBarClicker
 from tests.uitests.locators.BaseLocator import Location
-from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.locators.UmlClassLocator import UmlClassLocator
 
 #
@@ -68,7 +69,6 @@ if __name__ == '__main__':
         AGGREGATION_FILENAME.unlink(missing_ok=True)
         DECOMPRESSED_AGGREGATION_PROJECT.unlink(missing_ok=True)
 
-        iconLocator:     ToolBarIconLocator = ToolBarIconLocator()
         umlClassLocator: UmlClassLocator    = UmlClassLocator()
         createClassPair(
             class1Location=LOC_WHERE_AGGREGATOR_IS_CREATED,
@@ -76,11 +76,9 @@ if __name__ == '__main__':
             class2Location=LOC_WHERE_AGGREGATED_IS_CREATED,
             class2Name='Aggregated'
         )
-        #
-        # Click on the Aggregation Link Icon
-        #
-        newAggregationLinkLocation: Location = iconLocator.aggregationLink
-        click(x=newAggregationLinkLocation.x, y=newAggregationLinkLocation.y)
+
+        toolBarClicker: ToolBarClicker = ToolBarClicker()
+        toolBarClicker.clickAggregation()
 
         aggregatorLocation: Location = umlClassLocator.aggregator
         click(x=aggregatorLocation.x, y=aggregatorLocation.y)

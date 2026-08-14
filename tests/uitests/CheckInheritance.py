@@ -23,8 +23,8 @@ from tests.uitests.Common import isAppRunning
 from tests.uitests.Common import makeAppActive
 from tests.uitests.Common import wasTestSuccessful
 from tests.uitests.SaveAsProject import SaveAsProject
+from tests.uitests.ToolBarClicker import ToolBarClicker
 from tests.uitests.locators.BaseLocator import Location
-from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 from tests.uitests.locators.UmlClassLocator import UmlClassLocator
 
 #
@@ -78,7 +78,6 @@ if __name__ == '__main__':
         INHERITANCE_PROJECT_FILENAME.unlink(missing_ok=True)
         DECOMPRESSED_INHERITANCE_PROJECT.unlink(missing_ok=True)
 
-        iconLocator:     ToolBarIconLocator = ToolBarIconLocator()
         umlClassLocator: UmlClassLocator    = UmlClassLocator()
 
         createClassPair(
@@ -87,12 +86,8 @@ if __name__ == '__main__':
             class2Location=LOC_CREATE_SUB_CLASS,
             class2Name=SUBCLASS_NAME
         )
-
-        #
-        # Click on the Inheritance Link Icon
-        #
-        newInheritanceLinkLocation: Location = iconLocator.inheritanceLink
-        click(x=newInheritanceLinkLocation.x, y=newInheritanceLinkLocation.y)
+        toolBarClicker: ToolBarClicker = ToolBarClicker()
+        toolBarClicker.clickInheritance()
 
         subClassLocation: Location = umlClassLocator.subClass
         click(x=subClassLocation.x, y=subClassLocation.y)

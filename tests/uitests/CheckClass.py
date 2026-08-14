@@ -25,10 +25,10 @@ from tests.uitests.Common import displayAppropriateDialog
 from tests.uitests.Common import renameClass
 from tests.uitests.Common import wasTestSuccessful
 from tests.uitests.SaveAsProject import SaveAsProject
+from tests.uitests.ToolBarClicker import ToolBarClicker
 
-from tests.uitests.locators.ClassDialogLocator import ClassDialogLocator
 from tests.uitests.locators.ToolBarIconLocator import Location
-from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
+from tests.uitests.locators.ClassDialogLocator import ClassDialogLocator
 
 from tests.uitests.Common import DOUBLE_CLICK_INTERVAL
 from tests.uitests.Common import TYPE_WRITE_INTERVAL
@@ -145,11 +145,9 @@ if __name__ == '__main__':
     else:
         makeAppActive()
 
-        iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
         classDialogLocator: ClassDialogLocator = ClassDialogLocator()
-
-        location: Location = iconLocator.newClass
-        click(x=location.x,   y=location.y)
+        toolBarClicker:     ToolBarClicker     = ToolBarClicker()
+        toolBarClicker.clickNewClass()
 
         click(x=LOC_WHERE_CLASS_IS_CREATED.x, y=LOC_WHERE_CLASS_IS_CREATED.y)
 

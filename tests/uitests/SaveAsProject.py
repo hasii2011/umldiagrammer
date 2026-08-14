@@ -11,9 +11,9 @@ from pyautogui import hotkey
 from pyautogui import keyUp
 from pyautogui import press
 
+from tests.uitests.ToolBarClicker import ToolBarClicker
 from tests.uitests.locators.BaseLocator import Location
 from tests.uitests.locators.CommonImageLocator import CommonImageLocator
-from tests.uitests.locators.ToolBarIconLocator import ToolBarIconLocator
 
 POST_CONFIRM_GOTO_FOLDER_DIALOG = 1.2
 
@@ -40,8 +40,8 @@ class SaveAsProject:
 
         self.logger: Logger = getLogger(__name__)
 
-        self._iconLocator:        ToolBarIconLocator = ToolBarIconLocator()
         self._commonImageLocator: CommonImageLocator = CommonImageLocator()
+        self._toolBarClicker:     ToolBarClicker     = ToolBarClicker()
 
     def execute(self, projectFileName: str):
 
@@ -73,8 +73,7 @@ class SaveAsProject:
         """
         Waits for the Save dialog to fully appear
         """
-        location: Location = self._iconLocator.saveProject
-        click(x=location.x, y=location.y)
+        self._toolBarClicker.clickSaveProject()
 
         self.logger.info(f'Wait {SAVE_DIALOG_DELAY} seconds for Save dialog to appear')
         pySleep(SAVE_DIALOG_DELAY)
