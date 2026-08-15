@@ -1,0 +1,24 @@
+[build-system]
+requires = ['setuptools>=84.0.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'uitests-cli'
+version = '0.5.0'
+description = 'CLI tool for running UI tests'
+requires-python = '>=3.13'
+dependencies = [
+    'click>=8.0.0',
+    'pyautogui>=0.9.54',
+    'pillow>=12.3.0',
+    'umlshapes>=2.3.15',
+    'opencv-python>=5.0.0.93'
+]
+
+[project.scripts]
+# Exposes the 'uitest' group from Commands.py as a CLI
+uitest = 'Commands:uitest'
+
+[tool.setuptools]
+# When installed in editable mode from this directory, Commands.py will be exposed as a top-level module
+py-modules = ['Commands']
