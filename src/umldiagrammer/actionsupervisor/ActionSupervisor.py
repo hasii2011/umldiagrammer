@@ -474,6 +474,7 @@ class ActionSupervisor(metaclass=SingletonV3):
         linkType: LinkType = UI_ACTION_TO_LINK_TYPE[self._currentAction]
 
         command: CreateLinkCommand = CreateLinkCommand(
+            umlFrame=self._source.umlFrame,                     # kind of a cheat
             partialName=f'Create {linkType.name.capitalize()}-Link',
             sourceShape=self._source,
             destinationShape=self._destination,
