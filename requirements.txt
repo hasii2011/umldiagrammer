@@ -8,25 +8,12 @@ wheel==0.48.0
 #
 # setuptools==70.1.1
 # setuptools==70.3.0
-setuptools==84.0.0
+setuptools<81.0.0
 
 py2app==0.28.10
 
-mypy==2.3.0
+mypy==2.3.1
 html-testRunner~=1.2.1
-#
-#   GUI Test requirements
-#
-pyautogui==0.9.54
-pyperclip==1.11.0
-pillow==12.3.0
-PyMsgBox==2.0.1
-opencv-python==5.0.0.93
-types-PyScreeze==1.0.1.20260518
-types-pyperclip==1.11.0.20260508
-#
-#   GUI Test requirements
-#
 
 # So Circle CI works
 buildlackey==2.1.0
@@ -38,7 +25,7 @@ semantic-version==2.10.0
 codeallybasic==1.40.0
 codeallyadvanced==2.5.7
 
-umlmodel==3.4.3
+umlmodel==3.5.0
 umlshapes==3.0.0
-umlio==0.7.3
+umlio==0.8.0
 umlextensions==0.9.1

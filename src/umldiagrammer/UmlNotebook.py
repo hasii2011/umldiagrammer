@@ -499,6 +499,7 @@ class UmlNotebook(Notebook):
             linkControlPositions.append(cp)
 
         createLinkCommand: CreateLinkCommand = CreateLinkCommand(
+            umlFrame=currentFrame,
             partialName=partialName,
             sourceShape=linkInformation.sourceShape,
             destinationShape=linkInformation.destinationShape,
