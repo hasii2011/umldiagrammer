@@ -39,7 +39,6 @@ its subpackages, regardless of whether it detects static imports for them
 PY2APP_OPTIONS: Dict[str, Any] = {
     'packages': ['codeallyadvanced', 'codeallybasic', 'umlmodel', 'umlshapes', 'umlio', 'umlextensions'],
     'plist': {
-        'NSRequiresAquaSystemAppearance': 'False',
         'CFBundleGetInfoString': 'Edits Diagrammer UML Files',
         'CFBundleIdentifier': 'umldiagrammer',
         'CFBundleShortVersionString': __version__,
@@ -50,7 +49,7 @@ PY2APP_OPTIONS: Dict[str, Any] = {
                 'CFBundleTypeExtensions': ['udt', 'xml']
             }
         ],
-        'LSMinimumSystemVersion': '26.5',
+        'LSMinimumSystemVersion': '26.0',
         'LSEnvironment': {
             'APP_MODE': 'True',
             'PYTHONOPTIMIZE': '1',

@@ -1,3 +1,24 @@
+
 rm -rf build dist src/UmlDiagrammer.egg-info UmlDiagrammer.egg-info
 python -O setup.py py2app --iconfile src/umldiagrammer/resources/icons/umldiagrammer.icns
 # python setup.py py2app
+#
+# py2app uses a pre-compiled Mach-O launcher template (dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer).
+# Checking py2app's launcher stub revealed:
+#
+#
+#   platform: MACOS
+#   minos:    11.0
+#   sdk:      11.3
+#
+# update the SDK metadata on the py2app launcher binary using Apple's /usr/bin/vtool and re-sign with codesign.
+# The standard solution used across Python macOS packaging (including py2app, PyInstaller, and cx_Freeze) is keeping
+# the vtool post-build step in developer/umldiagrammer.bld:
+
+vtool -set-build-version 1 26.0 26.1 -replace -output dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer
+
+#
+# codesign --force --deep --sign - dist/UmlDiagrammer.app
+#
+#
+#  I use py2appsigner
