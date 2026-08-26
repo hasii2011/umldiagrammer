@@ -26,6 +26,6 @@ codeallybasic==1.40.0
 codeallyadvanced==2.5.7
 
 umlmodel==3.5.0
-umlshapes==3.0.0
+umlshapes==3.1.0
 umlio==0.8.0
 umlextensions==0.9.1
