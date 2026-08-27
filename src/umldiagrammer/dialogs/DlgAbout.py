@@ -1,45 +1,47 @@
 
 from typing import List
-from typing import NewType
 from typing import Tuple
-from typing import cast
+from typing import NewType
 
 from dataclasses import dataclass
 
+from wx import BLACK
+from wx import OK
+from wx import ID_OK
+from wx import WHITE
+from wx import ID_ANY
 from wx import CAPTION
 from wx import CLOSE_BOX
-from wx import EVT_BUTTON
 from wx import EVT_CLOSE
-
+from wx import EVT_BUTTON
+from wx import STAY_ON_TOP
+from wx import LI_HORIZONTAL
+from wx import RESIZE_BORDER
 from wx import FONTFAMILY_ROMAN
 from wx import FONTWEIGHT_SEMIBOLD
-from wx import ID_ANY
-from wx import DefaultPosition
-from wx import ID_OK
-from wx import LI_HORIZONTAL
-from wx import OK
-from wx import RESIZE_BORDER
-from wx import STAY_ON_TOP
+
 from wx import Size
-from wx import StaticLine
-from wx import WHITE
-
-from wx import StaticText
 from wx import Font
-
+from wx import Window
+from wx import StaticText
+from wx import StaticLine
 from wx import CommandEvent
 from wx import StaticBitmap
-from wx import Window
+from wx import DefaultPosition
+
+from wx import SystemSettings
+from wx import SystemAppearance
 
 from wx import NewIdRef as wxNewIdRef
 
-from wx.lib.sized_controls import SizedDialog
 from wx.lib.sized_controls import SizedPanel
+from wx.lib.sized_controls import SizedDialog
 
 from umldiagrammer import __version__ as diagrammerVersion
 from umldiagrammer.DependencyVersions import DependencyVersions
 
-from umldiagrammer.resources.icons.AboutDialogLogo import embeddedImage as AboutDialogLogo
+from umldiagrammer.resources.icons.AboutDialogLogoLightMode import embeddedImage as AboutDialogLogoLightMode
+from umldiagrammer.resources.icons.AboutDialogLogoDarkMode import embeddedImage as AboutDialogLogoDarkMode
 
 @dataclass
 class VersionDescriptor:
@@ -54,7 +56,7 @@ class DlgAbout(SizedDialog):
 
     def __init__(self, parent: Window, wxID: int = wxNewIdRef()):
 
-        title: str = f"About UML Diagrammer {diagrammerVersion}"
+        title: str = f'About UML Diagrammer {diagrammerVersion}'
         style: int = RESIZE_BORDER | CAPTION | CLOSE_BOX | STAY_ON_TOP
         super().__init__(parent, wxID, title, DefaultPosition, style=style)
 
@@ -66,13 +68,19 @@ class DlgAbout(SizedDialog):
         self._versions: DependencyVersions = DependencyVersions()
         # Main panel
         mainPanel:  SizedPanel = self.GetContentsPane()
-        mainPanel.SetSizerType("horizontal")
+        mainPanel.SetSizerType('horizontal')
         mainPanel.SetSizerProps(expand=True, proportion=1)
+
+        systemAppearance: SystemAppearance = SystemSettings.GetAppearance()
+        self._darkMode:   bool             = systemAppearance.IsDark()
 
         self._layoutDialog(parentPanel=mainPanel)
         self.SetButtonSizer(self.CreateStdDialogButtonSizer(OK))
 
-        self.SetBackgroundColour(WHITE)
+        if self._darkMode:
+            self.SetBackgroundColour(BLACK)
+        else:
+            self.SetBackgroundColour(WHITE)
 
         self.Bind(EVT_BUTTON, self._onOk, id=ID_OK)
         self.Bind(EVT_CLOSE,  self._onOk)
@@ -83,7 +91,7 @@ class DlgAbout(SizedDialog):
         self.SetMinSize(self.GetSize())
 
     # noinspection PyUnusedLocal
-    def _onOk(self, event: CommandEvent):
+    def _onOk(self, _event: CommandEvent):
         """
         Handle user click on the OK button
         """
@@ -91,7 +99,10 @@ class DlgAbout(SizedDialog):
 
     def _layoutDialog(self, parentPanel: SizedPanel):
 
-        StaticBitmap(parentPanel, ID_ANY, AboutDialogLogo.GetBitmap(), size=Size(128, 128))
+        if self._darkMode:
+            StaticBitmap(parentPanel, ID_ANY, AboutDialogLogoDarkMode.GetBitmap(), size=Size(128, 128))
+        else:
+            StaticBitmap(parentPanel, ID_ANY, AboutDialogLogoLightMode.GetBitmap(), size=Size(128, 128))
 
         self._layoutVersionsContainer(parentPanel=parentPanel)
 
@@ -134,13 +145,13 @@ class DlgAbout(SizedDialog):
         """
 
         gridPanel: SizedPanel = SizedPanel(parent=parentPanel)
-        gridPanel.SetSizerType("grid", {"cols": 2})   # 2-column grid layout
+        gridPanel.SetSizerType('grid', {'cols': 2})   # 2-column grid layout
         # gridPanel.SetSizerProps(expand=True, proportion=1)
 
         borderStyle: Tuple[List[str], int] = (['top', 'bottom', 'left', 'right'], 1)
 
         for d in versionDescriptors:
-            versionDescriptor: VersionDescriptor = cast(VersionDescriptor, d)
+            versionDescriptor: VersionDescriptor = d
 
             nameCtl:    StaticText = StaticText(gridPanel, ID_ANY, versionDescriptor.name,    style=CAPTION)
             versionCtl: StaticText = StaticText(gridPanel, ID_ANY, versionDescriptor.version, style=CAPTION)
