@@ -31,7 +31,7 @@ Put the pyapp options in a separate variable to avoid PyCharm type warnings;
 py2app options have a complex nested structure that PyCharm's setuptools stubs
 sometimes misinterpret. Using Dict[str, Any] provides the necessary flexibility.
 
-Explicitly include codeallyadvanced (and other related packages) in the packages list of the py2app 
+Explicitly include codeallyadvanced (and other related packages) in the packages list of the py2app
 options. This forces py2app to bundle the entire package and all
 its subpackages, regardless of whether it detects static imports for them
 

@@ -38,7 +38,7 @@ class ToolDefinition:
     """
     toolGroup: ToolGroup = ToolGroup.NOT_SET
     """
-    The tool group for this tool 
+    The tool group for this tool
     """
     actionCallback: Callable = cast(Callable, None)
     """
