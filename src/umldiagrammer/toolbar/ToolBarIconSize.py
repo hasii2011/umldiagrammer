@@ -7,6 +7,7 @@ class ToolBarIconSize(Enum):
     SMALL       = 'Small 16'
     MEDIUM      = 'Medium 24'
     LARGE       = 'Large 32'
+    VERY_LARGE  = 'Very Large 48'
     EXTRA_LARGE = 'Extra Large 64'
 
     @classmethod
@@ -22,6 +23,9 @@ class ToolBarIconSize(Enum):
 
         elif value == ToolBarIconSize.LARGE.value:
             toolBarIconSize = ToolBarIconSize.LARGE
+
+        elif value == ToolBarIconSize.VERY_LARGE.value:
+            toolBarIconSize = ToolBarIconSize.VERY_LARGE
 
         elif value == ToolBarIconSize.EXTRA_LARGE.value:
             toolBarIconSize = ToolBarIconSize.EXTRA_LARGE

@@ -7,6 +7,7 @@ from logging import Logger
 from logging import getLogger
 
 from wx import BOTH
+from wx import EXPAND
 from wx import ID_FILE1
 from wx import EVT_CLOSE
 from wx import EVT_ACTIVATE
@@ -17,8 +18,9 @@ from wx import FileHistoryMenuPathStyle
 
 from wx import Point
 from wx import Size
+from wx import Sizer
 from wx import Menu
-from wx import ToolBar
+from wx.aui import AuiToolBar
 from wx import MenuBar
 from wx import CommandEvent
 from wx import ActivateEvent
@@ -77,6 +79,7 @@ from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.toolbar.ToolBarCreator import ToolBarCreator
+from umldiagrammer.toolbar.ToolBarPosition import ToolBarPosition
 
 PROJECT_WILDCARD: str = f'UML Diagrammer files (*.{PROJECT_SUFFIX})|*{PROJECT_SUFFIX}'
 XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
@@ -114,7 +117,12 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
-        sizedPanel.SetSizerType('vertical')
+
+        toolBarPosition: ToolBarPosition = self._preferences.toolBarPosition
+        if toolBarPosition in [ToolBarPosition.LEFT, ToolBarPosition.RIGHT]:
+            sizedPanel.SetSizerType('horizontal')
+        else:
+            sizedPanel.SetSizerType('vertical')
 
         self._umlNotebook: UmlNotebook = cast(UmlNotebook, None)
 
@@ -138,7 +146,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                                               editMenuHandler=uiMenuCreator.editMenuHandler,
                                                               newActionCallback=self._onNewAction
                                                               )
-        self._tb: ToolBar = self._toolBarCreator.toolBar
+        self._tb: AuiToolBar = self._toolBarCreator.toolBar
         self._tb.Realize()
 
         self.SetDropTarget(DiagrammerFileDropTarget(appPubSubEngine=self._appPubSubEngine, ))
@@ -157,7 +165,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
         self._actionSupervisor: ActionSupervisor = ActionSupervisor(appPubSubEngine=self._appPubSubEngine, umlPubSubEngine=self._umlPubSubEngine)
         self.Show(True)
 
-        self.logger.debug(f'{self._tb.GetToolSize()=}')
+        self.logger.debug(f'{self._tb.GetToolBitmapSize()=}')
         self.Bind(EVT_ACTIVATE,       self._onActivate)
         self.Bind(EVT_CLOSE,          self.Close)
         self.Bind(EVT_WINDOW_DESTROY, self._onWindowDestroy)
@@ -469,7 +477,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
     def _doToolSelect(self, toolId: int):
 
-        toolBar:    ToolBar   = self._toolBarCreator.toolBar
+        toolBar:    AuiToolBar = self._toolBarCreator.toolBar
         toolBarIds: List[int] = self._toolBarCreator.toolBarIds
 
         for deselectedToolId in toolBarIds:
@@ -499,6 +507,7 @@ class UmlDiagrammerAppFrame(SizedFrame):
                                             umlPubSubEngine=self._umlPubSubEngine,
                                             extensionsPubSub=self._extensionsPubSub
                                             )
+            self._manuallyDockToolBar(sizedPanel=sizedPanel)
 
         # Add the new project FIRST
         projectPanel: UmlProjectPanel = UmlProjectPanel(self._umlNotebook,
@@ -556,3 +565,19 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
             iAmRunningPath: Path = Path(DIAGRAMMER_IN_TEST_MODE)
             iAmRunningPath.touch()
+
+    def _manuallyDockToolBar(self, sizedPanel: SizedPanel):
+        """
+        Manually docks the toolbar within the contents sizer for trailing positions.
+
+        SizedPanel automatically manages child controls in its sizer according
+        to their instantiation order. Because the toolbar is instantiated during
+        frame initialization before the notebook exists, it defaults to index 0
+        (top or left). For BOTTOM and RIGHT placements, this method detaches the
+        toolbar and appends it after the notebook so it docks at the trailing edge.
+        """
+        if self._preferences.toolBarPosition in [ToolBarPosition.BOTTOM, ToolBarPosition.RIGHT]:
+            contentsSizer: Sizer = sizedPanel.GetSizer()
+            contentsSizer.Detach(self._tb)
+            contentsSizer.Add(self._tb, 0, EXPAND)
+            sizedPanel.Layout()

@@ -59,6 +59,7 @@ class IconName(StrEnum):
 IconMap = NewType('IconMap', Dict[IconName, BitmapBundle])
 
 MODULE_NAME_EXTRA_LARGE: str = 'Embedded64'
+MODULE_NAME_VERY_LARGE:  str = 'Embedded48'
 MODULE_NAME_LARGE:       str = 'Embedded32'
 MODULE_NAME_MEDIUM:      str = 'Embedded24'
 MODULE_NAME_SMALL:       str = 'Embedded16'
@@ -78,6 +79,7 @@ class ToolBarIcons:
 
         mapSizeToPackage:      Dict[ToolBarIconSize, str] = {
             ToolBarIconSize.EXTRA_LARGE: MODULE_NAME_EXTRA_LARGE,
+            ToolBarIconSize.VERY_LARGE:  MODULE_NAME_VERY_LARGE,
             ToolBarIconSize.LARGE:       MODULE_NAME_LARGE,
             ToolBarIconSize.MEDIUM:      MODULE_NAME_MEDIUM,
             ToolBarIconSize.SMALL:       MODULE_NAME_SMALL
@@ -109,7 +111,7 @@ class ToolBarIcons:
                 pyEmbeddedImage: PyEmbeddedImage = getattr(moduleObj, variableName)
                 if isinstance(pyEmbeddedImage, PyEmbeddedImage):
                     bmp: Bitmap = pyEmbeddedImage.GetBitmap()
-                    self._iconMap[IconName(variableName)] = bmp
+                    self._iconMap[IconName(variableName)] = BitmapBundle(bmp)
 
     def _importModule(self, imagePackage: str, embeddedPackageName: str) -> ModuleType:
 

@@ -161,6 +161,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
             ToolBarIconSize.SMALL.value,
             ToolBarIconSize.MEDIUM.value,
             ToolBarIconSize.LARGE.value,
+            ToolBarIconSize.VERY_LARGE.value,
             ToolBarIconSize.EXTRA_LARGE.value,
         ]
 
@@ -256,6 +257,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self.logger.info(f'Tool Bar Icon Size Preference changed.  {newValue=}')
         newPreference: ToolBarIconSize = ToolBarIconSize(newValue)
         self._preferences.toolBarIconSize = newPreference
+        self._restartNeededMessage()
 
     def _pathChangedCallback(self, newPath: Path):
         self._preferences.diagramsDirectory = newPath
@@ -270,3 +272,5 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         valueStr: str = event.GetString()
 
         self._preferences.projectTabPosition = ProjectTabPosition(valueStr)
+
+        self._restartNeededMessage()

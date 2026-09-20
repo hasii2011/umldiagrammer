@@ -1,7 +1,8 @@
 
-from typing import Callable
+from typing import Dict
 from typing import List
 from typing import cast
+from typing import Callable
 
 from logging import Logger
 from logging import getLogger
@@ -11,10 +12,25 @@ from wx import ID_REDO
 from wx import ID_UNDO
 from wx import ITEM_CHECK
 from wx import ITEM_NORMAL
+from wx import ITEM_SEPARATOR
 from wx import BitmapBundle
-from wx import Frame
-from wx import ToolBar
+from wx import GetMousePosition
+from wx import Menu
+from wx import MenuItem
+from wx import Point
+from wx import Rect
 from wx import Size
+
+from wx.aui import AuiToolBar
+from wx.aui import AuiToolBarEvent
+from wx.aui import AuiToolBarItem
+from wx.aui import AUI_TB_DEFAULT_STYLE
+from wx.aui import AUI_TB_OVERFLOW
+from wx.aui import AUI_TB_VERTICAL
+from wx.aui import EVT_AUITOOLBAR_OVERFLOW_CLICK
+
+from wx.lib.sized_controls import SizedFrame
+from wx.lib.sized_controls import SizedPanel
 
 from umldiagrammer.menuHandlers.EditMenuHandler import EditMenuHandler
 from umldiagrammer.menuHandlers.FileMenuHandler import FileMenuHandler
@@ -48,9 +64,9 @@ TOOL_BAR_IDs: List[int] = [
 
 
 class ToolBarCreator:
-    def __init__(self, appFrame: Frame, fileMenuHandler: FileMenuHandler, editMenuHandler: EditMenuHandler, newActionCallback: Callable):
+    def __init__(self, appFrame: SizedFrame, fileMenuHandler: FileMenuHandler, editMenuHandler: EditMenuHandler, newActionCallback: Callable):
 
-        self._appFrame: Frame = appFrame
+        self._appFrame: SizedFrame = appFrame
 
         self._fileMenuHandler:   FileMenuHandler = fileMenuHandler
         self._editMenuHandler:   EditMenuHandler = editMenuHandler
@@ -58,15 +74,27 @@ class ToolBarCreator:
 
         self.logger: Logger = getLogger(__name__)
 
-        wxToolBarPosition: int = ToolBarPosition.toWxPosition(DiagrammerPreferences().toolBarPosition)
-        # self._toolBar: ToolBar = parent.CreateToolBar(wxToolBarPosition)
-        # Manually create my own tool bar so that the icons sizes are honored
-        #
-        self._toolBar: ToolBar = ToolBar(parent=appFrame, style=wxToolBarPosition)
+        self._toolBar: AuiToolBar = cast(AuiToolBar, None)
+
+        toolBarPosition: ToolBarPosition = DiagrammerPreferences().toolBarPosition
+        isVertical:      bool            = toolBarPosition in [ToolBarPosition.LEFT, ToolBarPosition.RIGHT]
+
+        parentPanel: SizedPanel = appFrame.GetContentsPane()
+
+        style: int = AUI_TB_DEFAULT_STYLE | AUI_TB_OVERFLOW
+        if isVertical:
+            style |= AUI_TB_VERTICAL
+
+        self._toolBar = AuiToolBar(parent=parentPanel, style=style)
+        self._toolBar.SetSizerProps(expand=True, proportion=0)
+
         #
         # Set the icon size before realizing the tool bar
         #
         self._setToolbarIconSize()
+
+        self._toolDefinitionsById: Dict[int, ToolDefinition] = {}
+        self._toolBar.Bind(EVT_AUITOOLBAR_OVERFLOW_CLICK, self._onOverflowClick)
 
         self._toolBarIcons: ToolBarIcons = ToolBarIcons()
 
@@ -98,10 +126,8 @@ class ToolBarCreator:
         self._createRelationshipTools()
         self._populateToolBar()
 
-        self._appFrame.SetToolBar(self._toolBar)
-
     @property
-    def toolBar(self) -> ToolBar:
+    def toolBar(self) -> AuiToolBar:
         return self._toolBar
 
     @property
@@ -110,11 +136,11 @@ class ToolBarCreator:
 
     def disableToolBar(self):
         self._enableToolBar(enable=False)
-        self.logger.info('TooBar disabled')
+        self.logger.info('ToolBar disabled')
 
     def enableToolBar(self):
         self._enableToolBar(enable=True)
-        self.logger.info('TooBar enabled')
+        self.logger.info('ToolBar enabled')
 
     def _createMenuTools(self):
 
@@ -388,10 +414,11 @@ class ToolBarCreator:
                 else:
                     itemKind = ITEM_NORMAL
                 """
-                AddTool(toolId, label, bitmap, shortHelp=EmptyString, kind=ITEM_NORMAL) -> ToolBarToolBase
+                AddTool(toolId, label, bitmap, short_help_string="", kind=ITEM_NORMAL) -> AuiToolBarItem
                 """
-                self._toolBar.AddTool(toolId=toolId, shortHelp=toolTip, bitmap=bitMapBundle, label=caption, kind=itemKind)
+                self._toolBar.AddTool(toolId=toolId, label=caption, bitmap=bitMapBundle, short_help_string=toolTip, kind=itemKind)
 
+                self._toolDefinitionsById[toolId] = tool
                 self._appFrame.Bind(EVT_TOOL, tool.actionCallback, id=tool.wxID)
             else:
                 self._toolBar.AddSeparator()
@@ -406,19 +433,93 @@ class ToolBarCreator:
             self._toolBar.SetToolBitmapSize(Size(24, 24))
         elif preferences.toolBarIconSize == ToolBarIconSize.LARGE:
             self._toolBar.SetToolBitmapSize(Size(32, 32))
+        elif preferences.toolBarIconSize == ToolBarIconSize.VERY_LARGE:
+            self._toolBar.SetToolBitmapSize(Size(48, 48))
         elif preferences.toolBarIconSize == ToolBarIconSize.EXTRA_LARGE:
             self._toolBar.SetToolBitmapSize(Size(64, 64))
 
     def _enableToolBar(self, enable: bool):
-        toolBar: ToolBar = self._toolBar
+        toolBar: AuiToolBar = self._toolBar
         for toggleId in TOOL_BAR_IDs:
-            toolBar.EnableTool(toolId=toggleId, enable=enable)
+            toolBar.EnableTool(toolId=toggleId, state=enable)
 
-        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_PROJECT_SAVE, enable=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_PROJECT_SAVE, state=enable)
 
-        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    enable=enable)
-        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  enable=enable)
-        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, enable=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_CLASS_DIAGRAM,    state=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_USECASE_DIAGRAM,  state=enable)
+        toolBar.EnableTool(toolId=UIIdentifiers.ID_MENU_FILE_NEW_SEQUENCE_DIAGRAM, state=enable)
 
-        toolBar.EnableTool(toolId=ID_UNDO, enable=enable)
-        toolBar.EnableTool(toolId=ID_REDO, enable=enable)
+        toolBar.EnableTool(toolId=ID_UNDO, state=enable)
+        toolBar.EnableTool(toolId=ID_REDO, state=enable)
+
+    def _onOverflowClick(self, event: AuiToolBarEvent):
+        """
+        Builds and displays a popup menu containing all overflowing tools when the chevron is clicked.
+        """
+        overflowMenu: Menu = self._buildTheOverflowMenu()
+        if overflowMenu.GetMenuItemCount() > 0:
+            popupPoint: Point = self._calculateOverflowPopupPoint(event)
+            self._toolBar.PopupMenu(overflowMenu, popupPoint)
+
+    def _buildTheOverflowMenu(self) -> Menu:
+        """
+        Builds and returns a popup menu containing all tools that
+        do not fit within the visible toolbar bounds.
+
+        The method preserveres separators,  but prevents leading separators.
+        Tool toggle and enabled states are synchronized with the toolbar.
+        """
+        overflowMenu: Menu = Menu()
+        toolCount:    int  = self._toolBar.GetToolCount()
+
+        for idx in range(toolCount):
+
+            if not self._toolBar.GetToolFitsByIndex(idx):
+                toolItem: AuiToolBarItem = self._toolBar.FindToolByIndex(idx)
+                if toolItem.GetKind() == ITEM_SEPARATOR:
+                    if overflowMenu.GetMenuItemCount() > 0:
+                        overflowMenu.AppendSeparator()
+                else:
+                    toolId: int = toolItem.GetId()
+                    toolDef: ToolDefinition = self._toolDefinitionsById.get(toolId, NO_TOOL_DEFINITION)
+                    if toolDef is not NO_TOOL_DEFINITION:
+
+                        menuItemKind: int      = ITEM_CHECK if toolDef.isToggle else ITEM_NORMAL
+                        menuItem:     MenuItem = MenuItem(overflowMenu, toolId, toolDef.caption, kind=menuItemKind)
+
+                        if toolDef.image.IsOk():
+                            menuItem.SetBitmap(toolDef.image)
+                        overflowMenu.Append(menuItem)
+                        if menuItemKind == ITEM_CHECK:
+                            menuItem.Check(self._toolBar.GetToolToggled(toolId))
+
+                        menuItem.Enable(self._toolBar.GetToolEnabled(toolId))
+
+        return overflowMenu
+
+    def _calculateOverflowPopupPoint(self, event: AuiToolBarEvent) -> Point:
+        """
+        Calculates the docking coordinates for the overflow popup menu
+        adjacent to the chevron button based on toolbar orientation.
+        Falls back to current mouse coordinates if chevron bounds are invalid.
+        """
+        buttonRect: Rect = event.GetItemRect()
+        if buttonRect.IsEmpty():
+            return self._toolBar.ScreenToClient(GetMousePosition())
+
+        toolBarPosition: ToolBarPosition = DiagrammerPreferences().toolBarPosition
+        popupPoint:      Point
+
+        match toolBarPosition:
+            case ToolBarPosition.TOP:
+                popupPoint = Point(buttonRect.GetLeft(), buttonRect.GetBottom())
+            case ToolBarPosition.BOTTOM:
+                popupPoint = Point(buttonRect.GetLeft(), buttonRect.GetTop())
+            case ToolBarPosition.RIGHT:
+                popupPoint = Point(0, buttonRect.GetTop())
+            case ToolBarPosition.LEFT:
+                popupPoint = Point(self._toolBar.GetClientSize().GetWidth(), buttonRect.GetTop())
+            case _:
+                popupPoint = Point(buttonRect.GetLeft(), buttonRect.GetBottom())
+
+        return popupPoint
