@@ -7,6 +7,8 @@ from typing import NewType
 from logging import Logger
 from logging import getLogger
 
+from pathlib import Path
+
 from wx import BOTH
 from wx import EXPAND
 from wx import ID_FILE1
@@ -356,8 +358,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         umlProjectIO:   UmlProjectIO   = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
 
         if umlProject.fileName == DEFAULT_PROJECT_PATH:
-            umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
-            self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
+            savedPath: str = umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
+            if savedPath != '' and Path(savedPath) != DEFAULT_PROJECT_PATH:
+                self._projectHistory.AddFileToHistory(filename=savedPath)
         else:
             if projectDossier.modified is True:
                 umlProjectIO.saveProject(umlProject=umlProject)
@@ -374,7 +377,8 @@ class UmlDiagrammerAppFrame(SizedFrame):
             umlProjectIO.saveProject(umlProject=umlProject)
             projectName = str(umlProject.fileName)
 
-        self._projectHistory.AddFileToHistory(projectName)
+        if projectName != '' and Path(projectName) != DEFAULT_PROJECT_PATH:
+            self._projectHistory.AddFileToHistory(projectName)
 
     def _saveAsProjectListener(self):
         """
@@ -385,8 +389,9 @@ class UmlDiagrammerAppFrame(SizedFrame):
         assert projectDossier.umlProject is not None, 'This is a developer error'
 
         umlProjectIO: UmlProjectIO = UmlProjectIO(appPubSubEngine=self._appPubSubEngine)
-        umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
-        self._projectHistory.AddFileToHistory(filename=str(projectDossier.umlProject.fileName))
+        savedPath:    str          = umlProjectIO.saveAsProject(umlProject=projectDossier.umlProject)
+        if savedPath != '' and Path(savedPath) != DEFAULT_PROJECT_PATH:
+            self._projectHistory.AddFileToHistory(filename=savedPath)
 
     def _updateApplicationStatusListener(self, message: str):
         self.logger.debug(f'{message=}')
@@ -572,7 +577,6 @@ class UmlDiagrammerAppFrame(SizedFrame):
         * Set the running indicator file
 
         """
-        from pathlib import Path
         if self._preferences.inTestMode is True:
             testPosition: Position   = self._preferences.testPosition
             testSize:     Dimensions = self._preferences.testSize
