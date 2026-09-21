@@ -3,13 +3,9 @@ from abc import ABC
 from abc import ABCMeta
 from abc import abstractmethod
 
-from wx import OK
 from wx import BORDER_DEFAULT
-from wx import ICON_WARNING
-
 
 from wx import Window
-from wx import MessageDialog
 
 from wx.lib.sized_controls import SizedPanel
 
@@ -52,13 +48,3 @@ class BasePreferencesPanel(SizedPanel, ABC, metaclass=MyMetaBasePreferencesPage)
         """
         panel.Fit()
         panel.SetMinSize(panel.GetSize())
-
-    def _restartNeededMessage(self):
-
-        msgDlg: MessageDialog = MessageDialog(
-            parent=None,
-            message='You need to restart the UML Diagrammer to see this change',
-            caption='Warning',
-            style=OK | ICON_WARNING
-        )
-        msgDlg.ShowModal()

@@ -20,9 +20,10 @@ from umlshapes.lib.ogl import OGLInitialize
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
 from umldiagrammer import START_STOP_MARKER
-from umldiagrammer.DiagrammerTypes import MAIN_LOGGING_NAME
 from umldiagrammer.SystemMetrics import SystemMetrics
+from umldiagrammer.DiagrammerTypes import MAIN_LOGGING_NAME
 from umldiagrammer.DependencyVersions import DependencyVersions
+from umldiagrammer.ApplicationRestarter import ApplicationRestarter
 from umldiagrammer.UmlDiagrammerAppFrame import UmlDiagrammerAppFrame
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
@@ -56,14 +57,14 @@ class UmlDiagrammer(App):
         # but before OGL is used.
         OGLInitialize()
 
-        self._wxFrame = UmlDiagrammerAppFrame()
+        self._wxFrame = UmlDiagrammerAppFrame(applicationRestarter=ApplicationRestarter)
 
         self.SetTopWindow(self._wxFrame)
 
         if self._preferences.debugOpenFiles:
             from wx import CallAfter as wxCallAfter
 
-            wxCallAfter(self.MacOpenFiles, [self._preferences.debugOpenFilePath])
+            wxCallAfter(self.MacOpenFiles, [str(self._preferences.debugOpenFilePath)])
         else:
             if self._preferences.loadLastOpenedProject is True:
                 self._wxFrame.loadLastOpenedProject()

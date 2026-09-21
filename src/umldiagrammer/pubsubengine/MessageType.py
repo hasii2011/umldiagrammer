@@ -45,4 +45,6 @@ class MessageType(Enum):
     #
     NO_OPEN_PROJECTS = 'No Open Projects'
 
+    RESTART_APPLICATION_REQUEST = 'Restart Application Request'
+
     NO_EVENT = 'NoEvent'

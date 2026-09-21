@@ -1,4 +1,6 @@
 
+from typing import cast
+
 from logging import Logger
 from logging import getLogger
 
@@ -9,11 +11,16 @@ from wx import EVT_CLOSE
 from wx import NB_FIXEDWIDTH
 from wx import NB_TOP
 from wx import OK
+from wx import YES_NO
+from wx import NO_DEFAULT
+from wx import ICON_QUESTION
 from wx import ID_ANY
 from wx import ID_OK
+from wx import ID_YES
 from wx import RESIZE_BORDER
 
 from wx import CommandEvent
+from wx import MessageDialog
 from wx import Notebook
 from wx import Size
 
@@ -23,10 +30,13 @@ from wx.lib.sized_controls import SizedPanel
 from umlshapes.dialogs.preferences.DefaultValuesPanel import DefaultValuesPanel
 from umlshapes.dialogs.preferences.DiagramPreferencesPanel import DiagramPreferencesPanel
 
+from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
+
 from umldiagrammer.dialogs.GeneralPreferencesPanel import GeneralPreferencesPanel
 from umldiagrammer.dialogs.StartupPreferencesPanel import StartupPreferencesPanel
 
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
+from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
@@ -66,6 +76,9 @@ class DlgPreferences(SizedDialog):
 
         self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 
+        self._generalPreferencesPanel: GeneralPreferencesPanel = cast(GeneralPreferencesPanel, None)
+        self._startupPreferencesPanel: StartupPreferencesPanel = cast(StartupPreferencesPanel, None)
+
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True)
 
@@ -77,6 +90,10 @@ class DlgPreferences(SizedDialog):
         # self.Fit()
         # self.SetMinSize(self.GetSize())
 
+    @property
+    def restartRequired(self) -> bool:
+        return self._generalPreferencesPanel.restartRequired
+
     def _createTheControls(self, sizedPanel: SizedPanel):
         """
         Initialize the controls and add them each as a notebook page.
@@ -85,17 +102,17 @@ class DlgPreferences(SizedDialog):
         book: Notebook = Notebook(sizedPanel, style=style)
         book.SetSizerProps(expand=True, proportion=1)
 
-        generalPreferences:     GeneralPreferencesPanel = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
-        startupPreferences:     StartupPreferencesPanel = StartupPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
-        valuePreferences:       DefaultValuesPanel      = DefaultValuesPanel(parent=book)
-        diagramPreferences:     DiagramPreferencesPanel = DiagramPreferencesPanel(parent=book)
+        self._generalPreferencesPanel = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
+        self._startupPreferencesPanel = StartupPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
+        valuePreferences:         DefaultValuesPanel      = DefaultValuesPanel(parent=book)
+        diagramPreferences:       DiagramPreferencesPanel = DiagramPreferencesPanel(parent=book)
         # positioningPreferences: PositioningPreferencesPage   = PositioningPreferencesPage(book, eventEngine=self._eventEngine)
         # pluginPreferences:      PluginPreferencesPage        = PluginPreferencesPage(book)
         # #
-        book.AddPage(generalPreferences, text=generalPreferences.name, select=True)
-        book.AddPage(startupPreferences, text=startupPreferences.name, select=False)
-        book.AddPage(valuePreferences,   text=valuePreferences.name,   select=False)
-        book.AddPage(diagramPreferences, text=diagramPreferences.name, select=False)
+        book.AddPage(self._generalPreferencesPanel, text=self._generalPreferencesPanel.name, select=True)
+        book.AddPage(self._startupPreferencesPanel, text=self._startupPreferencesPanel.name, select=False)
+        book.AddPage(valuePreferences,         text=valuePreferences.name,         select=False)
+        book.AddPage(diagramPreferences,       text=diagramPreferences.name,       select=False)
         # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)
         # book.AddPage(pluginPreferences,      text=pluginPreferences.name,      select=False)
 
@@ -115,11 +132,20 @@ class DlgPreferences(SizedDialog):
 
     def _potentiallyDisplayInfoMessage(self):
         """
-        TODO:  Need help from StartupPreferencesPanel through the GeneralPreferencesPanel
+        Prompt the user to restart now or later if any visual preferences changed.
         """
-
-        # if self._positioningPreferences.valuesChanged is True:
-        #     dlg = MessageDialog(self, "Restart the diagrammer for position/size changes", "Warning", OK | ICON_EXCLAMATION)
-        #     dlg.ShowModal()
-        #     dlg.Destroy()
-        pass
+        if self.restartRequired is True:
+            promptMessage: str = 'Visual preferences have changed.  Restart UML Diagrammer now to apply these changes?'
+            askDialog: MessageDialog = MessageDialog(
+                parent=self,
+                message=promptMessage,
+                caption='Restart Confirmation',
+                style=YES_NO | NO_DEFAULT | ICON_QUESTION
+            )
+            dialogResponse: int = askDialog.ShowModal()
+            askDialog.Destroy()
+            if dialogResponse == ID_YES:
+                self._appPubSubEngine.sendMessage(
+                    messageType=MessageType.RESTART_APPLICATION_REQUEST,
+                    uniqueId=APPLICATION_FRAME_ID
+                )

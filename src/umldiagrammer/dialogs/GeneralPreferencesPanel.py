@@ -66,8 +66,8 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
         self.SetSizerType('vertical')
 
-        self.logger:  Logger = getLogger(__name__)
-        self._change: bool   = False
+        self.logger:           Logger = getLogger(__name__)
+        self._restartRequired: bool   = False
 
         self._projectHistoryPathPref: RadioBox          = cast(RadioBox, None)
         self._toolBarIconSizePref:    RadioBox          = cast(RadioBox, None)
@@ -94,6 +94,10 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
     @property
     def name(self) -> str:
         return 'General'
+
+    @property
+    def restartRequired(self) -> bool:
+        return self._restartRequired
 
     def _layoutWindow(self, sizedPanel: SizedPanel):
 
@@ -242,8 +246,6 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
             case GeneralPreferencesPanel.LOAD_LAST_OPENED_PROJECT_ID:
                 p.loadLastOpenedProject = newValue
 
-        self._changed = True
-
     def _onFileHistoryPathPrefChanged(self, event: CommandEvent):
 
         newValue: str = event.GetString()
@@ -257,7 +259,7 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         self.logger.info(f'Tool Bar Icon Size Preference changed.  {newValue=}')
         newPreference: ToolBarIconSize = ToolBarIconSize(newValue)
         self._preferences.toolBarIconSize = newPreference
-        self._restartNeededMessage()
+        self._restartRequired = True
 
     def _pathChangedCallback(self, newPath: Path):
         self._preferences.diagramsDirectory = newPath
@@ -266,11 +268,11 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
         valueStr: str = event.GetString()
 
         self._preferences.toolBarPosition = ToolBarPosition(valueStr)
-        self._restartNeededMessage()
+        self._restartRequired = True
 
     def _onProjectTabPositionValueChanged(self, event: CommandEvent):
         valueStr: str = event.GetString()
 
         self._preferences.projectTabPosition = ProjectTabPosition(valueStr)
 
-        self._restartNeededMessage()
+        self._restartRequired = True

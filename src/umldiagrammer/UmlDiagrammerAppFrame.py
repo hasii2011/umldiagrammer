@@ -1,5 +1,6 @@
 
 from typing import List
+from typing import Type
 from typing import cast
 from typing import NewType
 
@@ -20,19 +21,21 @@ from wx import Point
 from wx import Size
 from wx import Sizer
 from wx import Menu
-from wx.aui import AuiToolBar
 from wx import MenuBar
 from wx import CommandEvent
 from wx import ActivateEvent
 from wx import WindowDestroyEvent
 
+from wx import CallAfter as wxCallAfter
 from wx import Yield as wxYield
+
+from wx.aui import AuiToolBar
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
-from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
+from codeallybasic.Dimensions import Dimensions
 
 from umlshapes.preferences.UmlPreferences import UmlPreferences
 
@@ -60,6 +63,7 @@ from umldiagrammer.DiagrammerTypes import FrameIdMap
 
 from umldiagrammer.ActionMap import ActionMap
 from umldiagrammer.UIAction import UIAction
+from umldiagrammer.IApplicationRestarter import IApplicationRestarter
 
 from umldiagrammer.UIMenuCreator import UIMenuCreator
 from umldiagrammer.UmlNotebook import UmlNotebook
@@ -95,13 +99,13 @@ class UmlDiagrammerAppFrame(SizedFrame):
     """
     Provides two methods for the main diagram class.  Either open the last opened project
     or open an empty project
-
     """
-    def __init__(self):
+    def __init__(self, applicationRestarter: Type[IApplicationRestarter]):
         self.logger: Logger = getLogger(__name__)
 
-        self._preferences:    DiagrammerPreferences = DiagrammerPreferences()
-        self._umlPreferences: UmlPreferences        = UmlPreferences()
+        self._applicationRestarter: Type[IApplicationRestarter] = applicationRestarter
+        self._preferences:          DiagrammerPreferences       = DiagrammerPreferences()
+        self._umlPreferences:       UmlPreferences              = UmlPreferences()
 
         # Show full screen ?
         if self._preferences.fullScreen is True:
@@ -401,6 +405,18 @@ class UmlDiagrammerAppFrame(SizedFrame):
     def _registerNewFrameListener(self, frameId: FrameId):
         self._doRegistration(frameId=frameId)
 
+    def _restartApplicationListener(self):
+        wxCallAfter(self._performRestart)
+
+    def _performRestart(self):
+        """
+        Cleanly closes the application frame, saving open projects and geometry,
+        and delegates process restart to the application restarter.
+        """
+        self.logger.info('Restarting UML Diagrammer application...')
+        self.Close()
+        self._applicationRestarter.restart()
+
     def _subscribeToMessagesWeHandle(self):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.OPEN_PROJECT,    uniqueId=APPLICATION_FRAME_ID, listener=self._openProjectListener)
@@ -413,9 +429,10 @@ class UmlDiagrammerAppFrame(SizedFrame):
 
         self._appPubSubEngine.subscribe(messageType=MessageType.LOLLIPOP_CREATION_REQUEST, uniqueId=APPLICATION_FRAME_ID, listener=self._lollipopCreationRequestListener)
 
-        self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME, uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_NAMED_PROJECT, uniqueId=APPLICATION_FRAME_ID, listener=self._saveNamedProjectListener)
-        self._appPubSubEngine.subscribe(messageType=MessageType.NO_OPEN_PROJECTS,   uniqueId=APPLICATION_FRAME_ID, listener=self._noOpenProjectsListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.REGISTER_NEW_FRAME,           uniqueId=APPLICATION_FRAME_ID, listener=self._registerNewFrameListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.SAVE_NAMED_PROJECT,           uniqueId=APPLICATION_FRAME_ID, listener=self._saveNamedProjectListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.NO_OPEN_PROJECTS,             uniqueId=APPLICATION_FRAME_ID, listener=self._noOpenProjectsListener)
+        self._appPubSubEngine.subscribe(messageType=MessageType.RESTART_APPLICATION_REQUEST,  uniqueId=APPLICATION_FRAME_ID, listener=self._restartApplicationListener)
 
     def _getFrameStyle(self) -> int:
         """
