@@ -92,7 +92,7 @@ jobs:
         run: |
           if [ -n "$IDENTITY" ]; then
             py2AppSign -p 3.13 -d umldiagrammer -a UmlDiagrammer zipSign --delete-part-files
-            py2AppSign -p 3.13 -d umldiagrammer -a UmlDiagrammer appSign
+            py2AppSign -p 3.13 -d umldiagrammer -a UmlDiagrammer appSign --fix-sym-link
             dmgTool -a UmlDiagrammer -d dist createDmg
             dmgTool -a UmlDiagrammer -d dist signDmg
           else
@@ -106,7 +106,19 @@ jobs:
         env:
           KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
         run: |
-          xcrun notarytool submit dist/UmlDiagrammer.dmg --keychain-profile NOTARY_TOOL_APP_ID --keychain $RUNNER_TEMP/build.keychain --wait
+          SUBMISSION_OUTPUT=$(xcrun notarytool submit dist/UmlDiagrammer.dmg --keychain-profile NOTARY_TOOL_APP_ID --keychain $RUNNER_TEMP/build.keychain --wait 2>&1) || true
+          echo "$SUBMISSION_OUTPUT"
+
+          SUBMISSION_ID=$(echo "$SUBMISSION_OUTPUT" | awk '/id: / {print $2; exit}')
+          if ! echo "$SUBMISSION_OUTPUT" | grep -q "status: Accepted"; then
+            echo "Notarization did not succeed!"
+            if [ -n "$SUBMISSION_ID" ]; then
+              echo "Fetching Apple diagnostic log for submission $SUBMISSION_ID..."
+              xcrun notarytool log "$SUBMISSION_ID" --keychain-profile NOTARY_TOOL_APP_ID --keychain $RUNNER_TEMP/build.keychain || true
+            fi
+            exit 1
+          fi
+
           xcrun stapler staple dist/UmlDiagrammer.dmg
           spctl --assess --type install --verbose dist/UmlDiagrammer.dmg
 
