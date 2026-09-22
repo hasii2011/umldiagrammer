@@ -38,6 +38,7 @@ its subpackages, regardless of whether it detects static imports for them
 """
 PY2APP_OPTIONS: Dict[str, Any] = {
     'packages': ['codeallyadvanced', 'codeallybasic', 'umlmodel', 'umlshapes', 'umlio', 'umlextensions'],
+    'excludes': ['tkinter', '_tkinter'],
     'plist': {
         'CFBundleGetInfoString': 'Edits Diagrammer UML Files',
         'CFBundleIdentifier': 'umldiagrammer',

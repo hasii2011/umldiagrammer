@@ -83,6 +83,7 @@ jobs:
           rm -rf build dist src/UmlDiagrammer.egg-info UmlDiagrammer.egg-info
           python -O setup.py py2app --iconfile src/umldiagrammer/resources/icons/umldiagrammer.icns
           vtool -set-build-version 1 26.0 26.1 -replace -output dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer
+          rm -rf dist/UmlDiagrammer.app/Contents/Frameworks/Tk.framework dist/UmlDiagrammer.app/Contents/Frameworks/Tcl.framework
 
       - name: Sign App Bundle and Create DMG
         env:
