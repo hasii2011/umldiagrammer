@@ -175,7 +175,7 @@ jobs:
           mypy --config-file .mypi.ini --check-untyped-defs src
 
       - name: Import Apple Code Signing Certificate
-        if: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 != '' }}
+        if: env.CERTIFICATE_P12_BASE64 != ''
         env:
           CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -193,7 +193,7 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
 
       - name: Configure Notarytool Credentials Profile
-        if: ${{ secrets.APPLE_API_KEY_BASE64 != '' }}
+        if: env.KEY_BASE64 != ''
         env:
           KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
           KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
@@ -230,7 +230,9 @@ jobs:
           fi
 
       - name: Notarize, Staple and Verify DMG
-        if: ${{ secrets.APPLE_API_KEY_BASE64 != '' }}
+        if: env.KEY_BASE64 != ''
+        env:
+          KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
         run: |
           xcrun notarytool submit dist/UmlDiagrammer.dmg --keychain-profile NOTARY_TOOL_APP_ID --keychain $RUNNER_TEMP/build.keychain --wait
           xcrun stapler staple dist/UmlDiagrammer.dmg
