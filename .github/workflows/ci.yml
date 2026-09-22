@@ -1,0 +1,121 @@
+name: CI & macOS Release Packaging
+
+on:
+  push:
+    branches: [ 'master', 'Issue-*' ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ 'master' ]
+
+jobs:
+  build-macos:
+    name: Build, Sign & Notarize macOS App
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.13']
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install System Dependencies
+        run: |
+          brew install xz
+          python -m pip install --upgrade pip
+
+      - name: Install Project Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install py2appsigner
+
+      - name: Fix PIL liblzma Dynamic Library
+        run: |
+          SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
+          mkdir -p "${SITE_PACKAGES}/PIL/.dylibs"
+          cp $(brew --prefix xz)/lib/liblzma.5.dylib "${SITE_PACKAGES}/PIL/.dylibs/"
+
+      - name: Run Type Checks (mypy)
+        run: |
+          mypy --config-file .mypi.ini --check-untyped-defs src
+
+      - name: Import Apple Code Signing Certificate
+        if: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 != '' }}
+        env:
+          CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+          echo -n "$CERTIFICATE_P12_BASE64" | base64 --decode -o $RUNNER_TEMP/certificate.p12
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $RUNNER_TEMP/certificate.p12 -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
+
+      - name: Configure Notarytool Credentials Profile
+        if: ${{ secrets.APPLE_API_KEY_BASE64 != '' }}
+        env:
+          KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          echo -n "$KEY_BASE64" | base64 --decode -o $RUNNER_TEMP/AuthKey.p8
+          xcrun notarytool store-credentials "NOTARY_TOOL_APP_ID" \
+            --key "$RUNNER_TEMP/AuthKey.p8" \
+            --key-id "$KEY_ID" \
+            --issuer "$ISSUER" \
+            --keychain $RUNNER_TEMP/build.keychain
+
+      - name: Build py2app Bundle
+        run: |
+          rm -rf build dist src/UmlDiagrammer.egg-info UmlDiagrammer.egg-info
+          python -O setup.py py2app --iconfile src/umldiagrammer/resources/icons/umldiagrammer.icns
+          vtool -set-build-version 1 26.0 26.1 -replace -output dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer dist/UmlDiagrammer.app/Contents/MacOS/UmlDiagrammer
+
+      - name: Sign App Bundle and Create DMG
+        env:
+          IDENTITY: ${{ secrets.CODE_SIGNING_IDENTITY }}
+          PROJECTS_BASE: ${{ github.workspace }}/..
+          PROJECT: ${{ github.event.repository.name }}
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            py2AppSign -p 3.13 -d umldiagrammer -a UmlDiagrammer zipSign --delete-part-files
+            py2AppSign -p 3.13 -d umldiagrammer -a UmlDiagrammer appSign
+            dmgTool -a UmlDiagrammer -d dist createDmg
+            dmgTool -a UmlDiagrammer -d dist signDmg
+          else
+            echo "Signing identity not found. Creating unsigned/ad-hoc bundle for CI validation..."
+            codesign --force --deep --sign - dist/UmlDiagrammer.app
+            dmgTool -a UmlDiagrammer -d dist createDmg
+          fi
+
+      - name: Notarize, Staple and Verify DMG
+        if: ${{ secrets.APPLE_API_KEY_BASE64 != '' }}
+        run: |
+          xcrun notarytool submit dist/UmlDiagrammer.dmg --keychain-profile NOTARY_TOOL_APP_ID --keychain $RUNNER_TEMP/build.keychain --wait
+          xcrun stapler staple dist/UmlDiagrammer.dmg
+          spctl --assess --type install --verbose dist/UmlDiagrammer.dmg
+
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UmlDiagrammer-macOS-Installer
+          path: dist/UmlDiagrammer.dmg
+          retention-days: 14
+
+      - name: Clean Up Keychain
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/build.keychain 2>/dev/null || true
