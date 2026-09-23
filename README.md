@@ -1,7 +1,7 @@
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/hasii2011/umldiagrammer/graphs/commit-activity)[![CI & macOS Release Packaging](https://github.com/hasii2011/umldiagrammer/actions/workflows/ci.yml/badge.svg)](https://github.com/hasii2011/umldiagrammer/actions/workflows/ci.yml)
-[![forthebadge made-with-python](https://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
-
-![](https://raw.githubusercontent.com/hasii2011/code-ally-basic/master/developer/agpl-license-web-badge-version-2-256x48.png 'AGPL')
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/hasii2011/umldiagrammer/graphs/commit-activity)
+[![CI & macOS Release Packaging](https://github.com/hasii2011/umldiagrammer/actions/workflows/ci.yml/badge.svg)](https://github.com/hasii2011/umldiagrammer/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![Made with Python](https://img.shields.io/badge/Made%20with-Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 
 # Introduction
 UML Diagrammer is primarily a class diagram creator and editor. It specializes in importing Python code and automatically creating class diagrams. In order to support large systems, it includes several auto-layout and auto-line-routing capabilities. These are provided by its robust extension system.
