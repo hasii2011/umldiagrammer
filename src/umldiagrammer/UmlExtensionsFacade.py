@@ -13,7 +13,6 @@ from umlextensions.ExtensionsTypes import LinkInformation
 from umlextensions.ExtensionsTypes import CreatedLinkCallback
 from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import FrameInformationCallback
-from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
 
@@ -55,9 +54,6 @@ class UmlExtensionsFacade(IExtensionsFacade):
 
     def selectUmlShapes(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.SELECT_UML_SHAPES)
-
-    def getSelectedUmlShapes(self, callback: SelectedUmlShapesCallback):
-        self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.GET_SELECTED_UML_SHAPES, callback=callback)
 
     def refreshFrame(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.REFRESH_FRAME)

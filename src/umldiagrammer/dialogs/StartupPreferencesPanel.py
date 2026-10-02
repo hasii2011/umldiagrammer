@@ -13,19 +13,26 @@ from codeallybasic.Dimensions import Dimensions
 from codeallybasic.Position import Position
 
 from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsControl
+from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsParameters
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
+from codeallyadvanced.ui.widgets.PositionControl import PositionParameters
 
 from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
 from umldiagrammer.DiagrammerTypes import APPLICATION_FRAME_ID
 from umldiagrammer.pubsubengine.IAppPubSubEngine import IAppPubSubEngine
 from umldiagrammer.pubsubengine.MessageType import MessageType
 
+POSITION_MIN_VALUE: int = 0
+POSITION_MAX_VALUE: int = 2048
+
+SIZE_MIN_VALUE: int = 480
+SIZE_MAX_VALUE: int = 4096
+
 
 class StartupPreferencesPanel(BasePreferencesPanel):
     """
     Implemented using sized components for better platform look and feel
     """
-
     def __init__(self, parent: Window, appPubSubEngine: IAppPubSubEngine):
 
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
@@ -57,10 +64,13 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
         self._cbCenterAppOnStartup = CheckBox(sizedPanel, label='Center on Startup')
 
-        appPositionControls: PositionControl = PositionControl(sizedPanel=sizedPanel, displayText='Startup Position',
-                                                               minValue=0, maxValue=2048,
-                                                               valueChangedCallback=self._appPositionChanged,
-                                                               setControlsSize=False)
+        positionParameters: PositionParameters = PositionParameters(
+            caption='Startup Position',
+            minValue=POSITION_MIN_VALUE,
+            maxValue=POSITION_MAX_VALUE,
+            valueChangedCallback=self._appPositionChanged
+        )
+        appPositionControls: PositionControl = PositionControl(parent=sizedPanel, parameters=positionParameters)
 
         return appPositionControls
 
@@ -68,10 +78,13 @@ class StartupPreferencesPanel(BasePreferencesPanel):
 
         self._cbFullScreenOnStartup = CheckBox(sizedPanel, label='Full Screen on Startup')
 
-        appSizeControls: DimensionsControl = DimensionsControl(sizedPanel=sizedPanel, displayText="Startup Width/Height",
-                                                               minValue=480, maxValue=4096,
-                                                               valueChangedCallback=self._appSizeChanged,
-                                                               setControlsSize=False)
+        dimensionsParameters: DimensionsParameters = DimensionsParameters(
+            caption='Startup Width/Height',
+            minValue=SIZE_MIN_VALUE,
+            maxValue=SIZE_MAX_VALUE,
+            valueChangedCallback=self._appSizeChanged
+        )
+        appSizeControls: DimensionsControl = DimensionsControl(parent=sizedPanel, parameters=dimensionsParameters)
 
         return appSizeControls
 

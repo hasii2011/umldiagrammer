@@ -40,10 +40,10 @@ from umldiagrammer.pubsubengine.MessageType import MessageType
 
 from umldiagrammer.preferences.DiagrammerPreferences import DiagrammerPreferences
 
-#
-#
-# from umlextensions.ui.preferences.ExtensionsPreferencesPage import ExtensionsPreferencesPage
-#
+from umlextensions.ui.preferences.ExtensionsPreferencesPage import ExtensionsPreferencesPage as ExtensionsPreferencesPanel
+
+DIALOG_SIZE = Size(width=500, height=620)
+
 
 class DlgPreferences(SizedDialog):
     """
@@ -69,15 +69,16 @@ class DlgPreferences(SizedDialog):
         self._appPubSubEngine: IAppPubSubEngine = appPubSubEngine
 
         style:   int  = DEFAULT_DIALOG_STYLE | RESIZE_BORDER
-        dlgSize: Size = Size(width=460, height=600)
+        dlgSize: Size = DIALOG_SIZE
         super().__init__(parent, ID_ANY, "Diagrammer Preferences", size=dlgSize, style=style)
 
         self.logger:  Logger          = getLogger(__name__)
 
         self._preferences: DiagrammerPreferences = DiagrammerPreferences()
 
-        self._generalPreferencesPanel: GeneralPreferencesPanel = cast(GeneralPreferencesPanel, None)
-        self._startupPreferencesPanel: StartupPreferencesPanel = cast(StartupPreferencesPanel, None)
+        self._generalPreferencesPanel:    GeneralPreferencesPanel    = cast(GeneralPreferencesPanel, None)
+        self._startupPreferencesPanel:    StartupPreferencesPanel    = cast(StartupPreferencesPanel, None)
+        self._extensionsPreferencesPanel: ExtensionsPreferencesPanel = cast(ExtensionsPreferencesPanel, None)
 
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True)
@@ -102,19 +103,19 @@ class DlgPreferences(SizedDialog):
         book: Notebook = Notebook(sizedPanel, style=style)
         book.SetSizerProps(expand=True, proportion=1)
 
-        self._generalPreferencesPanel = GeneralPreferencesPanel(book, appPubSubEngine=self._appPubSubEngine)
-        self._startupPreferencesPanel = StartupPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
-        valuePreferences:         DefaultValuesPanel      = DefaultValuesPanel(parent=book)
-        diagramPreferences:       DiagramPreferencesPanel = DiagramPreferencesPanel(parent=book)
-        # positioningPreferences: PositioningPreferencesPage   = PositioningPreferencesPage(book, eventEngine=self._eventEngine)
-        # pluginPreferences:      PluginPreferencesPage        = PluginPreferencesPage(book)
-        # #
+        self._generalPreferencesPanel    = GeneralPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
+        self._startupPreferencesPanel    = StartupPreferencesPanel(parent=book, appPubSubEngine=self._appPubSubEngine)
+        self._extensionsPreferencesPanel = ExtensionsPreferencesPanel(parent=book)
+
+        valuePreferences:   DefaultValuesPanel      = DefaultValuesPanel(parent=book)
+        diagramPreferences: DiagramPreferencesPanel = DiagramPreferencesPanel(parent=book)
+
         book.AddPage(self._generalPreferencesPanel, text=self._generalPreferencesPanel.name, select=True)
         book.AddPage(self._startupPreferencesPanel, text=self._startupPreferencesPanel.name, select=False)
         book.AddPage(valuePreferences,         text=valuePreferences.name,         select=False)
         book.AddPage(diagramPreferences,       text=diagramPreferences.name,       select=False)
-        # book.AddPage(positioningPreferences, text=positioningPreferences.name, select=False)
-        # book.AddPage(pluginPreferences,      text=pluginPreferences.name,      select=False)
+
+        book.AddPage(self._extensionsPreferencesPanel, text=self._extensionsPreferencesPanel.name, select=False)
 
     def _onClose(self, event):
 

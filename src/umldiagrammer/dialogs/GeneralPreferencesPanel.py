@@ -28,6 +28,7 @@ from wx.lib.sized_controls import SizedPanel
 from wx.lib.sized_controls import SizedStaticBox
 
 from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
+from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelectorParameters
 
 from umldiagrammer.dialogs.BasePreferencesPanel import BasePreferencesPanel
 
@@ -134,10 +135,12 @@ class GeneralPreferencesPanel(BasePreferencesPanel):
 
     def _layoutDiagramsDirectory(self, sizedPanel: SizedPanel):
 
-        dsPanel: SizedStaticBox = SizedStaticBox(sizedPanel, label='Diagrams Directory ', style=BORDER_THEME)
-        dsPanel.SetSizerProps(expand=True, proportion=1)
-
-        self._directorySelector = DirectorySelector(parent=dsPanel, pathChangedCallback=self._pathChangedCallback)
+        directorySelectorParameters: DirectorySelectorParameters = DirectorySelectorParameters(
+            caption='Diagrams Directory ',
+            pathChangedCallback=self._pathChangedCallback,
+            proportion=1
+        )
+        self._directorySelector = DirectorySelector(parent=sizedPanel, parameters=directorySelectorParameters)
         self._directorySelector.SetSizerProps(expand=True, proportion=1)
 
     def _layoutProjectHistoryDisplayPreferenceControl(self, parentPanel: SizedPanel):
